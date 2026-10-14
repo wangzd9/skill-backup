@@ -1,0 +1,6 @@
+interface:
+  display_name: "千问开发需求与文档交接"
+  short_description: "澄清需求、核实技术方案并生成可交给本地千问执行的开发文档与验收任务包"
+  default_prompt: "使用 $qwen-dev-handoff 澄清当前需求并调查项目，生成可交给本地千问执行的 PRD、技术设计、TODO 和交接入口。"
+policy:
+  allow_implicit_invocation: true

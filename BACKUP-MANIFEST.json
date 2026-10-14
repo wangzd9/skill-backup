@@ -1,0 +1,4145 @@
+{
+  "snapshot_at": "2026-10-14T18:12:10+08:00",
+  "timezone": "Asia/Shanghai",
+  "files": [
+    {
+      "path": "codex/skills/.system/.codex-system-skills.marker",
+      "source": "/home/wang/.codex/skills/.system/.codex-system-skills.marker",
+      "bytes": 17,
+      "sha256": "4b857d61192f2fa2df02f1200356167abf381eb1080de74972acd52a365eefca"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/LICENSE.txt",
+      "source": "/home/wang/.codex/skills/.system/imagegen/LICENSE.txt",
+      "bytes": 10776,
+      "sha256": "4dd13869245e356246a5b770723247bbb80a8f07a181d1d3d873a1734297cdb9"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/SKILL.md",
+      "source": "/home/wang/.codex/skills/.system/imagegen/SKILL.md",
+      "bytes": 19201,
+      "sha256": "681ddb4ad6d06a2acc78a3535b583f8d0c1ea800ecda3d56370d3310fd2cd4ba"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/.system/imagegen/agents/openai.yaml",
+      "bytes": 275,
+      "sha256": "9ca574af14580dc7a2a3dc37a1796d17f93cb8850be66501f0799ef8603e9dc0"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/assets/imagegen-small.svg",
+      "source": "/home/wang/.codex/skills/.system/imagegen/assets/imagegen-small.svg",
+      "bytes": 2889,
+      "sha256": "cff5f34f57ff60b3ee92eaedd17b15e96dd4b9e776df3e78936c9e00d42be294"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/assets/imagegen.png",
+      "source": "/home/wang/.codex/skills/.system/imagegen/assets/imagegen.png",
+      "bytes": 1711,
+      "sha256": "95952f644064eb9e890f98d8db07216347186526e4c41ad66d3420629eb86e20"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/references/cli.md",
+      "source": "/home/wang/.codex/skills/.system/imagegen/references/cli.md",
+      "bytes": 9655,
+      "sha256": "ecfc2e09261a0feb3482517a5fa0ff410cb7d1958e3cbd2ac6b61586f5b81405"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/references/codex-network.md",
+      "source": "/home/wang/.codex/skills/.system/imagegen/references/codex-network.md",
+      "bytes": 1779,
+      "sha256": "c88298ca4481f6116a16fa7987434fc977f8b311c1bbc0c3d862ffd0c5981148"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/references/image-api.md",
+      "source": "/home/wang/.codex/skills/.system/imagegen/references/image-api.md",
+      "bytes": 6072,
+      "sha256": "dc975d7af8a4888967251a0276014b4a71ea30455294944b762256373ce3e569"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/references/prompting.md",
+      "source": "/home/wang/.codex/skills/.system/imagegen/references/prompting.md",
+      "bytes": 8282,
+      "sha256": "b210b051c775860267080941eba968212bf0ac7fce581d75c5dcc217d8293f8b"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/references/sample-prompts.md",
+      "source": "/home/wang/.codex/skills/.system/imagegen/references/sample-prompts.md",
+      "bytes": 17617,
+      "sha256": "70474177d151855b175c6133de2aae1d90b7f146b0dab50ec830972c47d72183"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/scripts/image_gen.py",
+      "source": "/home/wang/.codex/skills/.system/imagegen/scripts/image_gen.py",
+      "bytes": 34667,
+      "sha256": "b4345cf835e5b593b97df6bb2b70bda493b8a97eee4cabbc99b2fa57dba9b448"
+    },
+    {
+      "path": "codex/skills/.system/imagegen/scripts/remove_chroma_key.py",
+      "source": "/home/wang/.codex/skills/.system/imagegen/scripts/remove_chroma_key.py",
+      "bytes": 13905,
+      "sha256": "a5893c4bd04b21abced33731ea89d2ac428e81d92a0368eb18ffbe4fda5253e2"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/LICENSE.txt",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/LICENSE.txt",
+      "bytes": 10776,
+      "sha256": "4dd13869245e356246a5b770723247bbb80a8f07a181d1d3d873a1734297cdb9"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/SKILL.md",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/SKILL.md",
+      "bytes": 5437,
+      "sha256": "aa6829e21df2223167c85d2e49b6337a7345c84c1033f1ec10182c7882b36d45"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/agents/openai.yaml",
+      "bytes": 370,
+      "sha256": "44b9efac6be1bae32d869aa2942fecbe4dcae82682ee03e4120f2f9b7d4658ec"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/assets/openai-small.svg",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/assets/openai-small.svg",
+      "bytes": 1091,
+      "sha256": "45be1f0757eb18889eefb1e7db79668ef46a275dc4e0e78e8df5ebd7f6cdeadc"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/assets/openai.png",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/assets/openai.png",
+      "bytes": 1429,
+      "sha256": "156cc84d7332bfe95b310350bd470b690d22aa33d65340cc6c2e06022946194c"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/references/codex-self-knowledge.md",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/references/codex-self-knowledge.md",
+      "bytes": 7417,
+      "sha256": "8c8fb00e6e5cb1977924f5164684a6095427fa828bbc765225f17d9aeb79a912"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/references/latest-model.md",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/references/latest-model.md",
+      "bytes": 2147,
+      "sha256": "bdf241d505eb071b1c7b0b732f842b701348cf6eab95d1c36fd97edac64dd158"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/references/mcp-diagnostics.md",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/references/mcp-diagnostics.md",
+      "bytes": 2318,
+      "sha256": "49bbd2f73df7bbd7f86c80425dea4da2d301c22046080399a36bfc0ca49509e9"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/references/model-migration.md",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/references/model-migration.md",
+      "bytes": 5094,
+      "sha256": "bef46671036c8e483b7f65df931171217d55a8d26098851c2f89784db8edca2f"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/references/model-selection.md",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/references/model-selection.md",
+      "bytes": 1344,
+      "sha256": "ba2d164abbca30435a460a0bc3a7d82398dce2bdf092705c98ba55b3f3af38a8"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/references/official-docs.md",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/references/official-docs.md",
+      "bytes": 3337,
+      "sha256": "7962f2dce55089b93bde4115bb89fd42f20993c1597a2b13edd4956f463875b9"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/references/prompting-guide.md",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/references/prompting-guide.md",
+      "bytes": 10166,
+      "sha256": "548d4ca73a34cd4b0041ef05a899592e8c50772b8f3a76c579ec941e403e19f6"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/references/upgrade-guide.md",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/references/upgrade-guide.md",
+      "bytes": 1027,
+      "sha256": "ecac89155f910f064fd306e89c74585cabdb2142aba4f2acc0cead092ae1d1a5"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/references/upgrading-to-gpt-6-astra.md",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/references/upgrading-to-gpt-6-astra.md",
+      "bytes": 18993,
+      "sha256": "62ef6d22684662a019d203834fe1205a07e4ca4c65dddcbabe1bb51efe1aa840"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "bytes": 16085,
+      "sha256": "f53eb6d2f286e9efcc397e8bee93a938e37296c90953e4e06e94899ef1b6c363"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/scripts/resolve-latest-model-info",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info",
+      "bytes": 1038,
+      "sha256": "7354dbb030ca0736dd633a7ca1b930cf640abd40370725dea3a458cb51d49523"
+    },
+    {
+      "path": "codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.cjs",
+      "source": "/home/wang/.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.cjs",
+      "bytes": 3937,
+      "sha256": "eeb1bb486018e16b37edfc06b1a37179dbc672982d501040d4f7142f29dd2e64"
+    },
+    {
+      "path": "codex/skills/.system/review-agent/SKILL.md",
+      "source": "/home/wang/.codex/skills/.system/review-agent/SKILL.md",
+      "bytes": 2661,
+      "sha256": "07079efd0dc76f05fade424e5dfb048dce1de2df7626e1a4f56292a4f3f92228"
+    },
+    {
+      "path": "codex/skills/.system/review-agent/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/.system/review-agent/agents/openai.yaml",
+      "bytes": 252,
+      "sha256": "4d867a46d15e36ac880176484aae160f59855340c6059b2ea6ab9fbc9af084de"
+    },
+    {
+      "path": "codex/skills/.system/skill-creator/SKILL.md",
+      "source": "/home/wang/.codex/skills/.system/skill-creator/SKILL.md",
+      "bytes": 15311,
+      "sha256": "6656e54755638e8efcf275a472b9672eaa8a9a1b9e59dc210e275b03b59e1e66"
+    },
+    {
+      "path": "codex/skills/.system/skill-creator/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/.system/skill-creator/agents/openai.yaml",
+      "bytes": 183,
+      "sha256": "d07d21b93fcf3d4dc8d9a3399c05fc226a49a333a96d3e1c68b451b8dd9eade6"
+    },
+    {
+      "path": "codex/skills/.system/skill-creator/assets/skill-creator-small.svg",
+      "source": "/home/wang/.codex/skills/.system/skill-creator/assets/skill-creator-small.svg",
+      "bytes": 1319,
+      "sha256": "6591bf8ea9bb9435890dbdea299e0d2bd05f3aa893a335d26e4c535e93c8e7fb"
+    },
+    {
+      "path": "codex/skills/.system/skill-creator/assets/skill-creator.png",
+      "source": "/home/wang/.codex/skills/.system/skill-creator/assets/skill-creator.png",
+      "bytes": 1563,
+      "sha256": "a4024b0306ddb05847e1012879d37aaf1e658205199da596f5145ed7a88d9162"
+    },
+    {
+      "path": "codex/skills/.system/skill-creator/license.txt",
+      "source": "/home/wang/.codex/skills/.system/skill-creator/license.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "codex/skills/.system/skill-creator/references/openai_yaml.md",
+      "source": "/home/wang/.codex/skills/.system/skill-creator/references/openai_yaml.md",
+      "bytes": 2356,
+      "sha256": "ffac39318e408108141d40f820968e59f70434a891694f9bf1d25be8237b150c"
+    },
+    {
+      "path": "codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "source": "/home/wang/.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "bytes": 6669,
+      "sha256": "816df12072d74faf924d802a6599a139997e1441e90bfe4869ec304f2e5e2851"
+    },
+    {
+      "path": "codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "source": "/home/wang/.codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "bytes": 10314,
+      "sha256": "bf0656a5f9d8d8cdecf0245eaf27e1df8e0e9b6d40ccdda814eb8e3d5f6992c8"
+    },
+    {
+      "path": "codex/skills/.system/skill-creator/scripts/quick_validate.py",
+      "source": "/home/wang/.codex/skills/.system/skill-creator/scripts/quick_validate.py",
+      "bytes": 4249,
+      "sha256": "ee6dba90f44d37171c5a6edb8095979c54919ff6822c1a907afca2e78c48738c"
+    },
+    {
+      "path": "codex/skills/.system/skill-installer/LICENSE.txt",
+      "source": "/home/wang/.codex/skills/.system/skill-installer/LICENSE.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "codex/skills/.system/skill-installer/SKILL.md",
+      "source": "/home/wang/.codex/skills/.system/skill-installer/SKILL.md",
+      "bytes": 3367,
+      "sha256": "d68b77e5bbb34dedab89d134da52855f140fc4b4299b80104f534e3b9e98f8ee"
+    },
+    {
+      "path": "codex/skills/.system/skill-installer/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/.system/skill-installer/agents/openai.yaml",
+      "bytes": 221,
+      "sha256": "5ce223d8b1070b82c42298538f1b8d376f788eb9e7a42a987e8c094070d73f0e"
+    },
+    {
+      "path": "codex/skills/.system/skill-installer/assets/skill-installer-small.svg",
+      "source": "/home/wang/.codex/skills/.system/skill-installer/assets/skill-installer-small.svg",
+      "bytes": 923,
+      "sha256": "3928703ff00dc1a681e7a22401843b7edcbd4b2051651ce4c43b75f7e140504e"
+    },
+    {
+      "path": "codex/skills/.system/skill-installer/assets/skill-installer.png",
+      "source": "/home/wang/.codex/skills/.system/skill-installer/assets/skill-installer.png",
+      "bytes": 1086,
+      "sha256": "d0a230b1a79b71b858b7c215a0fbb0768d6459c14ea4ef80c61592629bf0e605"
+    },
+    {
+      "path": "codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "source": "/home/wang/.codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "bytes": 659,
+      "sha256": "61c1bbe2ae217433b4b6f9f09f21aca4df52c12598068343ade719f706e4859b"
+    },
+    {
+      "path": "codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "source": "/home/wang/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "bytes": 11917,
+      "sha256": "38f311b75664bb063808f982c600271ebc4b560830f491705190f88a94e3e781"
+    },
+    {
+      "path": "codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "source": "/home/wang/.codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "bytes": 2948,
+      "sha256": "9d6dfb2abf3afeee7f027a89fb1626b918a973da18f4eb6c25681286301beb41"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/SKILL.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/SKILL.md",
+      "bytes": 13517,
+      "sha256": "5e7000998248be71c8abbc22fb7895a2731cb556716e64e7f8e1af15b1cd7a28"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/agents/openai.yaml",
+      "bytes": 372,
+      "sha256": "3abbae297a00f13ed6d4f19856bb9c09c1eaf92b7db9cd7bd7167ff8426b2666"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/assets/role-document-observer.service",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/assets/role-document-observer.service",
+      "bytes": 273,
+      "sha256": "81135a67fb079d2f8e0b52d5c07ae81e7649db265866c83f91b7fa2b27f4b579"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/assets/role-document-observer.timer",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/assets/role-document-observer.timer",
+      "bytes": 223,
+      "sha256": "6fa35e07d863ce5d1dcde71d84405e272de5cfac5d8de7897b93ebdde5255b98"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/assets/strong-review-pack.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/assets/strong-review-pack.md",
+      "bytes": 3712,
+      "sha256": "5a756db54927f0ef745ff89089e6b7d3e7028f091da1b86cafdd31292b1e0b7b"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/references/development-log.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/references/development-log.md",
+      "bytes": 2177,
+      "sha256": "529261dea7cd26daf0da98cb7d49f7dfb8563659562854e55ad626b670134bfe"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/references/idle-report.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/references/idle-report.md",
+      "bytes": 316,
+      "sha256": "423df85d9026d6f805ff3c002ecf239da4dd44897db4369548deb0a21530f782"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/references/ocr-and-merge.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/references/ocr-and-merge.md",
+      "bytes": 15734,
+      "sha256": "c61667b56cf514399525452bc7e38253ff6bbeb13814e888b01de66012a06a57"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/references/ocr-runtime.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/references/ocr-runtime.md",
+      "bytes": 8263,
+      "sha256": "59236f5dda1e0335fa0479f90bde0553abb1702665d4bf8d794acb405433dca4"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/references/reporting-policy.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/references/reporting-policy.md",
+      "bytes": 9692,
+      "sha256": "5289e4489af3a8b6d5195c3ee0948fcd30ac4403c5475fde3f69ee9e220d60b5"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/references/review-authorization.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/references/review-authorization.md",
+      "bytes": 6184,
+      "sha256": "9b3dd417fad7404a17a1ce660cbeb7070732790af972e7e1947d2386e43182f7"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/references/runtime-helpers.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/references/runtime-helpers.md",
+      "bytes": 11379,
+      "sha256": "6f53d3e55c494df82d64a056596ac0cb1e7feef5f5358ecc4750ed5192a9cae4"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/references/script-observer.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/references/script-observer.md",
+      "bytes": 6439,
+      "sha256": "28a6c9d3740843236cd082bb1f2be2f23405d9fa53b6ef04feb208aff1a76502"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/references/strong-review.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/references/strong-review.md",
+      "bytes": 9171,
+      "sha256": "6ef20f09d48026827e698061d40c5aa86626292f961a3e283d735a89e3992aed"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/references/task-decomposition.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/references/task-decomposition.md",
+      "bytes": 2830,
+      "sha256": "3473af687d8d4417ba994d06b94966255c0c26fcfb8b69af5f1a883d9869fc18"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/references/workflow-guide-maintenance.md",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/references/workflow-guide-maintenance.md",
+      "bytes": 2333,
+      "sha256": "58a3359b877934b1c8cf525c569b4293279788925f4015d312da0d16554d9b08"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/activity_report.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/activity_report.py",
+      "bytes": 35573,
+      "sha256": "8ec58688fa3f77310880213356d653a8c5c0f521166ad26d5a0475dce57c8667"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/ocr_runtime.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/ocr_runtime.py",
+      "bytes": 28265,
+      "sha256": "1fb1ee61ef3e316120b223529190e50e66997ac2e6828451c801276f0ba0faca"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/ocr_session_status.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/ocr_session_status.py",
+      "bytes": 8509,
+      "sha256": "5a11e0f04e8d7ca0c0e2d36c34f14ed7186a2f4c02bc546b7357a9cf847e15ac"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/progress_display.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/progress_display.py",
+      "bytes": 23829,
+      "sha256": "9481df9af0995accce5272c5b85e19f0d13bca18c1aeb90faca5e45c208ef7bf",
+      "materialized_symlink": "/home/wang/work/hermes-role-runtime/progress_display.py"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/progress_projection.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/progress_projection.py",
+      "bytes": 30560,
+      "sha256": "94425f29e624b49a4907c3644673b36cbc6b8271211fd72647134a08c0135d4f",
+      "materialized_symlink": "/home/wang/work/hermes-role-runtime/progress_projection.py"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/report_gate.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/report_gate.py",
+      "bytes": 6071,
+      "sha256": "df2e451def21750aaabd3649bbd0789a605d7caa7039f8afe1b1ea098e5edc4d"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/role_observer.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/role_observer.py",
+      "bytes": 34828,
+      "sha256": "20bc53ee15257fe41639ab70a1a8611543b971b84ca2c082ef61ab217eeac3d3"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/role_runtime.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/role_runtime.py",
+      "bytes": 14422,
+      "sha256": "4ffa0ba44e4b6f9fda29e5052a5f04d365b8096c32c7872641d1ab604820381f"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/runtime_common.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/runtime_common.py",
+      "bytes": 1639,
+      "sha256": "c19c54693558e5edb9c57156b8345d739d3a2a7d9346f55b91888ea132f43960",
+      "materialized_symlink": "/home/wang/work/hermes-role-runtime/runtime_common.py"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/runtime_tools.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/runtime_tools.py",
+      "bytes": 7943,
+      "sha256": "cd12da40ae7b7fcbb1af2ee3276b5413a440a505a3887e6b3acf7ca1854a26bf",
+      "materialized_symlink": "/home/wang/work/hermes-role-runtime/runtime_tools.py"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/strong_review.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/strong_review.py",
+      "bytes": 21936,
+      "sha256": "6c10d0374b9bdcc8c002b4c218101ed1821335ff4b51e8be6779a24eebe350b6"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/task_observation.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/task_observation.py",
+      "bytes": 14333,
+      "sha256": "2bf8dcb90da68520520b0aaf1b3aeb2fb40fb6e1012f83b3cf035d85891bba27",
+      "materialized_symlink": "/home/wang/work/hermes-role-runtime/task_observation.py"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/test_activity_report.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/test_activity_report.py",
+      "bytes": 25296,
+      "sha256": "a29528dc46445703612d43b9675f3bd4edb9373403090496c5fb256a5dea4800"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/test_ocr_runtime.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/test_ocr_runtime.py",
+      "bytes": 15174,
+      "sha256": "54398ced5c3ef61c8201e42d739ff7da3a17dfcda28f5986a7497aa0f61e0c4d"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/test_report_gate.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/test_report_gate.py",
+      "bytes": 5074,
+      "sha256": "2f0dcfadae079f0935dc8a368bb524db10622e99efed5047dea3075637b006c8"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/test_role_observer.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/test_role_observer.py",
+      "bytes": 29707,
+      "sha256": "c5010446d14965caa74f8caf54f1cdf5e320479228560e805c1949b0e01c1a82"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/test_strong_review.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/test_strong_review.py",
+      "bytes": 11365,
+      "sha256": "20944cdd2941154e33511b317ff72b69cea6578d0e2c6f5d64a445b57e6bee33"
+    },
+    {
+      "path": "codex/skills/complex-task-coordinator/scripts/time_accounting.py",
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/time_accounting.py",
+      "bytes": 22980,
+      "sha256": "3c5ccc90b75b982a44f014ee11cfecd9669a061d9c307df0eef3d468f4417d67",
+      "materialized_symlink": "/home/wang/work/hermes-role-runtime/time_accounting.py"
+    },
+    {
+      "path": "codex/skills/complex-task-executor/SKILL.md",
+      "source": "/home/wang/.codex/skills/complex-task-executor/SKILL.md",
+      "bytes": 9110,
+      "sha256": "05a42c198a24d6401fd4463a16b13e04a52d07b7d14d0ad002ee8eced10cfd4e"
+    },
+    {
+      "path": "codex/skills/complex-task-executor/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/complex-task-executor/agents/openai.yaml",
+      "bytes": 361,
+      "sha256": "5ee65fd77473e50953c03d31ae323f34a4705356dfb2c2a25fb1c85a8cb043e5"
+    },
+    {
+      "path": "codex/skills/complex-task-planner/SKILL.md",
+      "source": "/home/wang/.codex/skills/complex-task-planner/SKILL.md",
+      "bytes": 6909,
+      "sha256": "9e0004fb627e86fce671c935a4ade70663915fd9f0c5ed3581d2a44fe0917b9a"
+    },
+    {
+      "path": "codex/skills/complex-task-planner/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/complex-task-planner/agents/openai.yaml",
+      "bytes": 394,
+      "sha256": "f8656f201795290f4bc370e55eb5213aa7b5a0ea0f719e3921a8030c90ee1fa4"
+    },
+    {
+      "path": "codex/skills/complex-task-planner/assets/protocol.md",
+      "source": "/home/wang/.codex/skills/complex-task-planner/assets/protocol.md",
+      "bytes": 15963,
+      "sha256": "e00068c21bd9bc59c5797bf4cfe0a426aedb028088029a104b8d83983affa091"
+    },
+    {
+      "path": "codex/skills/complex-task-planner/assets/requirement-readme.md",
+      "source": "/home/wang/.codex/skills/complex-task-planner/assets/requirement-readme.md",
+      "bytes": 1159,
+      "sha256": "f8e7d76a268437b6fd8ae50efb7acdc996546dd0ff37a583f32ed64b8f1f6476"
+    },
+    {
+      "path": "codex/skills/complex-task-planner/assets/role-bindings.json",
+      "source": "/home/wang/.codex/skills/complex-task-planner/assets/role-bindings.json",
+      "bytes": 2947,
+      "sha256": "f92776591631f835e779174fe9ce4014524aa7a08d718139e3444a423cf720b6"
+    },
+    {
+      "path": "codex/skills/complex-task-planner/assets/task-card.md",
+      "source": "/home/wang/.codex/skills/complex-task-planner/assets/task-card.md",
+      "bytes": 977,
+      "sha256": "157ee46431672be88dec6f232a6fc37c3c9d47c7dd59e4c96d0e1c88cf0d9305"
+    },
+    {
+      "path": "codex/skills/complex-task-planner/references/architecture.md",
+      "source": "/home/wang/.codex/skills/complex-task-planner/references/architecture.md",
+      "bytes": 7884,
+      "sha256": "fa02c5de8f4162e692552d8e02e7211fbb75269b3e297dbee3e9f7b3244cb658"
+    },
+    {
+      "path": "codex/skills/complex-task-planner/references/requirement-boundaries.md",
+      "source": "/home/wang/.codex/skills/complex-task-planner/references/requirement-boundaries.md",
+      "bytes": 7209,
+      "sha256": "c768b4afa7458df81c90de37f52e2d39cc54e81837c79d241915b99b285b5cab"
+    },
+    {
+      "path": "codex/skills/complex-task-reviewer/SKILL.md",
+      "source": "/home/wang/.codex/skills/complex-task-reviewer/SKILL.md",
+      "bytes": 4590,
+      "sha256": "6aedb3d14ff2289c6054349b557d85c2f1e398584260c6088b4afda1413e95e8"
+    },
+    {
+      "path": "codex/skills/complex-task-reviewer/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/complex-task-reviewer/agents/openai.yaml",
+      "bytes": 323,
+      "sha256": "07376afa5a7f4162cbcafcccea1ebfcdaf998248b28929eec7acbf3195f1d490"
+    },
+    {
+      "path": "codex/skills/complex-task-reviewer/assets/result.md",
+      "source": "/home/wang/.codex/skills/complex-task-reviewer/assets/result.md",
+      "bytes": 1521,
+      "sha256": "d58217f7915a5e29ea86a80f39398ec7e10e341cc8533428881b392cd894b73c"
+    },
+    {
+      "path": "codex/skills/complex-task-tester/SKILL.md",
+      "source": "/home/wang/.codex/skills/complex-task-tester/SKILL.md",
+      "bytes": 8996,
+      "sha256": "eb0d971afb9ac5d0d4bf6fec14de67f6e61ec6ed71a885512f950757d1393c43"
+    },
+    {
+      "path": "codex/skills/complex-task-tester/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/complex-task-tester/agents/openai.yaml",
+      "bytes": 369,
+      "sha256": "173d0ffc43c4f8317f72b8aec30eff6daa8a1b9d2a201b9b7a01174d841480c5"
+    },
+    {
+      "path": "codex/skills/feishu-progress-style/SKILL.md",
+      "source": "/home/wang/.codex/skills/feishu-progress-style/SKILL.md",
+      "bytes": 9469,
+      "sha256": "2f2ccc8fc6b867970df30cf75631b81c563d9c449e4da0f816f4cf842cdb3cc1"
+    },
+    {
+      "path": "codex/skills/feishu-progress-style/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/feishu-progress-style/agents/openai.yaml",
+      "bytes": 332,
+      "sha256": "d984e8db7bc98072a3c05fd72653405c03619a3220ed7f710f1a8abf71071fdf"
+    },
+    {
+      "path": "codex/skills/qwen-dev-handoff/SKILL.md",
+      "source": "/home/wang/.codex/skills/qwen-dev-handoff/SKILL.md",
+      "bytes": 7341,
+      "sha256": "994ad80d93a938dd6e95c17a9ec8d7eed8a535c7d0fe2fb9df41cc1ed5884e28"
+    },
+    {
+      "path": "codex/skills/qwen-dev-handoff/agents/openai.yaml",
+      "source": "/home/wang/.codex/skills/qwen-dev-handoff/agents/openai.yaml",
+      "bytes": 394,
+      "sha256": "8be8a0262b2f5651ce4c71b6c5dd3fc2e0243d8ab9b977d5bfdeac8ae579a38f"
+    },
+    {
+      "path": "codex/skills/qwen-dev-handoff/references/document-pack.md",
+      "source": "/home/wang/.codex/skills/qwen-dev-handoff/references/document-pack.md",
+      "bytes": 5759,
+      "sha256": "6b695c841f6f9be8357f87e0f975a317df68b1adc6dbbaa0771bd8486f85a370"
+    },
+    {
+      "path": "hermes/skills/a100-test-data-cleanup/SKILL.md",
+      "source": "/home/wang/.hermes/skills/a100-test-data-cleanup/SKILL.md",
+      "bytes": 3244,
+      "sha256": "53014f007fd1d959529b4a30497c114f6c11dea8c3eeb7ac24f51c8de19880ab"
+    },
+    {
+      "path": "hermes/skills/api-and-interface-design/SKILL.md",
+      "source": "/home/wang/.hermes/skills/api-and-interface-design/SKILL.md",
+      "bytes": 14884,
+      "sha256": "5dafd0c44a3aabf11cae5bcb34f6fcc24dfa5c01ba6e0d3176bce997f4d68bc8"
+    },
+    {
+      "path": "hermes/skills/apple/DESCRIPTION.md",
+      "source": "/home/wang/.hermes/skills/apple/DESCRIPTION.md",
+      "bytes": 137,
+      "sha256": "c9537e578d68950224dbc09a425497a780e8c3956db9cb38a97b4a9e985516b3"
+    },
+    {
+      "path": "hermes/skills/apple/apple-notes/SKILL.md",
+      "source": "/home/wang/.hermes/skills/apple/apple-notes/SKILL.md",
+      "bytes": 2394,
+      "sha256": "1ba042cb17e3aca06a68415526e926ada464bf873c8592c3326125cd72cb397f"
+    },
+    {
+      "path": "hermes/skills/apple/apple-reminders/SKILL.md",
+      "source": "/home/wang/.hermes/skills/apple/apple-reminders/SKILL.md",
+      "bytes": 3606,
+      "sha256": "ee5084f2d7ec196488bef2c74248fb3d8328d1b2e3277ddda3f0de9da6fc7131"
+    },
+    {
+      "path": "hermes/skills/apple/findmy/SKILL.md",
+      "source": "/home/wang/.hermes/skills/apple/findmy/SKILL.md",
+      "bytes": 3823,
+      "sha256": "e35d4d165daadfd066661df59a202a4159c5df41b77642884d3656830054d6bc"
+    },
+    {
+      "path": "hermes/skills/apple/imessage/SKILL.md",
+      "source": "/home/wang/.hermes/skills/apple/imessage/SKILL.md",
+      "bytes": 2442,
+      "sha256": "bc68b1648e301409bc25b1084ec26766213ca9f3c1b2fd3d3d6ebe3dbde9e967"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/DESCRIPTION.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/DESCRIPTION.md",
+      "bytes": 211,
+      "sha256": "7f2427c7112d71235d92f68ba68392a4fed3d28a7636f522deb2748cb44fe7fc"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/claude-code/SKILL.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/claude-code/SKILL.md",
+      "bytes": 35175,
+      "sha256": "ec92e627db1f449ea038e2b756ebbaa067880dd673a35497ea64b7e6391cf519"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/codex/SKILL.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/codex/SKILL.md",
+      "bytes": 5852,
+      "sha256": "1b15b57bcaba128b83ebe9f050b6873958198a1570bc801d4ca0406fb7e3271d"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/computer-use/SKILL.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/computer-use/SKILL.md",
+      "bytes": 18054,
+      "sha256": "778833ecfea4385cab79ec4dda0ffe956e3f4bf9231eb80e52c5d113ee4e6cdf"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/SKILL.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/SKILL.md",
+      "bytes": 13183,
+      "sha256": "a111466ce81ccdad8bccc7f670c7946df9d9f8b639399f28bd2958f5bce92c56"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/background-systems.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/background-systems.md",
+      "bytes": 5069,
+      "sha256": "70099ca64774cc7e70a33330d180f862cf19a02c0f936dc4c50d51c6d0b73556"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/cli-reference.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/cli-reference.md",
+      "bytes": 6592,
+      "sha256": "1732000d896879e753740e465936883a06da11e82e3e9830c9b59cff3e4f39d1"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/configuration.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/configuration.md",
+      "bytes": 4248,
+      "sha256": "d18d4781266563ebdb6602df3b89af760c027ca54281e7714572802969f90331"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/contributor-guide.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/contributor-guide.md",
+      "bytes": 6546,
+      "sha256": "7349d28caba6b7b60b863825391e3bc8c7e3cfc82b8550dcc34119b07c06bd79"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/delegate-task-concurrency-diagnosis.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/delegate-task-concurrency-diagnosis.md",
+      "bytes": 4660,
+      "sha256": "41019dd37c0c048b002d3639fe01455513b5c9aba142a21ff9c3bd4c7718a77b"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/desktop-plugins.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/desktop-plugins.md",
+      "bytes": 12384,
+      "sha256": "45880c212f028e27f821308cf3e1770a360b05892bd97e760d6bb1ac5819640e"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/native-mcp.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/native-mcp.md",
+      "bytes": 12110,
+      "sha256": "d02ad7616664ac4fb817953de42ab51d31220bae5e952952291681e72c015130"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/petdex.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/petdex.md",
+      "bytes": 3244,
+      "sha256": "2254eabf40c360efb54e4df482f3b84820b54a15e6954c4a7e9e7fee4eb90f77"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/portal-auth-for-third-party-apps.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/portal-auth-for-third-party-apps.md",
+      "bytes": 6563,
+      "sha256": "ca9e357ae5be6e10b677f4de3fd7a09d1efc423fe157dcda5b5a2ce7d39dee2a"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/project-context-files.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/project-context-files.md",
+      "bytes": 3285,
+      "sha256": "20b51406102e6498f62ed837978e5c67ebd91a917b985de7bbddfaaf23c1f593"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/providers-and-models.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/providers-and-models.md",
+      "bytes": 3381,
+      "sha256": "41c9c8e9de3a66c5e7f12c6fe39916d58a13e315be1dfd712fbf8cdaab4af203"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/security-privacy.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/security-privacy.md",
+      "bytes": 3393,
+      "sha256": "f27913f7775915d8065b2dea782197907ff90cf37f07b865135c7f61aee98e83"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/slash-commands.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/slash-commands.md",
+      "bytes": 5379,
+      "sha256": "690dc6c2543dfa028bbf2918c229f27f4962e9d897fce25ebb1de67d56f3b822"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/themes.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/themes.md",
+      "bytes": 6887,
+      "sha256": "f5a8269a7312173f0caa6736156a3f76d32e56b4e15511e84dc2e902f48e8157"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/troubleshooting.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/troubleshooting.md",
+      "bytes": 3726,
+      "sha256": "b4d33de1c2c189d23892d043819c7146749a068c688af51919ff58fa8cb399a9"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/tui-widgets.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/tui-widgets.md",
+      "bytes": 6484,
+      "sha256": "20e21aabb757a9d3c7d895db8f05a3782fe8b28feef3768ac5550c8860b4a3db"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/webhooks.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/webhooks.md",
+      "bytes": 7923,
+      "sha256": "a4ef792943b03fbd1769e5176703a1f356c23756554abd37e0070f3885582489"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/references/windows-quirks.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/references/windows-quirks.md",
+      "bytes": 2496,
+      "sha256": "69addbf56f70671a97d5abc8d88e90d46681b8d8cdc3d26d2fa90abc210f64cd"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/templates/clock.mjs",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/templates/clock.mjs",
+      "bytes": 1423,
+      "sha256": "44ec25d560e16c7815a633039a783ddbba2d8e8cf1659560c0cd1cddec83f89d"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/templates/plugin.js",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/templates/plugin.js",
+      "bytes": 3141,
+      "sha256": "a63c8f879756854b45373f5d6b1ae0a7fefcdd4a5af840be8a60d83b64724744"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/hermes-agent/templates/skin.yaml",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/hermes-agent/templates/skin.yaml",
+      "bytes": 1389,
+      "sha256": "bc8fddd7e5373b074c1c7dd423bb59d6e04769977e8a18354e3a6b3983209994"
+    },
+    {
+      "path": "hermes/skills/autonomous-ai-agents/opencode/SKILL.md",
+      "source": "/home/wang/.hermes/skills/autonomous-ai-agents/opencode/SKILL.md",
+      "bytes": 7297,
+      "sha256": "885582e6f2d5b88f431c5a0bc3b69b88f5aab701774f91572487a6f4e4679a0b"
+    },
+    {
+      "path": "hermes/skills/bag-cleanup-e2e-test-driver/SKILL.md",
+      "source": "/home/wang/.hermes/skills/bag-cleanup-e2e-test-driver/SKILL.md",
+      "bytes": 11989,
+      "sha256": "f2d2473883467141beeced9799c4e15cf54f2ade4d429df79f1442c865a2e698"
+    },
+    {
+      "path": "hermes/skills/browser-testing-with-devtools/SKILL.md",
+      "source": "/home/wang/.hermes/skills/browser-testing-with-devtools/SKILL.md",
+      "bytes": 14539,
+      "sha256": "4e3aacd6a380cd25bc6c2d67fdd1c926a9b22535b8a62109ecd33cefd909e3d9"
+    },
+    {
+      "path": "hermes/skills/ci-cd-and-automation/SKILL.md",
+      "source": "/home/wang/.hermes/skills/ci-cd-and-automation/SKILL.md",
+      "bytes": 11332,
+      "sha256": "a6ed8ed56456b01ff8314c44eefc69897d9905ae4e06bb2b7036286efb79b5f0"
+    },
+    {
+      "path": "hermes/skills/claude-mem-local-setup/SKILL.md",
+      "source": "/home/wang/.hermes/skills/claude-mem-local-setup/SKILL.md",
+      "bytes": 2793,
+      "sha256": "a0944830eea61d2c91bb1ca37850309f8a1951c3b7bb3f2cfdd2e7f43de9a6c2"
+    },
+    {
+      "path": "hermes/skills/claude-mem-memory/SKILL.md",
+      "source": "/home/wang/.hermes/skills/claude-mem-memory/SKILL.md",
+      "bytes": 2931,
+      "sha256": "c1b85c9da6fdca0a205798ec01bbec647032c739faa4145d1a8077c2f6732950"
+    },
+    {
+      "path": "hermes/skills/code-review-and-quality/SKILL.md",
+      "source": "/home/wang/.hermes/skills/code-review-and-quality/SKILL.md",
+      "bytes": 20555,
+      "sha256": "8f3cabca581bbf7cb5f0add3f7454e7a4523f9d4353a6a4a217e6fa515309612"
+    },
+    {
+      "path": "hermes/skills/code-simplification/SKILL.md",
+      "source": "/home/wang/.hermes/skills/code-simplification/SKILL.md",
+      "bytes": 13545,
+      "sha256": "f0c5ed754057eb0c1e027e2587f59de816651feb5e837242296c43ea21cf621d"
+    },
+    {
+      "path": "hermes/skills/constraint-driven-development/SKILL.md",
+      "source": "/home/wang/.hermes/skills/constraint-driven-development/SKILL.md",
+      "bytes": 21008,
+      "sha256": "06479d4305f286d23cfb99f5dc85695896785269664e1f6a8d800e3b71e70c10"
+    },
+    {
+      "path": "hermes/skills/constraint-driven-development/references/floor-guard.md",
+      "source": "/home/wang/.hermes/skills/constraint-driven-development/references/floor-guard.md",
+      "bytes": 5851,
+      "sha256": "dba15dad8f5a5cbae464ec8457e6dd014a7bcb3ad13a360a6908d54991a5415e"
+    },
+    {
+      "path": "hermes/skills/context-engineering/SKILL.md",
+      "source": "/home/wang/.hermes/skills/context-engineering/SKILL.md",
+      "bytes": 15486,
+      "sha256": "8b736cb9e55b82b265ab6ff78349c0e826e8a6df550deddf665b7fb3ff858b63"
+    },
+    {
+      "path": "hermes/skills/creative/DESCRIPTION.md",
+      "source": "/home/wang/.hermes/skills/creative/DESCRIPTION.md",
+      "bytes": 116,
+      "sha256": "e890a87ac49fed98df4e1fc72fb9c548dd2ba66efa9f15dd1ba65935a1a60eed"
+    },
+    {
+      "path": "hermes/skills/creative/architecture-diagram/SKILL.md",
+      "source": "/home/wang/.hermes/skills/creative/architecture-diagram/SKILL.md",
+      "bytes": 5830,
+      "sha256": "0e7e2736aafe052e409c2ad27863d51ef3007c116711e584033787ccb5d99d3f"
+    },
+    {
+      "path": "hermes/skills/creative/architecture-diagram/templates/template.html",
+      "source": "/home/wang/.hermes/skills/creative/architecture-diagram/templates/template.html",
+      "bytes": 12483,
+      "sha256": "d17a1631a14f108dd469ad16c83d667d917565ebe780f42fad7321be327de442"
+    },
+    {
+      "path": "hermes/skills/creative/ascii-video/README.md",
+      "source": "/home/wang/.hermes/skills/creative/ascii-video/README.md",
+      "bytes": 16440,
+      "sha256": "a182ea6fd86e9a1a3e1d8e3281e0274b7cd33ef7b15c10bd12064ad4d75fbfae"
+    },
+    {
+      "path": "hermes/skills/creative/ascii-video/SKILL.md",
+      "source": "/home/wang/.hermes/skills/creative/ascii-video/SKILL.md",
+      "bytes": 15011,
+      "sha256": "3bd3f39985a52954e2693866608bd8105f4dc0efbca5b6baa3045c2b641bda26"
+    },
+    {
+      "path": "hermes/skills/creative/ascii-video/references/architecture.md",
+      "source": "/home/wang/.hermes/skills/creative/ascii-video/references/architecture.md",
+      "bytes": 33004,
+      "sha256": "d537a3f6e6263cdd87a9cc71938706e50e8d7cc454aab36231923c319abd4aeb"
+    },
+    {
+      "path": "hermes/skills/creative/ascii-video/references/composition.md",
+      "source": "/home/wang/.hermes/skills/creative/ascii-video/references/composition.md",
+      "bytes": 34942,
+      "sha256": "3bdcb525921a3143b9f5e453fe6c4473f2992ac3404faa061d1883b8693da66c"
+    },
+    {
+      "path": "hermes/skills/creative/ascii-video/references/effects.md",
+      "source": "/home/wang/.hermes/skills/creative/ascii-video/references/effects.md",
+      "bytes": 72928,
+      "sha256": "842f5720af3bf5a2d0ef7f0c9c832b8cc357caf93a9c534030f0f2b156c39f67"
+    },
+    {
+      "path": "hermes/skills/creative/ascii-video/references/inputs.md",
+      "source": "/home/wang/.hermes/skills/creative/ascii-video/references/inputs.md",
+      "bytes": 24575,
+      "sha256": "d9b723aa68f4239e7d306ed9ecd1e45b506e1197fb0c87194fbbe5a96f3d9402"
+    },
+    {
+      "path": "hermes/skills/creative/ascii-video/references/optimization.md",
+      "source": "/home/wang/.hermes/skills/creative/ascii-video/references/optimization.md",
+      "bytes": 24265,
+      "sha256": "a9e78b131bf7fd6d575759c7eaf121a93e26bd56e2e0f6af67fd9fa766811713"
+    },
+    {
+      "path": "hermes/skills/creative/ascii-video/references/scenes.md",
+      "source": "/home/wang/.hermes/skills/creative/ascii-video/references/scenes.md",
+      "bytes": 37487,
+      "sha256": "6c9a0293a5be961269f5d02e5b6dc83d4960a10511dfd777bc1033d416ecf093"
+    },
+    {
+      "path": "hermes/skills/creative/ascii-video/references/shaders.md",
+      "source": "/home/wang/.hermes/skills/creative/ascii-video/references/shaders.md",
+      "bytes": 50435,
+      "sha256": "29cac0af0b4614b3782fbd19c2f2857d8e95fec70c0ea68be86f5c5d0702c669"
+    },
+    {
+      "path": "hermes/skills/creative/ascii-video/references/troubleshooting.md",
+      "source": "/home/wang/.hermes/skills/creative/ascii-video/references/troubleshooting.md",
+      "bytes": 13246,
+      "sha256": "eb992b11d051ba1ec8bb47d62cb28c329b69fc8ebc5ba38d4f501a9893ae9ebd"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/PORT_NOTES.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/PORT_NOTES.md",
+      "bytes": 1699,
+      "sha256": "5dd3dbe9e9e713af903c7b29d391e259d93491b1504223880d8296c7a7093d51"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/SKILL.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/SKILL.md",
+      "bytes": 10434,
+      "sha256": "89e25da6d8ea1cac79b18d9e6c4c3b8d7a522df2eef559f151f19c6ce5b2a002"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/analysis-framework.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/analysis-framework.md",
+      "bytes": 7490,
+      "sha256": "666d5682334ffde15bbd095a19d0720aa877b0f8c411cafbb60889f3f16fe71a"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/base-prompt.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/base-prompt.md",
+      "bytes": 1082,
+      "sha256": "a0d476aa0042d25d4c757e7f400883a04f586e74920ac822b89a50dffa185d16"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/bento-grid.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/bento-grid.md",
+      "bytes": 851,
+      "sha256": "b8dfb690b90d935483c5bfcfbd1476f31b392990fe81b1b67ad571008f6e6e99"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/binary-comparison.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/binary-comparison.md",
+      "bytes": 1278,
+      "sha256": "6740c77e89b4cd120e2da9c96feb447fb707e40ef42ee1774794337c8079c8ee"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/bridge.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/bridge.md",
+      "bytes": 907,
+      "sha256": "ead9bd74c76c6de214e0fcee0b6bb756764b10f67ccaba52b591d05136bc7e1d"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/circular-flow.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/circular-flow.md",
+      "bytes": 759,
+      "sha256": "96c560cdf274e62cebecdd864e7d7a18ce44863c78cbda3ff62f48233839e859"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/comic-strip.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/comic-strip.md",
+      "bytes": 847,
+      "sha256": "3ed52755443e435304cb28925da1f7465bd6186aac2ac125d9336c8e0afed028"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/comparison-matrix.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/comparison-matrix.md",
+      "bytes": 893,
+      "sha256": "77bfeb08fd66287e11db575582262f80a6c8471c5dfa6b9508e3c48e567ae14e"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/dashboard.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/dashboard.md",
+      "bytes": 776,
+      "sha256": "045514ab6f196ff0ab2c7ead9755e955eff582c5cdedc163eb0a4b18aebee2b6"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/dense-modules.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/dense-modules.md",
+      "bytes": 3673,
+      "sha256": "5d73084f494c863b5c6186925f0eec0372a80157b63ebc6021379a5659b10420"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/funnel.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/funnel.md",
+      "bytes": 821,
+      "sha256": "e505f04f334d8da00607972b19b23f9a2e24b6c2cff8cdb8fbe6baa0698c7286"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/hierarchical-layers.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/hierarchical-layers.md",
+      "bytes": 1180,
+      "sha256": "5fdacc7c543788a32d9e73b4cc26465e54adec498dd4975cdcff85ca2f2d1da9"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/hub-spoke.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/hub-spoke.md",
+      "bytes": 865,
+      "sha256": "d79526313a7f6550e5586652d871dee3b958c2ea400242a9a9c3f2bccf4b57a5"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/iceberg.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/iceberg.md",
+      "bytes": 884,
+      "sha256": "26a21caf9a3d8dd4172565953f2cd060bca0b3ab2afd82f54828dc7542f5e9e3"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/isometric-map.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/isometric-map.md",
+      "bytes": 833,
+      "sha256": "ec0be8d54e5a8db5182696c637fd8769f9b9a6c7f4f190ca9f6f4ea7fc00732a"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/jigsaw.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/jigsaw.md",
+      "bytes": 844,
+      "sha256": "1b5566cdf0981677bf79437a6c5877749a7ecc22fcf1cccc1bee864c9d865e75"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/linear-progression.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/linear-progression.md",
+      "bytes": 1238,
+      "sha256": "65dea6f3fc3c131c7d3fc32050e541b3f60e5896699adc0e8624d1c5cc469757"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/periodic-table.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/periodic-table.md",
+      "bytes": 774,
+      "sha256": "8fa5c1823092eecd84e88cf8a3f9547e5ce7389dfeec4fd87b6277154f33f858"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/story-mountain.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/story-mountain.md",
+      "bytes": 815,
+      "sha256": "251491e38320301caa0e2c29c4d7c73f910f598c8a00f924eb7e58a70cc7f2e8"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/structural-breakdown.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/structural-breakdown.md",
+      "bytes": 1118,
+      "sha256": "eff60da27c0603113a283488824312e1078140872ff204935bf2c3cfe712c1fc"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/tree-branching.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/tree-branching.md",
+      "bytes": 913,
+      "sha256": "f493c76aa8d5ace6b5cf96a8ca2480f1131ee2ad41d335fdcb82f3ab83d928fc"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/venn-diagram.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/venn-diagram.md",
+      "bytes": 825,
+      "sha256": "c0babb164e540dcdc83f9006835024d04e3e2782665ceac4742e59b02a0cfd48"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/layouts/winding-roadmap.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/layouts/winding-roadmap.md",
+      "bytes": 799,
+      "sha256": "52dc70d953e795696a71a4331b951cc428283016d8a01e0ffcf9f1d79eb6e4f4"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/structured-content-template.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/structured-content-template.md",
+      "bytes": 5515,
+      "sha256": "d979b8d4fb37746fbf404d5737ec76e5837f066b97f6bd45c9b9b9478bee0877"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/aged-academia.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/aged-academia.md",
+      "bytes": 990,
+      "sha256": "596be4263818615dc491531bb326370a276c3995d13b27a7d3222da7ab8fffd3"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/bold-graphic.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/bold-graphic.md",
+      "bytes": 920,
+      "sha256": "d7262e681a5d8ca93aea397dbd4f00925724af9d20909adef877f5f117e2dabd"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/chalkboard.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/chalkboard.md",
+      "bytes": 2204,
+      "sha256": "d903ffb1bd67b7f05972acbf82fec2305d93c149f458ad434097e4b18ff94df5"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/claymation.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/claymation.md",
+      "bytes": 654,
+      "sha256": "c55e726c0d1156f2715107dd3b3d3c60af385b48db33b6121cb569494aa59644"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/corporate-memphis.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/corporate-memphis.md",
+      "bytes": 612,
+      "sha256": "156e6e27009fdc3305e97ef242cb1a45fac65a054f73cd62718ce99bf5171ebf"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/craft-handmade.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/craft-handmade.md",
+      "bytes": 1429,
+      "sha256": "91740549239ab391d18532c83317a137c68cb11ab33ea154130db68a791288c0"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/cyberpunk-neon.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/cyberpunk-neon.md",
+      "bytes": 625,
+      "sha256": "68fdaa033dbece53c5e788972ab47fc548df621f23c1ab408c7c633b457f6491"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/hand-drawn-edu.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/hand-drawn-edu.md",
+      "bytes": 2648,
+      "sha256": "f08c3abbdde1b63a8ff8e5a6d82024d2bf961fcff42c032510cf8dd0194e48b8"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/ikea-manual.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/ikea-manual.md",
+      "bytes": 572,
+      "sha256": "64816d33fd9fb5c22024d2db48f9e4ca7ca38c64cfad1d020880c7f32ccd5690"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/kawaii.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/kawaii.md",
+      "bytes": 653,
+      "sha256": "d88bf32f4257c13ee68b6b13e7af733aa67b4eedce14e50182a791272f389f3a"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/knolling.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/knolling.md",
+      "bytes": 584,
+      "sha256": "59302d093c12766b1924e659c406429cc2543055ddf791f0d42760a1b2eaafbd"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/lego-brick.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/lego-brick.md",
+      "bytes": 574,
+      "sha256": "3753f54d30e02bce4de89a1ace9db4ba82bd8395ae8f643c3670449aaaab04c7"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/morandi-journal.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/morandi-journal.md",
+      "bytes": 2233,
+      "sha256": "13d230f40671f05d80c6e8b134e426da1c7f5a463d354ab241ca0f1ee30fec0d"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/origami.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/origami.md",
+      "bytes": 607,
+      "sha256": "58f51438267c1499591d272bd7e434283565799889a4b0c75debf2329f2b919b"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/pixel-art.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/pixel-art.md",
+      "bytes": 562,
+      "sha256": "1a1dffbccf818e77fd8b16f7a5872e245a934db77ce2aa2a5b6348268bb2f5f3"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/pop-laboratory.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/pop-laboratory.md",
+      "bytes": 2174,
+      "sha256": "c920d07989697c46aa3482fe2b2f4c6387ab803e3f19ca11206a35a2ac7b7ff9"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/retro-pop-grid.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/retro-pop-grid.md",
+      "bytes": 2106,
+      "sha256": "d59faa1639c15a6624c51746d9725de50a40c448dbbeba8faf6eb00ac3468023"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/storybook-watercolor.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/storybook-watercolor.md",
+      "bytes": 703,
+      "sha256": "d7067bc69f56f3fad42e3f2671c86317c36962f38fd69a181f9d606d6fd54f88"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/subway-map.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/subway-map.md",
+      "bytes": 591,
+      "sha256": "a122e7f9f5b990f804b717d6e696f916922ff61227e72bfe5e540fd51c66d359"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/technical-schematic.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/technical-schematic.md",
+      "bytes": 983,
+      "sha256": "2b21ce445c6a2b1ef280c2d7b4cb8e87e2f6e720f85cb68a8ba40a5c2d73a12d"
+    },
+    {
+      "path": "hermes/skills/creative/baoyu-infographic/references/styles/ui-wireframe.md",
+      "source": "/home/wang/.hermes/skills/creative/baoyu-infographic/references/styles/ui-wireframe.md",
+      "bytes": 596,
+      "sha256": "9a27502ab6bba76ad042cfa08834053f9e563c76cc8ffb46456cd3db2a6523a3"
+    },
+    {
+      "path": "hermes/skills/creative/claude-design/SKILL.md",
+      "source": "/home/wang/.hermes/skills/creative/claude-design/SKILL.md",
+      "bytes": 25117,
+      "sha256": "1582b0d49e48bdf937b2f555098484e0979cdfa285c6cc9fa329ba8e416d347a"
+    },
+    {
+      "path": "hermes/skills/creative/design-md/SKILL.md",
+      "source": "/home/wang/.hermes/skills/creative/design-md/SKILL.md",
+      "bytes": 8477,
+      "sha256": "7ed56bba40ffc9573fa51b33b2424f37fb5f774e9ecb7e76e737797afd0b62ae"
+    },
+    {
+      "path": "hermes/skills/creative/design-md/templates/starter.md",
+      "source": "/home/wang/.hermes/skills/creative/design-md/templates/starter.md",
+      "bytes": 2566,
+      "sha256": "587571ab914ebe6c228d786aeb3b531d88b5b53dcffd5295333d609275a0b2d4"
+    },
+    {
+      "path": "hermes/skills/creative/humanizer/LICENSE",
+      "source": "/home/wang/.hermes/skills/creative/humanizer/LICENSE",
+      "bytes": 1066,
+      "sha256": "4ac4810254ab36d45419141aeb8e69bf50652cfafe5b2dab947d06d44e5cbf96"
+    },
+    {
+      "path": "hermes/skills/creative/humanizer/SKILL.md",
+      "source": "/home/wang/.hermes/skills/creative/humanizer/SKILL.md",
+      "bytes": 34463,
+      "sha256": "887d5e3467a682da9b166e5293007f8bbbc299f8a6718ae00f26161b7d062b04"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/README.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/README.md",
+      "bytes": 886,
+      "sha256": "a30f3ec6105d5b23bc5ec28e8e2809e9ceed49f1fd816570d5b5656d0aa65819"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/SKILL.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/SKILL.md",
+      "bytes": 12150,
+      "sha256": "467376469fc2043e2674a843509f8eea52660791e76fb2e142074ecd4abc7e69"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/animation-design-thinking.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/animation-design-thinking.md",
+      "bytes": 7205,
+      "sha256": "87812340f4756f5e2cc653e6e13ec922562a58483bcd66a5317c19ace5e08220"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/animations.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/animations.md",
+      "bytes": 8836,
+      "sha256": "e00bf77a8e17bf457b7669175ac5dc9ffa68e93d35b3f092036a6077892ba51d"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/camera-and-3d.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/camera-and-3d.md",
+      "bytes": 4132,
+      "sha256": "36a17d79a0d7b9b11b8e645417f10ebcd2e051228c06867611a3271db7f28ad4"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/decorations.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/decorations.md",
+      "bytes": 5006,
+      "sha256": "dfd7bd79a57a0b1860aae5a5d6d282b1b517445457db4d4493519d77c0f568de"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/equations.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/equations.md",
+      "bytes": 6086,
+      "sha256": "7408d2688b497f423770e33408d883d54e293a1ba3abb892ebb799a698b50e38"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/graphs-and-data.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/graphs-and-data.md",
+      "bytes": 4628,
+      "sha256": "347847bc60f1e5f00ab8ad0f81deede00e8c702b3e1d13a22358e358f370be12"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/mobjects.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/mobjects.md",
+      "bytes": 9739,
+      "sha256": "771421e463b526dcc4e2593ae327358ef26919f698c48ee4e32cc7749d32dcda"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/paper-explainer.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/paper-explainer.md",
+      "bytes": 9333,
+      "sha256": "ab67495a01e60f2c45afded7c3c80a4e4501c841a562d1a6d305cc74787a4fc4"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/production-quality.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/production-quality.md",
+      "bytes": 5904,
+      "sha256": "d9f41d3c58396a94750e6d7c56c9fe5aaa0d067679df059adbe472ceab87d9c0"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/rendering.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/rendering.md",
+      "bytes": 5375,
+      "sha256": "8a326d4081d658018fccb8ee4df34be6a945b40466f08f4675924f98649c6ac2"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/scene-planning.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/scene-planning.md",
+      "bytes": 2751,
+      "sha256": "c54a8cf6cf864ff5a60d4569e4e285f0fca88e40f3cbff1350b70b099af319e0"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/troubleshooting.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/troubleshooting.md",
+      "bytes": 4319,
+      "sha256": "7ee9880cf32ab2b4e1eeaa289464f211e96e9510004635ade59ee6660a4909df"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/updaters-and-trackers.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/updaters-and-trackers.md",
+      "bytes": 8500,
+      "sha256": "96c024dce576750a917277e0f4e09135fa7be25ea7e9248b702d36533b22dae5"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/references/visual-design.md",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/references/visual-design.md",
+      "bytes": 4762,
+      "sha256": "6703a312d9e35820a84140343b5c484050874ff19daf5c72789fa00cc1644c99"
+    },
+    {
+      "path": "hermes/skills/creative/manim-video/scripts/setup.sh",
+      "source": "/home/wang/.hermes/skills/creative/manim-video/scripts/setup.sh",
+      "bytes": 921,
+      "sha256": "e7563c458764c1b369c26f874cf94acbe43db8f9a3b1e0d9d735230f5d895bae"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/README.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/README.md",
+      "bytes": 3316,
+      "sha256": "8251be0e41fbe1bd0a903ac93b38beb2b64375696fd0cd23bb73dd2ef8f8054f"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/SKILL.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/SKILL.md",
+      "bytes": 27534,
+      "sha256": "3b39b75303e082af69b3f4e2deab7a55b27d60293eff6a561fb627188194a33e"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/references/animation.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/references/animation.md",
+      "bytes": 10456,
+      "sha256": "7b71c1fd7c7778bfe3e348e49ae8b4cae59c5eb730a42d9b603acce7801bbe57"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/references/color-systems.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/references/color-systems.md",
+      "bytes": 8647,
+      "sha256": "4c210028c4d6e8cf72df7eb0c730b6faea6ac60d627d333991040c42e7f5d699"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/references/core-api.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/references/core-api.md",
+      "bytes": 9841,
+      "sha256": "8b1278b31bd4e003cb093da1858e4d0753eb304540c8f4e8e567c682222753e7"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/references/export-pipeline.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/references/export-pipeline.md",
+      "bytes": 15611,
+      "sha256": "b88e7236c5a674c2541d664c1c1f7cdf2eea0ef7da43c047ac2d45e3fd239667"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/references/interaction.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/references/interaction.md",
+      "bytes": 8345,
+      "sha256": "2951d6e9df71c467fe9ac8401c771a0b93b7c648dd4723108743f339d3c82aa3"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/references/shapes-and-geometry.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/references/shapes-and-geometry.md",
+      "bytes": 7213,
+      "sha256": "0a468a75d22322552abffec0cb1305d94ee531c850dd8b590584fd1078d48ed2"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/references/troubleshooting.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/references/troubleshooting.md",
+      "bytes": 13041,
+      "sha256": "89812ad4fa9f08bde59ee1050107c723bd1b9046a81f8dd0aad94d4a9d8b215f"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/references/typography.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/references/typography.md",
+      "bytes": 6779,
+      "sha256": "d26c532a850750c6d6e64ddaa0465a499bfd44023465a6a19d8909637266654c"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/references/visual-effects.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/references/visual-effects.md",
+      "bytes": 23456,
+      "sha256": "644cbaf5f91b44dfa54ec125ccdff44c445f454781ff98edd316d30df258db56"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/references/webgl-and-3d.md",
+      "source": "/home/wang/.hermes/skills/creative/p5js/references/webgl-and-3d.md",
+      "bytes": 8893,
+      "sha256": "86ce498bccba5ce24ab9ba6d104723ea2739db6da27c2aec4284848ba306860d"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/scripts/export-frames.js",
+      "source": "/home/wang/.hermes/skills/creative/p5js/scripts/export-frames.js",
+      "bytes": 5398,
+      "sha256": "b1de46c977c9edfcc71fc045422f78722f12744c4f8b3d80e0fa6b2681a1dd05"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/scripts/render.sh",
+      "source": "/home/wang/.hermes/skills/creative/p5js/scripts/render.sh",
+      "bytes": 2911,
+      "sha256": "10a5e45d1a9d3dc867fbd7cea3b744f8d335ec03bf85a77d3a1852f315adf9e2"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/scripts/serve.sh",
+      "source": "/home/wang/.hermes/skills/creative/p5js/scripts/serve.sh",
+      "bytes": 833,
+      "sha256": "65c28a2bff1dbf74f86fe027ead37eaa02da02a146c33cef4af36bc0b51c9917"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/scripts/setup.sh",
+      "source": "/home/wang/.hermes/skills/creative/p5js/scripts/setup.sh",
+      "bytes": 2475,
+      "sha256": "27750af377cec00485ffa26fcc7bd2452167bdf73f15d4997bda49a8f4b780c3"
+    },
+    {
+      "path": "hermes/skills/creative/p5js/templates/viewer.html",
+      "source": "/home/wang/.hermes/skills/creative/p5js/templates/viewer.html",
+      "bytes": 10858,
+      "sha256": "6a0f3f42fbc6a52cc82cd5990a856474cdbf43d2f157d2183a09b9cec91a331a"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/SKILL.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/SKILL.md",
+      "bytes": 9722,
+      "sha256": "cd89bdb86008bb30b35d9bdd30e06587f75ee54055c54e1a79afb20418264b3d"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/airbnb.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/airbnb.md",
+      "bytes": 14824,
+      "sha256": "4d6277a1e6432047f25cc7b7443d7eac7a9bde5b483c609cf7bb7f5c9abab70b"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/airtable.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/airtable.md",
+      "bytes": 4300,
+      "sha256": "9795a57c10e0773d547a219db6c7d9aa294b7fc8f0b9cec96f9e293655dc5f30"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/apple.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/apple.md",
+      "bytes": 21122,
+      "sha256": "9dfce6c8ba40c93b6e9a3d537b24dad8643df56d0839bada58f8cf41f99ecaec"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/bmw.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/bmw.md",
+      "bytes": 10585,
+      "sha256": "f4d82d0acd92db83e63dc21424fdcb198b3c620ce30ea7726a2c0ce4927d6dbe"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/cal.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/cal.md",
+      "bytes": 18582,
+      "sha256": "87b5ebb39dfaa2b3d86be692ad2210392476bb5a6b9190e977de61cd3f2d510f"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/claude.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/claude.md",
+      "bytes": 21078,
+      "sha256": "0644dd065f1167959a157648a420d64756963fef47df8584968c0003dbce56ed"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/clay.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/clay.md",
+      "bytes": 18105,
+      "sha256": "fc18ca7b88c2840bc35ce574803f6d5ee87415457aad1e116a2e34513fefebe4"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/clickhouse.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/clickhouse.md",
+      "bytes": 16180,
+      "sha256": "1f92343a51ca05fa742ee012d902c829478b97f7a49c4055e047349730bbb6fa"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/cohere.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/cohere.md",
+      "bytes": 15543,
+      "sha256": "0db7feff1fe45ccf39a6ffe6758620284dea9d235e42db7b7efaab1ae0e3b4c3"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/coinbase.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/coinbase.md",
+      "bytes": 5781,
+      "sha256": "d34fc53bf9d0d68c8a825cde92f6243add31e6e471012ce519bdeb09b7592cf9"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/composio.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/composio.md",
+      "bytes": 21732,
+      "sha256": "2398498177e69c32819695c16718e83eea3d5499798c600d6aa4a025a496f448"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/cursor.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/cursor.md",
+      "bytes": 19867,
+      "sha256": "9c0584ad583057cf88c47f352a395d0e6d508b98f5e844188d0df2a122c7a100"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/elevenlabs.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/elevenlabs.md",
+      "bytes": 15978,
+      "sha256": "ba0f7455143c2fd89422e09baf3b92030fb55422eb500a46af2432528f72e585"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/expo.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/expo.md",
+      "bytes": 19466,
+      "sha256": "513bded0ab8137833488cba76526644f64f6d91de8bce0793253a261e78807cb"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/figma.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/figma.md",
+      "bytes": 12403,
+      "sha256": "d04a5225723177d265e80125d50c249861c3e0e91ea1f3dab469ba06f61dee70"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/framer.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/framer.md",
+      "bytes": 18347,
+      "sha256": "4374dc30dd981448936fa7f1d84e34025a0380a909e17ac9f43cc4e41adef0c5"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/hashicorp.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/hashicorp.md",
+      "bytes": 16425,
+      "sha256": "fc14c7103c6dcd7cb649b92042a5a7fb8b9327d3d35fee665e84f7806a851089"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/ibm.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/ibm.md",
+      "bytes": 20366,
+      "sha256": "328494dcf5266f17b71ccff3fb68b3a7077c8fe1f45d7688c26ba24f0aeae3fd"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/intercom.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/intercom.md",
+      "bytes": 7162,
+      "sha256": "a8a3f040a170b061d7ea84457fe9f56b7733d282fc6b436d6d498966b7d81275"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/kraken.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/kraken.md",
+      "bytes": 5094,
+      "sha256": "4c318649813d7293829bda3e26536a33f625546ce6ed530b5af50c7897b91a6c"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/linear.app.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/linear.app.md",
+      "bytes": 23231,
+      "sha256": "0826aef4c683f0d9cefdd5464ae26865e003e827544da9d30d63010471e32835"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/lovable.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/lovable.md",
+      "bytes": 18160,
+      "sha256": "c4092616ed94b011142b36eb4a0eeb8611f1e5032ed6d4594663489cb4307779"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/minimax.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/minimax.md",
+      "bytes": 15071,
+      "sha256": "8b1cfa04f435ed4931cca8d81fa8998d714db5ad193512a6e240862dd517c1a1"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/mintlify.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/mintlify.md",
+      "bytes": 18203,
+      "sha256": "2a1e56e99fbe94835f90240f03e60292b14811bd5712dde696f3622a6aa5bec4"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/miro.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/miro.md",
+      "bytes": 5538,
+      "sha256": "47307a1d603f3e1c9cbfde1bdee2b976bc6a27b75357076bc75e84bfd2bdfa1d"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/mistral.ai.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/mistral.ai.md",
+      "bytes": 16421,
+      "sha256": "82b090855a45a16fca45962c7f9ff78debb7ea3ed064846658e9a21e5fadb70f"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/mongodb.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/mongodb.md",
+      "bytes": 15808,
+      "sha256": "96531df710b4a49a0b68af6f1cf81b8927d48a7ee215315e6ed7e09c7d6b615f"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/notion.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/notion.md",
+      "bytes": 19090,
+      "sha256": "9afd11387e550f2ce085514b38a5e0393d6192a1d9e05a14342356977a832621"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/nvidia.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/nvidia.md",
+      "bytes": 17834,
+      "sha256": "9a565542920f930ac743d17fa5226afb2be2e8f921333960b4d03bdbe3f9977d"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/ollama.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/ollama.md",
+      "bytes": 16307,
+      "sha256": "56e636e385fd1a9c79e9352f8b3d1a02919c30fa7fe8fe2e14f25f422b64b7e5"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/opencode.ai.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/opencode.ai.md",
+      "bytes": 16307,
+      "sha256": "fac924b83e1483e46fdf15a56791b10b739c194c1ea9a7b2cf2945de21ba7aec"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/pinterest.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/pinterest.md",
+      "bytes": 12694,
+      "sha256": "eaec9d13e6450e74074198743337f1e9b0d21572123a4ab1ebccdd66e114faf0"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/posthog.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/posthog.md",
+      "bytes": 19347,
+      "sha256": "9d17a75b45720763c0107885f3f77f8f2871e4957e145a49696d569ddc5052a2"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/raycast.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/raycast.md",
+      "bytes": 19261,
+      "sha256": "90304a7a878784920768d8bdd46ac519cdc2258daf157dcb3668cd8e7bc47f67"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/replicate.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/replicate.md",
+      "bytes": 14947,
+      "sha256": "7753ebfffb73d2a25bbc1abfe84ac7f0d05903a36a7068446f877bd0f097a02f"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/resend.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/resend.md",
+      "bytes": 19201,
+      "sha256": "9ee46f856f8d89d8dea4abb3d2c78a210825e8263f126eab3bdd939de0060834"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/revolut.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/revolut.md",
+      "bytes": 9363,
+      "sha256": "1d024aa8105e22a192b4670b9406a9ca73aa4a1b85a65508f9b409864cb9b5ee"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/runwayml.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/runwayml.md",
+      "bytes": 15097,
+      "sha256": "81fe46161ae5501da5b9c473e298f32cb02de2d3b5605b192aa7bb635b7cb269"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/sanity.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/sanity.md",
+      "bytes": 22041,
+      "sha256": "174ae98a518f69230f54865b8a47699e475dde7ad822e14e52eb26ecbbf52799"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/sentry.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/sentry.md",
+      "bytes": 15539,
+      "sha256": "edac951ab2807005002e2619472526ec4118ebb8332aec6698c9f9dfb659fa81"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/spacex.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/spacex.md",
+      "bytes": 12064,
+      "sha256": "8b91bf24463cb5c8e98aacf43af02305faaeb8f28bf24199d90cfebca7b3c48f"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/spotify.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/spotify.md",
+      "bytes": 13731,
+      "sha256": "5cc773b31d12a9a3c54a100e10a9729818bb07e611bb837f3891007f88840af6"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/stripe.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/stripe.md",
+      "bytes": 21263,
+      "sha256": "cdddebb03bc5282ad9eabf2e6fde823d7a2deb828f9dc8ca4ab6f919b42aef05"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/supabase.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/supabase.md",
+      "bytes": 15592,
+      "sha256": "deeabf2b03efd5a0fc8e1d3876fc3f9bfe0ea480fbf35fddfb3e43f7943f938d"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/superhuman.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/superhuman.md",
+      "bytes": 19714,
+      "sha256": "edbd6f3c175f45cd264a7fbf17ad9a367b68a5eb1068d385639973658730bd93"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/together.ai.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/together.ai.md",
+      "bytes": 15073,
+      "sha256": "de149f63fd3c7bd0190a86a2d194ab8b2800bb4ec5c0312711d11dca8b07487a"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/uber.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/uber.md",
+      "bytes": 19430,
+      "sha256": "68291d1291680183e2786965d076053f66e4fd68efb47cdb4ba48256ecf2b2b6"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/vercel.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/vercel.md",
+      "bytes": 20227,
+      "sha256": "ad326ef79b6e4415f564e31b4317170384b2cf424a2e582c4cbc4df53dea9705"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/voltagent.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/voltagent.md",
+      "bytes": 27091,
+      "sha256": "e73d9409a63d157774528b260b3249fb52745e6b242efe8bc1ae2e9f04b08827"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/warp.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/warp.md",
+      "bytes": 17441,
+      "sha256": "0a6569a598ca207704ab87fedd76fc1ac2cae537f0da8eb3d9ca5cb843d309ab"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/webflow.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/webflow.md",
+      "bytes": 4863,
+      "sha256": "64c4d2929e2bc906086d6d04e4638cc4f87fd553ac8073d5f3cea7b46a620d13"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/wise.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/wise.md",
+      "bytes": 9208,
+      "sha256": "6496785cb61f66b5c3edc74f6a8bf6fe10d4e16ada427bbdd7dc6c92f0a0c656"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/x.ai.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/x.ai.md",
+      "bytes": 17043,
+      "sha256": "5454af16b5f3daee9a2f05658d267bb0bd8a025e1870bad996a85677a091d284"
+    },
+    {
+      "path": "hermes/skills/creative/popular-web-designs/templates/zapier.md",
+      "source": "/home/wang/.hermes/skills/creative/popular-web-designs/templates/zapier.md",
+      "bytes": 19484,
+      "sha256": "9aac8e73a4a471fecb2d252afead66c82436e7525e7f9d1e6bbe64e375c65160"
+    },
+    {
+      "path": "hermes/skills/creative/songwriting-and-ai-music/SKILL.md",
+      "source": "/home/wang/.hermes/skills/creative/songwriting-and-ai-music/SKILL.md",
+      "bytes": 10963,
+      "sha256": "5dbf92dc336e9b17be45c35c92a5bb307e4655e39a86617f07b7654678f92583"
+    },
+    {
+      "path": "hermes/skills/debugging-and-error-recovery/SKILL.md",
+      "source": "/home/wang/.hermes/skills/debugging-and-error-recovery/SKILL.md",
+      "bytes": 10913,
+      "sha256": "21f3960f5d7ae2cc95c40896545004dbbcbbd752ea65fc2d53962554d4174220"
+    },
+    {
+      "path": "hermes/skills/deprecation-and-migration/SKILL.md",
+      "source": "/home/wang/.hermes/skills/deprecation-and-migration/SKILL.md",
+      "bytes": 12642,
+      "sha256": "6a624f942e09c69863a4219b9bd5d56975026b67b0c70bc83385ffd2120b6142"
+    },
+    {
+      "path": "hermes/skills/dev-machine-host-triage/SKILL.md",
+      "source": "/home/wang/.hermes/skills/dev-machine-host-triage/SKILL.md",
+      "bytes": 7312,
+      "sha256": "49180795dbe4d61b9a35a93f4658c6b6c148f58a100071d969c92b60f23c0c13"
+    },
+    {
+      "path": "hermes/skills/dev-machine-ssh-connections/SKILL.md",
+      "source": "/home/wang/.hermes/skills/dev-machine-ssh-connections/SKILL.md",
+      "bytes": 2820,
+      "sha256": "ada8822384c0b9d9f3aaa830180eb58bbdf133157e1af7b6ed1fc3c7570fd43b"
+    },
+    {
+      "path": "hermes/skills/devops/sdlc-review/SKILL.md",
+      "source": "/home/wang/.hermes/skills/devops/sdlc-review/SKILL.md",
+      "bytes": 9073,
+      "sha256": "ce90e8a3e145cce69c62880dc85921700110879f9290952d6cec28218503155f"
+    },
+    {
+      "path": "hermes/skills/documentation-and-adrs/SKILL.md",
+      "source": "/home/wang/.hermes/skills/documentation-and-adrs/SKILL.md",
+      "bytes": 9848,
+      "sha256": "87ae44a0c7bb3eefc2131a9d11caabcc14e4d8dcb27d66a3a675551ee2ce1671"
+    },
+    {
+      "path": "hermes/skills/doubt-driven-development/SKILL.md",
+      "source": "/home/wang/.hermes/skills/doubt-driven-development/SKILL.md",
+      "bytes": 16647,
+      "sha256": "6fa1fcd8420c28daf7e53c5b08b0f20b907911efd2a6d9bce0b9740da20a4008"
+    },
+    {
+      "path": "hermes/skills/email/DESCRIPTION.md",
+      "source": "/home/wang/.hermes/skills/email/DESCRIPTION.md",
+      "bytes": 101,
+      "sha256": "2c40e123f597ebbb4db9edf5fe8e5d63a1aacf8f00b59eca1b5af0748062ac24"
+    },
+    {
+      "path": "hermes/skills/email/email-inbox-triage/SKILL.md",
+      "source": "/home/wang/.hermes/skills/email/email-inbox-triage/SKILL.md",
+      "bytes": 5447,
+      "sha256": "deeade1bb70f8835b2f3158980030b8aa41bb1ea6f798631451c89cfd632bcc8"
+    },
+    {
+      "path": "hermes/skills/email/himalaya/SKILL.md",
+      "source": "/home/wang/.hermes/skills/email/himalaya/SKILL.md",
+      "bytes": 7272,
+      "sha256": "0f6c9bb4c0a5c4f4627e139b6beb2b1ba0addd7145895196528b8125929e3837"
+    },
+    {
+      "path": "hermes/skills/email/himalaya/references/configuration.md",
+      "source": "/home/wang/.hermes/skills/email/himalaya/references/configuration.md",
+      "bytes": 5906,
+      "sha256": "ccd540fa964f843903b17400a5f45ef610a16f23fe1e0ca3e625f717fa951b89"
+    },
+    {
+      "path": "hermes/skills/email/himalaya/references/message-composition.md",
+      "source": "/home/wang/.hermes/skills/email/himalaya/references/message-composition.md",
+      "bytes": 3799,
+      "sha256": "84d889972f5f4243d891405b83e67bddc7e835b2c4e434efd77fdc6bca9fe307"
+    },
+    {
+      "path": "hermes/skills/executor-session-triage/SKILL.md",
+      "source": "/home/wang/.hermes/skills/executor-session-triage/SKILL.md",
+      "bytes": 3732,
+      "sha256": "ca8e396a512b652a16fa6921af017e44466a3299dc18f6a8bb66fe82b76d064e"
+    },
+    {
+      "path": "hermes/skills/feishu-gateway-ops/SKILL.md",
+      "source": "/home/wang/.hermes/skills/feishu-gateway-ops/SKILL.md",
+      "bytes": 11703,
+      "sha256": "f66985edde790a6e1088a2354afbb0dbeb146175adc7f174961a5a4425257ee9"
+    },
+    {
+      "path": "hermes/skills/feishu-gateway-ops/references/shared-llm-load.md",
+      "source": "/home/wang/.hermes/skills/feishu-gateway-ops/references/shared-llm-load.md",
+      "bytes": 3668,
+      "sha256": "a11fb01c773244f4b922857ce91101c3bd871cd447d83b3c4b76642f46e7762a"
+    },
+    {
+      "path": "hermes/skills/frontend-ui-engineering/SKILL.md",
+      "source": "/home/wang/.hermes/skills/frontend-ui-engineering/SKILL.md",
+      "bytes": 11712,
+      "sha256": "549044e9bd8d7fe993ce8e5c0d2b0f5465650676dc15805329973f936179eb1e"
+    },
+    {
+      "path": "hermes/skills/git-github-mirror-remote/SKILL.md",
+      "source": "/home/wang/.hermes/skills/git-github-mirror-remote/SKILL.md",
+      "bytes": 5412,
+      "sha256": "5b15f99bfe0954478e3502bb2e4112b19576c48aa3dc79d01ba5f765f91b4ee7"
+    },
+    {
+      "path": "hermes/skills/git-mirror-add-remote/SKILL.md",
+      "source": "/home/wang/.hermes/skills/git-mirror-add-remote/SKILL.md",
+      "bytes": 2153,
+      "sha256": "21a904322c4c06a36a7af088444f90e02ad467605e9c45220f9f33520cff4c44"
+    },
+    {
+      "path": "hermes/skills/git-workflow-and-versioning/SKILL.md",
+      "source": "/home/wang/.hermes/skills/git-workflow-and-versioning/SKILL.md",
+      "bytes": 14141,
+      "sha256": "b7465d187935c52546d39fdc7bd6ac36d94eda25a9500ef8c18b767d2eb116ea"
+    },
+    {
+      "path": "hermes/skills/github-repo-fetch/SKILL.md",
+      "source": "/home/wang/.hermes/skills/github-repo-fetch/SKILL.md",
+      "bytes": 1522,
+      "sha256": "9c896e642990913ef2457af7e66eae30b7829c64def85c26b6270e128fc489e3"
+    },
+    {
+      "path": "hermes/skills/hermes-usage-cost-stats/SKILL.md",
+      "source": "/home/wang/.hermes/skills/hermes-usage-cost-stats/SKILL.md",
+      "bytes": 4310,
+      "sha256": "dbd4be804a3c35320ec8587a6ce336d83f185986eb4f1fe88b2592dee85ff998"
+    },
+    {
+      "path": "hermes/skills/i-have-adhd/SKILL.md",
+      "source": "/home/wang/.hermes/skills/i-have-adhd/SKILL.md",
+      "bytes": 7201,
+      "sha256": "88955c019bbb1419ff4b49dbb1f80a867467de6233d7865af2e06a7d7b76c7d3"
+    },
+    {
+      "path": "hermes/skills/idea-refine/SKILL.md",
+      "source": "/home/wang/.hermes/skills/idea-refine/SKILL.md",
+      "bytes": 8111,
+      "sha256": "79e773058963adc7646b0115b4f8a4afc974c5ff95843e4ef1cafff3cb51899e"
+    },
+    {
+      "path": "hermes/skills/idea-refine/examples.md",
+      "source": "/home/wang/.hermes/skills/idea-refine/examples.md",
+      "bytes": 20284,
+      "sha256": "563204bfbf2f80a444151695205af4cb759e722b3d1e5460e08f278a69c89ba1"
+    },
+    {
+      "path": "hermes/skills/idea-refine/frameworks.md",
+      "source": "/home/wang/.hermes/skills/idea-refine/frameworks.md",
+      "bytes": 5404,
+      "sha256": "161ebc18fdf2d996bc62a87a2d747cf1bf53548354f8925de25c732c27f00309"
+    },
+    {
+      "path": "hermes/skills/idea-refine/refinement-criteria.md",
+      "source": "/home/wang/.hermes/skills/idea-refine/refinement-criteria.md",
+      "bytes": 5738,
+      "sha256": "1ca2973a4d01b5cb37ab7ddb2eff77fa4e792634a33d0ce44961c068fc88d51a"
+    },
+    {
+      "path": "hermes/skills/idea-refine/scripts/idea-refine.sh",
+      "source": "/home/wang/.hermes/skills/idea-refine/scripts/idea-refine.sh",
+      "bytes": 342,
+      "sha256": "f02a52408a4218047c032d221483abfbb48d11f090bb4915965c7419bf2e0e47"
+    },
+    {
+      "path": "hermes/skills/incremental-implementation/SKILL.md",
+      "source": "/home/wang/.hermes/skills/incremental-implementation/SKILL.md",
+      "bytes": 9629,
+      "sha256": "df66536610071727feae1ca95f3c391c248ad828041750ccd3699cce763aa00b"
+    },
+    {
+      "path": "hermes/skills/interview-me/SKILL.md",
+      "source": "/home/wang/.hermes/skills/interview-me/SKILL.md",
+      "bytes": 15080,
+      "sha256": "ace4b675999bb504593d572e0f73f3d7e803ad6fddf318445598c82c11939db2"
+    },
+    {
+      "path": "hermes/skills/llm-service-load-check/SKILL.md",
+      "source": "/home/wang/.hermes/skills/llm-service-load-check/SKILL.md",
+      "bytes": 9951,
+      "sha256": "c94780a7ff439b4a2686e2d88e42aea98b44ecd5fa6c5c5e276d9d1c7aee361e"
+    },
+    {
+      "path": "hermes/skills/mattpocock/DESCRIPTION.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/DESCRIPTION.md",
+      "bytes": 153,
+      "sha256": "a303141a8c321d67b97fb37e00f4834124ed5e548f9264412fa2aebd74151b2b"
+    },
+    {
+      "path": "hermes/skills/mattpocock/ask-matt/PHASE-BOUNDARIES.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/ask-matt/PHASE-BOUNDARIES.md",
+      "bytes": 4249,
+      "sha256": "a8aa20158609ef39e2b308b6ba0660c91066838d07a867202e63a7744a88a3ed"
+    },
+    {
+      "path": "hermes/skills/mattpocock/ask-matt/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/ask-matt/SKILL.md",
+      "bytes": 12594,
+      "sha256": "1371f5ce005de0992a44b137748bfb960a56948aa9871b405fe9d90b24332e3c"
+    },
+    {
+      "path": "hermes/skills/mattpocock/ask-matt/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/ask-matt/agents/openai.yaml",
+      "bytes": 137,
+      "sha256": "bdffbc5a0a99ed1b6ef3253d251d755fd18162b9845972e380007f844b09b05c"
+    },
+    {
+      "path": "hermes/skills/mattpocock/chief-of-staff/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/chief-of-staff/SKILL.md",
+      "bytes": 2112,
+      "sha256": "6cc6e47ab5022f3e45e5be0fedbb0f6e645f4f0190d6b0c51c7cd60c2d7c1d98"
+    },
+    {
+      "path": "hermes/skills/mattpocock/chief-of-staff/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/chief-of-staff/agents/openai.yaml",
+      "bytes": 184,
+      "sha256": "c0f68ed9da6977adc97a791be3bb0830d301b2d27f9c635d92d6f325bffefb83"
+    },
+    {
+      "path": "hermes/skills/mattpocock/claude-handoff/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/claude-handoff/SKILL.md",
+      "bytes": 1424,
+      "sha256": "79357a18425d66d4c24048bedf83dceb79d3bba356f38014950f764a7fab4026"
+    },
+    {
+      "path": "hermes/skills/mattpocock/claude-handoff/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/claude-handoff/agents/openai.yaml",
+      "bytes": 141,
+      "sha256": "2308a672978864633286fb9f0792b08657e501426b3f7883fc418d5d2eac5eb0"
+    },
+    {
+      "path": "hermes/skills/mattpocock/code-review/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/code-review/SKILL.md",
+      "bytes": 6670,
+      "sha256": "09eb147f793e4647949edd32dbad278f0554dfb56e0d46b699cd4c2c55bf0357"
+    },
+    {
+      "path": "hermes/skills/mattpocock/code-review/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/code-review/agents/openai.yaml",
+      "bytes": 100,
+      "sha256": "8229ca854e11dc8e6aef2131ee03f31fb1561cf905fab9ccc325180cf3331352"
+    },
+    {
+      "path": "hermes/skills/mattpocock/codebase-design/DEEPENING.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/codebase-design/DEEPENING.md",
+      "bytes": 2553,
+      "sha256": "f3dd099ce99289bd213914d8ee3e2429b78309c3957ca4583f7659551b1d53c1"
+    },
+    {
+      "path": "hermes/skills/mattpocock/codebase-design/DESIGN-IT-TWICE.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/codebase-design/DESIGN-IT-TWICE.md",
+      "bytes": 2665,
+      "sha256": "52b52e75655a27aea59c6966b410bac82448968ad46ef1ebb9f07c274e3ae010"
+    },
+    {
+      "path": "hermes/skills/mattpocock/codebase-design/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/codebase-design/SKILL.md",
+      "bytes": 6446,
+      "sha256": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2"
+    },
+    {
+      "path": "hermes/skills/mattpocock/codebase-design/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/codebase-design/agents/openai.yaml",
+      "bytes": 102,
+      "sha256": "edebc9e4fcfe102114012575eaa9600b9b5fd08c311664f389c36e7bc717740f"
+    },
+    {
+      "path": "hermes/skills/mattpocock/diagnosing-bugs/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/diagnosing-bugs/SKILL.md",
+      "bytes": 8664,
+      "sha256": "849198df88cdb65fd0d97236604c1fca7ff2f22d2f705f9724a800d0266b118d"
+    },
+    {
+      "path": "hermes/skills/mattpocock/diagnosing-bugs/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/diagnosing-bugs/agents/openai.yaml",
+      "bytes": 103,
+      "sha256": "3e430dbe4334a87597488c060cb3dc3786bb00c9182877d6f5ec41f62490e90b"
+    },
+    {
+      "path": "hermes/skills/mattpocock/diagnosing-bugs/scripts/hitl-loop.template.sh",
+      "source": "/home/wang/.hermes/skills/mattpocock/diagnosing-bugs/scripts/hitl-loop.template.sh",
+      "bytes": 1316,
+      "sha256": "35103539fc36873eea36074769ad454f9379d6fc8b2dc0e26ce987fd3bfe5503"
+    },
+    {
+      "path": "hermes/skills/mattpocock/domain-modeling/ADR-FORMAT.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/domain-modeling/ADR-FORMAT.md",
+      "bytes": 2733,
+      "sha256": "944c92aa790e8fbdc9199640b170979abb8a34ba8d0fe18c2a01a63bce140ca0"
+    },
+    {
+      "path": "hermes/skills/mattpocock/domain-modeling/GLOSSARY-FORMAT.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/domain-modeling/GLOSSARY-FORMAT.md",
+      "bytes": 2300,
+      "sha256": "21dcc40cdec8e151a829b98ab1517c1867bc444e3665134a98c6983411996801"
+    },
+    {
+      "path": "hermes/skills/mattpocock/domain-modeling/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/domain-modeling/SKILL.md",
+      "bytes": 3346,
+      "sha256": "7b925d7b1e341a2eeae33ad68a8a8c0ab889a38ddd22a7598e4c240e5a7556a3"
+    },
+    {
+      "path": "hermes/skills/mattpocock/domain-modeling/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/domain-modeling/agents/openai.yaml",
+      "bytes": 101,
+      "sha256": "f6bf2aa996c6e6f53fdd0708e18a0d16a56aed8322cca59fedbe3c0d2c75f06b"
+    },
+    {
+      "path": "hermes/skills/mattpocock/git-guardrails-claude-code/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/git-guardrails-claude-code/SKILL.md",
+      "bytes": 2313,
+      "sha256": "69b291d655626a01602b998a1836fcb93c058ede68dfafddfd71e87f17074764"
+    },
+    {
+      "path": "hermes/skills/mattpocock/git-guardrails-claude-code/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/git-guardrails-claude-code/agents/openai.yaml",
+      "bytes": 112,
+      "sha256": "d53cd783fc0ac208dec9a4c267989284384785aab6422dccdaed42f9e40243ec"
+    },
+    {
+      "path": "hermes/skills/mattpocock/git-guardrails-claude-code/scripts/block-dangerous-git.sh",
+      "source": "/home/wang/.hermes/skills/mattpocock/git-guardrails-claude-code/scripts/block-dangerous-git.sh",
+      "bytes": 507,
+      "sha256": "234922b83c0a1737ee7300806c21ac0f389b07aaeb65c2d71ccedafbc5e1ea4b"
+    },
+    {
+      "path": "hermes/skills/mattpocock/grill-me/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/grill-me/SKILL.md",
+      "bytes": 157,
+      "sha256": "caaf8b8de1684f96e26b28f3c29189db5c89cce4b73e1c93d86164f66ef88637"
+    },
+    {
+      "path": "hermes/skills/mattpocock/grill-me/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/grill-me/agents/openai.yaml",
+      "bytes": 137,
+      "sha256": "c061e39c3e0f9d865fb1b97556d485704af2a8a58f4b8221a8917a5c2074a32b"
+    },
+    {
+      "path": "hermes/skills/mattpocock/grill-with-docs/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/grill-with-docs/SKILL.md",
+      "bytes": 247,
+      "sha256": "7de372c13488f1ee96cc11cd8907b56b6809cc93eef776eeddd37de6b6cbe3fe"
+    },
+    {
+      "path": "hermes/skills/mattpocock/grill-with-docs/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/grill-with-docs/agents/openai.yaml",
+      "bytes": 145,
+      "sha256": "94cd0ab161fb468a836349f5ed482ba58ce8e709a05c57ce533d739dbd35cca9"
+    },
+    {
+      "path": "hermes/skills/mattpocock/grilling/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/grilling/SKILL.md",
+      "bytes": 2049,
+      "sha256": "befdff1e27a1dfe2a294d5871169ac1afe16d983911daa4f32627514a48c1e15"
+    },
+    {
+      "path": "hermes/skills/mattpocock/grilling/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/grilling/agents/openai.yaml",
+      "bytes": 113,
+      "sha256": "1411d7df7d99b7e621a1ff8283c8133cc2464be63d064e52d8ce169c6800ee9b"
+    },
+    {
+      "path": "hermes/skills/mattpocock/handoff/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/handoff/SKILL.md",
+      "bytes": 940,
+      "sha256": "4cbb043950dad2ffd3662ff1a5a0b51ae676004b5cae10e3787e8ee7a4ee69d3"
+    },
+    {
+      "path": "hermes/skills/mattpocock/handoff/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/handoff/agents/openai.yaml",
+      "bytes": 141,
+      "sha256": "5c479fd562c691851690e8b18c8501045bef0943c10743d636b2fae26add1d28"
+    },
+    {
+      "path": "hermes/skills/mattpocock/implement/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/implement/SKILL.md",
+      "bytes": 622,
+      "sha256": "483bdc4ccf4ac31d86ac7beeaa0d0db80313e71e120bb8c59b3196ae5decd53d"
+    },
+    {
+      "path": "hermes/skills/mattpocock/implement/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/implement/agents/openai.yaml",
+      "bytes": 139,
+      "sha256": "8970a8596ade0c28ab427f41a4ea242d6bdf6186c59ebf55e1238dbecaab79dc"
+    },
+    {
+      "path": "hermes/skills/mattpocock/implement-spec/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/implement-spec/SKILL.md",
+      "bytes": 2780,
+      "sha256": "7a22dd2e60b8fcece478ced9d2533582adf3520d695acd3ab715341535c9e56d"
+    },
+    {
+      "path": "hermes/skills/mattpocock/implement-spec/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/implement-spec/agents/openai.yaml",
+      "bytes": 168,
+      "sha256": "fd41efb42c60c96320d6531be7e4bf15cbf5518cd652d57dff27ccffa46988e9"
+    },
+    {
+      "path": "hermes/skills/mattpocock/improve-codebase-architecture/HTML-REPORT.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/improve-codebase-architecture/HTML-REPORT.md",
+      "bytes": 6641,
+      "sha256": "581e8bb5a521e46bbda8ca7e19b15948bed882187108092ebb90c62513b77528"
+    },
+    {
+      "path": "hermes/skills/mattpocock/improve-codebase-architecture/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/improve-codebase-architecture/SKILL.md",
+      "bytes": 6000,
+      "sha256": "552240a5ab5cec6b67c15dd1ad6e9f6962b1bca6ce870059a8c2713760c20392"
+    },
+    {
+      "path": "hermes/skills/mattpocock/improve-codebase-architecture/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/improve-codebase-architecture/agents/openai.yaml",
+      "bytes": 166,
+      "sha256": "c8cb20f68ebf0edb4e497bc11ae5fcaa196004e661cd189015b04f4109ced7f1"
+    },
+    {
+      "path": "hermes/skills/mattpocock/loop-me/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/loop-me/SKILL.md",
+      "bytes": 2522,
+      "sha256": "e44d1cc3e760fb86ac42964c2a5f1fcac511715db50fb375f3f7be814de1eaa7"
+    },
+    {
+      "path": "hermes/skills/mattpocock/loop-me/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/loop-me/agents/openai.yaml",
+      "bytes": 140,
+      "sha256": "b66fa10079957051be6a812f45e55b67ac394b71d5ba88349962b4c9205802c3"
+    },
+    {
+      "path": "hermes/skills/mattpocock/migrate-to-shoehorn/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/migrate-to-shoehorn/SKILL.md",
+      "bytes": 2795,
+      "sha256": "de4da4c11d924fac79c924b2ee3d2db4a5cb98386eb490a599119463d036ae72"
+    },
+    {
+      "path": "hermes/skills/mattpocock/migrate-to-shoehorn/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/migrate-to-shoehorn/agents/openai.yaml",
+      "bytes": 110,
+      "sha256": "395c2db852e66a199f1cd07f7ed92d66cb6f0787460c5475926f1a5e778b699d"
+    },
+    {
+      "path": "hermes/skills/mattpocock/pr/CREDITS.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/pr/CREDITS.md",
+      "bytes": 604,
+      "sha256": "a7a087127665d7298a72280ef6e19c41ad8404523712a788c8dc3ab414bc2497"
+    },
+    {
+      "path": "hermes/skills/mattpocock/pr/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/pr/SKILL.md",
+      "bytes": 4169,
+      "sha256": "ab63f1cf78647389edcd386c9427c5dfca27ed2836930c24773ffee834c19bcd"
+    },
+    {
+      "path": "hermes/skills/mattpocock/pr/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/pr/agents/openai.yaml",
+      "bytes": 93,
+      "sha256": "2295b586624db4ef546f3fd4695492f039d941a46d8a1593a702ce3ca511b8ad"
+    },
+    {
+      "path": "hermes/skills/mattpocock/prototype/LOGIC.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/prototype/LOGIC.md",
+      "bytes": 6036,
+      "sha256": "f61c7d249e786a79ef289018901c348271e1798dd0b0bc5607b5c6f4d4a01ab9"
+    },
+    {
+      "path": "hermes/skills/mattpocock/prototype/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/prototype/SKILL.md",
+      "bytes": 2931,
+      "sha256": "714de632d116bb73f65cdb5a882db15b9369a6713b9a47c0fad827848f0bfbe3"
+    },
+    {
+      "path": "hermes/skills/mattpocock/prototype/UI.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/prototype/UI.md",
+      "bytes": 6913,
+      "sha256": "723211e878acbc7b6ff09755263f3295cde724ba902ff0064da41eed51d45ad3"
+    },
+    {
+      "path": "hermes/skills/mattpocock/prototype/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/prototype/agents/openai.yaml",
+      "bytes": 100,
+      "sha256": "5af65e43ab41a350436697b81e27b7f848d36782043b73c322bb2c9fa9cc55dc"
+    },
+    {
+      "path": "hermes/skills/mattpocock/research/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/research/SKILL.md",
+      "bytes": 794,
+      "sha256": "985569f15739c713d6784887c3d186d4ef9ac85bec5ad9c068d25bf0739928e4"
+    },
+    {
+      "path": "hermes/skills/mattpocock/research/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/research/agents/openai.yaml",
+      "bytes": 94,
+      "sha256": "9b4c470d63221c1f68f22df70b83e2f12401b317babe0d1b7b5f24a974474d0d"
+    },
+    {
+      "path": "hermes/skills/mattpocock/retro/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/retro/SKILL.md",
+      "bytes": 4369,
+      "sha256": "33fbc28568e3146f20fd908b12998bc0ab30aa4f4c87288199a40793efa94696"
+    },
+    {
+      "path": "hermes/skills/mattpocock/retro/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/retro/agents/openai.yaml",
+      "bytes": 146,
+      "sha256": "cb6fb9d7e6b4be5975f41f6def1dd00a1255bad5d9b02696b124c924a8b8745c"
+    },
+    {
+      "path": "hermes/skills/mattpocock/scaffold-exercises/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/scaffold-exercises/SKILL.md",
+      "bytes": 3589,
+      "sha256": "75f5c9d771606fb9762f16522efc954df11c324f87148d8ff069bce166257de9"
+    },
+    {
+      "path": "hermes/skills/mattpocock/scaffold-exercises/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/scaffold-exercises/agents/openai.yaml",
+      "bytes": 108,
+      "sha256": "525b33913340bea7947ad2de17f2a7c5fb94be543345fe80ae753b9a44ba601d"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-matt-pocock-skills/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-matt-pocock-skills/SKILL.md",
+      "bytes": 6978,
+      "sha256": "f148858ffb7f63c03c06fca06e6fdb1d91a35c6b293244b8fdfacd5f4cc028c4"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-matt-pocock-skills/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-matt-pocock-skills/agents/openai.yaml",
+      "bytes": 152,
+      "sha256": "9527de0110541c45712319025155aeab8dc7d77c6ed6e5e83271bab1851ab939"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-matt-pocock-skills/domain.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-matt-pocock-skills/domain.md",
+      "bytes": 2042,
+      "sha256": "593a7042218689f1d24df89df14eaf0a20e19e0d0a7d479a01947ac78f0784b9"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-matt-pocock-skills/issue-tracker-github.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-matt-pocock-skills/issue-tracker-github.md",
+      "bytes": 4117,
+      "sha256": "f0653fe106dd8ee7b33be27bd7fe3104b40555896cb45f61997aed20467020c3"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-matt-pocock-skills/issue-tracker-gitlab.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-matt-pocock-skills/issue-tracker-gitlab.md",
+      "bytes": 3816,
+      "sha256": "591a9e7057382aaccdfbed3f7ea3f2ad07e0cd29f012d18b82ee4e485fd81e24"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-matt-pocock-skills/issue-tracker-local.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-matt-pocock-skills/issue-tracker-local.md",
+      "bytes": 1810,
+      "sha256": "7dcda20a2eb4bdc89b95d1143423c0691309921cadae3132e6424f371030506e"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-matt-pocock-skills/triage-labels.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-matt-pocock-skills/triage-labels.md",
+      "bytes": 1057,
+      "sha256": "ae512af838c78b8750471c42cd2b20fa32319553e61d84c9a23d171b40ce14aa"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-pre-commit/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-pre-commit/SKILL.md",
+      "bytes": 2258,
+      "sha256": "c9819d7f1e3b198064edc1faa3154224ed67395e9f07f5d3cea4b67cf0a11a98"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-pre-commit/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-pre-commit/agents/openai.yaml",
+      "bytes": 99,
+      "sha256": "acf41db398c5c43afe504008bb7d615a97b6498b0f1f6c5b2395254c0bfb57d1"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-ts-deep-modules/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-ts-deep-modules/SKILL.md",
+      "bytes": 7546,
+      "sha256": "29acca66ac99d4532e2a6f0370d8125d7cba1e87c9ac66573203c75189d3e6c7"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-ts-deep-modules/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-ts-deep-modules/agents/openai.yaml",
+      "bytes": 149,
+      "sha256": "159f680217d50747702620c05fd65734a152185b3219a8ca5ee4630878a354fa"
+    },
+    {
+      "path": "hermes/skills/mattpocock/setup-ts-deep-modules/dependency-cruiser.config.cjs",
+      "source": "/home/wang/.hermes/skills/mattpocock/setup-ts-deep-modules/dependency-cruiser.config.cjs",
+      "bytes": 3712,
+      "sha256": "3c4973bec69f73b2117654abf9e666a7c28665b213be20e6d39869e29842428e"
+    },
+    {
+      "path": "hermes/skills/mattpocock/tdd/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/tdd/SKILL.md",
+      "bytes": 3629,
+      "sha256": "5505d25bbaa8fc14a79e4d20163936958992a2995b7f1dd1d6197edc9ed722e0"
+    },
+    {
+      "path": "hermes/skills/mattpocock/tdd/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/tdd/agents/openai.yaml",
+      "bytes": 87,
+      "sha256": "ea6f01cf1b8c06a4b0f5b649d74b1b8ce8685e72af1b38d70d877693e092af0b"
+    },
+    {
+      "path": "hermes/skills/mattpocock/tdd/mocking.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/tdd/mocking.md",
+      "bytes": 1481,
+      "sha256": "3ceb807fdf4a47d6a93d4d9a891e5ba6d362a6247bd08adc451feebfc17361ef"
+    },
+    {
+      "path": "hermes/skills/mattpocock/tdd/tests.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/tdd/tests.md",
+      "bytes": 2214,
+      "sha256": "859f9e592c188fda4fc7277dd180e4ce9c7a2e13f6efe1f6f29eccc9d28c106a"
+    },
+    {
+      "path": "hermes/skills/mattpocock/teach/GLOSSARY-FORMAT.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/teach/GLOSSARY-FORMAT.md",
+      "bytes": 2122,
+      "sha256": "9b99859ec28437668130d8f2ce5a342938970f8a1ed4fd38c3eab4f4b5fff210"
+    },
+    {
+      "path": "hermes/skills/mattpocock/teach/LEARNING-RECORD-FORMAT.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/teach/LEARNING-RECORD-FORMAT.md",
+      "bytes": 2747,
+      "sha256": "701fa34b6748aa89e6c960ffb815257f481a7d77fb2900f9028f7edf3fdd6052"
+    },
+    {
+      "path": "hermes/skills/mattpocock/teach/MISSION-FORMAT.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/teach/MISSION-FORMAT.md",
+      "bytes": 1540,
+      "sha256": "8cacbb3c0644d3ae0ea4965564797099401a6930a23f7cf462918576587f2418"
+    },
+    {
+      "path": "hermes/skills/mattpocock/teach/RESOURCES-FORMAT.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/teach/RESOURCES-FORMAT.md",
+      "bytes": 1924,
+      "sha256": "e9cacf34026e11a8d1c8f9de88abe5bcbf654f4ebdb25cae8c0de0d5f48f44ec"
+    },
+    {
+      "path": "hermes/skills/mattpocock/teach/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/teach/SKILL.md",
+      "bytes": 9733,
+      "sha256": "550482c2d674b085c9043b87bfdc14a8f2ec453c736119e7fcbb1e9332bffeba"
+    },
+    {
+      "path": "hermes/skills/mattpocock/teach/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/teach/agents/openai.yaml",
+      "bytes": 139,
+      "sha256": "5856f3ae8aec742f1499c640aecdd5f1d6af5fa210a7c6ec794de8263a6f733f"
+    },
+    {
+      "path": "hermes/skills/mattpocock/to-questionnaire/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/to-questionnaire/SKILL.md",
+      "bytes": 2904,
+      "sha256": "b5eb929842ee0e93d867c5e906d183d350f2f2d149eaeaa86967d94d8eda1d3b"
+    },
+    {
+      "path": "hermes/skills/mattpocock/to-questionnaire/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/to-questionnaire/agents/openai.yaml",
+      "bytes": 166,
+      "sha256": "9e8a06c38c8842eea8d4922cb9d1ead8e3ace647bab259b943c994a1b4742bc2"
+    },
+    {
+      "path": "hermes/skills/mattpocock/to-spec/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/to-spec/SKILL.md",
+      "bytes": 3043,
+      "sha256": "43ad9cf318e5e7d3d1fa360253a37021796dc87a0c2e595ad262661a10f85088"
+    },
+    {
+      "path": "hermes/skills/mattpocock/to-spec/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/to-spec/agents/openai.yaml",
+      "bytes": 135,
+      "sha256": "1c5b4d1e3d8e52287ef19cc2742fdbbfae1914ac75d33af3e4c8174f08cc55bb"
+    },
+    {
+      "path": "hermes/skills/mattpocock/to-tickets/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/to-tickets/SKILL.md",
+      "bytes": 5812,
+      "sha256": "56ec23c5b2782785d4e65bff9e315b6d3aeb4ef977c174a219e99489fada1995"
+    },
+    {
+      "path": "hermes/skills/mattpocock/to-tickets/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/to-tickets/agents/openai.yaml",
+      "bytes": 146,
+      "sha256": "21bc6215fffcd7614e9f772bb1760e87cc5fc7dcc707e7d282bc9414267a6090"
+    },
+    {
+      "path": "hermes/skills/mattpocock/triage/AGENT-BRIEF.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/triage/AGENT-BRIEF.md",
+      "bytes": 7942,
+      "sha256": "7f5f87fed3033df1b06e083c480f3e847b1fbb0647746b8a4c6a50f9f26ef44f"
+    },
+    {
+      "path": "hermes/skills/mattpocock/triage/OUT-OF-SCOPE.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/triage/OUT-OF-SCOPE.md",
+      "bytes": 4667,
+      "sha256": "1fbf9b432130c6380aa65813b55553cfda150309b27c595e183f8e335b8a190d"
+    },
+    {
+      "path": "hermes/skills/mattpocock/triage/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/triage/SKILL.md",
+      "bytes": 6558,
+      "sha256": "917b0baf74be583e74f110857ed45df2766617f75c00baf61fd136d7af515edf"
+    },
+    {
+      "path": "hermes/skills/mattpocock/triage/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/triage/agents/openai.yaml",
+      "bytes": 135,
+      "sha256": "2e683717720cf456d165d0bb1a68bb600d0b6a8ccb61841c172e50d26f95351c"
+    },
+    {
+      "path": "hermes/skills/mattpocock/wait-what/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/wait-what/SKILL.md",
+      "bytes": 396,
+      "sha256": "d961bb37defd975c539427edb8f450cdbccdcdd552e213c1ece46676a7970905"
+    },
+    {
+      "path": "hermes/skills/mattpocock/wait-what/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/wait-what/agents/openai.yaml",
+      "bytes": 158,
+      "sha256": "b41faadf741d51e4ea184148b2d1854d93f947aaf754c7844f70a00f04194999"
+    },
+    {
+      "path": "hermes/skills/mattpocock/wayfinder/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/wayfinder/SKILL.md",
+      "bytes": 12380,
+      "sha256": "9be7b478c389605a24517d27752f278933588da97a1b5921b165f455edf4c5b7"
+    },
+    {
+      "path": "hermes/skills/mattpocock/wayfinder/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/wayfinder/agents/openai.yaml",
+      "bytes": 144,
+      "sha256": "88bc81a11a6d52ac67aeaa76b8b619e387020d47c5133a4dd4927fd15c4ad073"
+    },
+    {
+      "path": "hermes/skills/mattpocock/wizard/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/wizard/SKILL.md",
+      "bytes": 4123,
+      "sha256": "bdf31d48211ea559878f95a4f344aeabf8d85897488ba564382bab0b000daac1"
+    },
+    {
+      "path": "hermes/skills/mattpocock/wizard/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/wizard/agents/openai.yaml",
+      "bytes": 96,
+      "sha256": "98f44d682d58e262f160dc59a8befc365e0aa65820dd0261864af26aa8e59d83"
+    },
+    {
+      "path": "hermes/skills/mattpocock/wizard/template.sh",
+      "source": "/home/wang/.hermes/skills/mattpocock/wizard/template.sh",
+      "bytes": 9047,
+      "sha256": "7c70da7da1b0cab497c469411aa92b5650d43ef24e6b88728eb3a19a63ee8be7"
+    },
+    {
+      "path": "hermes/skills/mattpocock/writing-beats/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/writing-beats/SKILL.md",
+      "bytes": 4855,
+      "sha256": "a96abafa2372eede8267d770138b322d6125da8adaa7ccf0a5e08e4ee13ee71e"
+    },
+    {
+      "path": "hermes/skills/mattpocock/writing-beats/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/writing-beats/agents/openai.yaml",
+      "bytes": 142,
+      "sha256": "ddaef01da61d8e3c5f482c4403033c20cf5823f08a1dbf1d4c871670831d01e2"
+    },
+    {
+      "path": "hermes/skills/mattpocock/writing-for-agents/SKILL-MECHANICS.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/writing-for-agents/SKILL-MECHANICS.md",
+      "bytes": 2629,
+      "sha256": "c768e6307c7c10728c401c213f2c4ba71c542127eeb7ad2956aabd15a0fa0059"
+    },
+    {
+      "path": "hermes/skills/mattpocock/writing-for-agents/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/writing-for-agents/SKILL.md",
+      "bytes": 10886,
+      "sha256": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a"
+    },
+    {
+      "path": "hermes/skills/mattpocock/writing-for-agents/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/writing-for-agents/agents/openai.yaml",
+      "bytes": 102,
+      "sha256": "eacb24b2a618cfb81dacb0416f4fdd75ddf3a8060f8ddb99aae1b1e301907e4b"
+    },
+    {
+      "path": "hermes/skills/mattpocock/writing-fragments/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/writing-fragments/SKILL.md",
+      "bytes": 3558,
+      "sha256": "298b0edd23df229183630de592ed8aa4289233560f2040691f6eb77caeaad4ea"
+    },
+    {
+      "path": "hermes/skills/mattpocock/writing-fragments/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/writing-fragments/agents/openai.yaml",
+      "bytes": 140,
+      "sha256": "81167f25ee8ea1bb4b4958f12b6702ea972ad31b05e03ec91e39fa4bae0c2641"
+    },
+    {
+      "path": "hermes/skills/mattpocock/writing-shape/SKILL.md",
+      "source": "/home/wang/.hermes/skills/mattpocock/writing-shape/SKILL.md",
+      "bytes": 5922,
+      "sha256": "f5e6c57bdd85178ace4a260c92f46da6b64ddee18215b461d875739c68976f72"
+    },
+    {
+      "path": "hermes/skills/mattpocock/writing-shape/agents/openai.yaml",
+      "source": "/home/wang/.hermes/skills/mattpocock/writing-shape/agents/openai.yaml",
+      "bytes": 144,
+      "sha256": "56de45430e23104ff178415f5ecf7821d51a9cfabd8814b1607ebf39da2ef5cd"
+    },
+    {
+      "path": "hermes/skills/media/DESCRIPTION.md",
+      "source": "/home/wang/.hermes/skills/media/DESCRIPTION.md",
+      "bytes": 139,
+      "sha256": "c27bb2f0f3acd71771de1e7dc2ec27311dced72cbdf3989577c6907928e52645"
+    },
+    {
+      "path": "hermes/skills/media/gif-search/SKILL.md",
+      "source": "/home/wang/.hermes/skills/media/gif-search/SKILL.md",
+      "bytes": 2720,
+      "sha256": "a8349043740a8805d4ebfeb3a21f67ec0e9a9733a84f96403ca142c88a312b5d"
+    },
+    {
+      "path": "hermes/skills/media/songsee/SKILL.md",
+      "source": "/home/wang/.hermes/skills/media/songsee/SKILL.md",
+      "bytes": 2336,
+      "sha256": "d9d8d1394c630bd83329cd54cd8f18e0e3cd140debe31c3ccf5d9667f054de07"
+    },
+    {
+      "path": "hermes/skills/media/youtube-content/SKILL.md",
+      "source": "/home/wang/.hermes/skills/media/youtube-content/SKILL.md",
+      "bytes": 3538,
+      "sha256": "52349e30ac74a3c2693c43588e9392a53236526b4b7d92769a64045a9782308e"
+    },
+    {
+      "path": "hermes/skills/media/youtube-content/references/output-formats.md",
+      "source": "/home/wang/.hermes/skills/media/youtube-content/references/output-formats.md",
+      "bytes": 1259,
+      "sha256": "f24e6939b47511a7dfc1257f3087c9dafd027fe7836d0e65b0feb3214f598cd1"
+    },
+    {
+      "path": "hermes/skills/media/youtube-content/scripts/fetch_transcript.py",
+      "source": "/home/wang/.hermes/skills/media/youtube-content/scripts/fetch_transcript.py",
+      "bytes": 4054,
+      "sha256": "462f96320f641d3372fb54dd34d5e4892c185cb48096f9c5e97b05a77ac02467"
+    },
+    {
+      "path": "hermes/skills/note-taking/DESCRIPTION.md",
+      "source": "/home/wang/.hermes/skills/note-taking/DESCRIPTION.md",
+      "bytes": 146,
+      "sha256": "fb28a609372460b2788d3b7dbc551985d24d4042057971f4d6345144d2d78caa"
+    },
+    {
+      "path": "hermes/skills/note-taking/obsidian/SKILL.md",
+      "source": "/home/wang/.hermes/skills/note-taking/obsidian/SKILL.md",
+      "bytes": 3092,
+      "sha256": "7aea4e8f89f94ab2876d79898d10a5d4cdab31390c53f72ad6934b071179f826"
+    },
+    {
+      "path": "hermes/skills/nvidia-driver-ops/SKILL.md",
+      "source": "/home/wang/.hermes/skills/nvidia-driver-ops/SKILL.md",
+      "bytes": 6969,
+      "sha256": "f7e0d370ba7e7370da73bb9b26afd6a73191131ed32b68f3009922c2edf70166"
+    },
+    {
+      "path": "hermes/skills/observability-and-instrumentation/SKILL.md",
+      "source": "/home/wang/.hermes/skills/observability-and-instrumentation/SKILL.md",
+      "bytes": 13948,
+      "sha256": "e7fcb0820306d46268de9594d676ad98e35040858926c412b7000faa52a61f87"
+    },
+    {
+      "path": "hermes/skills/performance-optimization/SKILL.md",
+      "source": "/home/wang/.hermes/skills/performance-optimization/SKILL.md",
+      "bytes": 21717,
+      "sha256": "00694d0c69bbde674d0e39de24052d90afea32d9fef9553eaee21a50a7e9b8cf"
+    },
+    {
+      "path": "hermes/skills/planning-and-task-breakdown/SKILL.md",
+      "source": "/home/wang/.hermes/skills/planning-and-task-breakdown/SKILL.md",
+      "bytes": 10564,
+      "sha256": "ed0f90cc5951ddd4bcab7f871f64efec93a49af9279ef93bc470da77ad8da3f7"
+    },
+    {
+      "path": "hermes/skills/processing-machine-host-triage/SKILL.md",
+      "source": "/home/wang/.hermes/skills/processing-machine-host-triage/SKILL.md",
+      "bytes": 5935,
+      "sha256": "94483318d8ab710566f474874c132d2183d3aa48801d99812513b7eae5b552de"
+    },
+    {
+      "path": "hermes/skills/productivity/DESCRIPTION.md",
+      "source": "/home/wang/.hermes/skills/productivity/DESCRIPTION.md",
+      "bytes": 114,
+      "sha256": "b5a494a45bfd430bfb3042ee0452a6b88c81481f147ce7fca2c29ed3e93c490a"
+    },
+    {
+      "path": "hermes/skills/productivity/airtable/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/airtable/SKILL.md",
+      "bytes": 11314,
+      "sha256": "28253f1e20c4d250725eb7f475c886952a4c6a1ef43ef6900c2dc0e75ebb40e6"
+    },
+    {
+      "path": "hermes/skills/productivity/box/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/box/SKILL.md",
+      "bytes": 11697,
+      "sha256": "e9672412333de4feff348e6dc387d9022d32005247360347a10a7131fb87eb13"
+    },
+    {
+      "path": "hermes/skills/productivity/box/references/bulk-operations.md",
+      "source": "/home/wang/.hermes/skills/productivity/box/references/bulk-operations.md",
+      "bytes": 2025,
+      "sha256": "873a14840a01048004ca0dfa9fd3eb6015a9b4d5d5ed00c4701ac9235280e331"
+    },
+    {
+      "path": "hermes/skills/productivity/box/references/cli-guide.md",
+      "source": "/home/wang/.hermes/skills/productivity/box/references/cli-guide.md",
+      "bytes": 7515,
+      "sha256": "a94496da79df7aceb8d92bf285069cd3b80034649da62ce23eb076e2da39ae7e"
+    },
+    {
+      "path": "hermes/skills/productivity/box/references/content-workflows.md",
+      "source": "/home/wang/.hermes/skills/productivity/box/references/content-workflows.md",
+      "bytes": 4767,
+      "sha256": "703bc320272cc93d93d67330ab1c082f88985b1e0095117099c4693683d042ad"
+    },
+    {
+      "path": "hermes/skills/productivity/box/references/hubs.md",
+      "source": "/home/wang/.hermes/skills/productivity/box/references/hubs.md",
+      "bytes": 6189,
+      "sha256": "61909fa5e550f6cd51c8d2c069a95e01f79f28c24a5780fe16e63e3b1eee890a"
+    },
+    {
+      "path": "hermes/skills/productivity/box/references/oauth-setup.md",
+      "source": "/home/wang/.hermes/skills/productivity/box/references/oauth-setup.md",
+      "bytes": 6569,
+      "sha256": "6506cef6a6e44c5b5f8e483642595feb2ca2b93799ebd5e60ba9f08ddd8459a5"
+    },
+    {
+      "path": "hermes/skills/productivity/box/references/rest-api.md",
+      "source": "/home/wang/.hermes/skills/productivity/box/references/rest-api.md",
+      "bytes": 2227,
+      "sha256": "3afe53c5bcfda288f3727de3ff1fa05773e24b7fdd964373280831218bb6b5d2"
+    },
+    {
+      "path": "hermes/skills/productivity/box/references/sdk-development.md",
+      "source": "/home/wang/.hermes/skills/productivity/box/references/sdk-development.md",
+      "bytes": 5727,
+      "sha256": "96886f989937399fa80d1841be2c99eb006f180bc1f8538c628f23a4c584cb8c"
+    },
+    {
+      "path": "hermes/skills/productivity/box/references/search-and-ai.md",
+      "source": "/home/wang/.hermes/skills/productivity/box/references/search-and-ai.md",
+      "bytes": 10746,
+      "sha256": "6bfca0afc9cd35d5312261f0c5947b9387d5ec100473f4739cda9d432e040e1a"
+    },
+    {
+      "path": "hermes/skills/productivity/box/references/troubleshooting.md",
+      "source": "/home/wang/.hermes/skills/productivity/box/references/troubleshooting.md",
+      "bytes": 2970,
+      "sha256": "a7c394e219a429ff3b04e76a1cbe5a97ce71ae6a2a7eed1eea7888d2eeb8b922"
+    },
+    {
+      "path": "hermes/skills/productivity/box/references/webhooks-and-events.md",
+      "source": "/home/wang/.hermes/skills/productivity/box/references/webhooks-and-events.md",
+      "bytes": 2276,
+      "sha256": "5c1382adf41d8b3cecfd922f815ed85b10740d826924cf33def5250da934c6c5"
+    },
+    {
+      "path": "hermes/skills/productivity/document-to-action-items/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/document-to-action-items/SKILL.md",
+      "bytes": 3910,
+      "sha256": "8a7556754aca2a7d04d38847131fb4db8d6705fa2106fcb154279e26117b41ee"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/LICENSE",
+      "source": "/home/wang/.hermes/skills/productivity/docx/LICENSE",
+      "bytes": 1070,
+      "sha256": "8aa3c7717d57a68490c31eef4b57b6887e892f0566ff866078ebd76113d357e2"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/docx/SKILL.md",
+      "bytes": 10395,
+      "sha256": "9678b14d5e7841d588b969f6a4696cd46bcc46c3e4ac1479edc7656a051aa5ff"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/references/revisions-and-comments.md",
+      "source": "/home/wang/.hermes/skills/productivity/docx/references/revisions-and-comments.md",
+      "bytes": 3997,
+      "sha256": "cd861f6e9ea77767b1a5e2ec3f48dd620b0664811d8f204c59c61571b408e9ba"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/scripts/docx_comments.py",
+      "source": "/home/wang/.hermes/skills/productivity/docx/scripts/docx_comments.py",
+      "bytes": 10655,
+      "sha256": "6687c2f8b8e4cdd2ea9d70da668417e8c26f30dead2b1a4b7bda07e34fbf67cf"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/scripts/docx_common.py",
+      "source": "/home/wang/.hermes/skills/productivity/docx/scripts/docx_common.py",
+      "bytes": 3364,
+      "sha256": "5f915ce8138d19344f80b218b3e81aac8332dc6b560774a6f2a9757f4fc2eaea"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/scripts/docx_create.py",
+      "source": "/home/wang/.hermes/skills/productivity/docx/scripts/docx_create.py",
+      "bytes": 6387,
+      "sha256": "8391869c97ab804374dddadff4fbebc060120c0b973d06133f84487cc2c442d5"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/scripts/docx_edit.py",
+      "source": "/home/wang/.hermes/skills/productivity/docx/scripts/docx_edit.py",
+      "bytes": 8619,
+      "sha256": "00feef0a58a318406077020a017dd0b2673daaef93e0bda81fa9437b237180ff"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/scripts/docx_read.py",
+      "source": "/home/wang/.hermes/skills/productivity/docx/scripts/docx_read.py",
+      "bytes": 5405,
+      "sha256": "4760617eea1b17d648f7a46f6718c22ec4a76a359e8f0ee9f6ffe921df9129de"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/scripts/docx_revisions.py",
+      "source": "/home/wang/.hermes/skills/productivity/docx/scripts/docx_revisions.py",
+      "bytes": 4571,
+      "sha256": "0b835b76b86a1a7bf607c7724a09a71af788cacec48058ae99b04dba6950b938"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/scripts/docx_template.py",
+      "source": "/home/wang/.hermes/skills/productivity/docx/scripts/docx_template.py",
+      "bytes": 2482,
+      "sha256": "aed1b1db212b72995bd47a28e6c9928a4d02d7596615f1dadf12cd43a4f34219"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/scripts/docx_validate.py",
+      "source": "/home/wang/.hermes/skills/productivity/docx/scripts/docx_validate.py",
+      "bytes": 6200,
+      "sha256": "64d4197ac4aa555384efaefa1cc392a863e2d05489acc04776c33ab1a591d024"
+    },
+    {
+      "path": "hermes/skills/productivity/docx/tests/test_docx_skill.py",
+      "source": "/home/wang/.hermes/skills/productivity/docx/tests/test_docx_skill.py",
+      "bytes": 21267,
+      "sha256": "a6e5ef3595d2168b15a655c366dcebbcc3e2ced73a0e2e5f741c626148c8566d"
+    },
+    {
+      "path": "hermes/skills/productivity/google-workspace/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/google-workspace/SKILL.md",
+      "bytes": 13926,
+      "sha256": "c22194d932d9d96f3b6d7001b5d7680348163279af64d4c2c12aa09e32ea2267"
+    },
+    {
+      "path": "hermes/skills/productivity/google-workspace/references/daily-brief.md",
+      "source": "/home/wang/.hermes/skills/productivity/google-workspace/references/daily-brief.md",
+      "bytes": 3217,
+      "sha256": "d4b78bad4121fea470dfe1aa92b2fc0ae2368af6ffbdd0b29ef40c7c8f99067c"
+    },
+    {
+      "path": "hermes/skills/productivity/google-workspace/references/gmail-search-syntax.md",
+      "source": "/home/wang/.hermes/skills/productivity/google-workspace/references/gmail-search-syntax.md",
+      "bytes": 2150,
+      "sha256": "340b78000fba67b9c5373978185446eb549a474870decf8c439edb03b3883bc5"
+    },
+    {
+      "path": "hermes/skills/productivity/google-workspace/scripts/_hermes_home.py",
+      "source": "/home/wang/.hermes/skills/productivity/google-workspace/scripts/_hermes_home.py",
+      "bytes": 1636,
+      "sha256": "4d0f4393059688353bf8a3cca8118f08548edbae6f3c6ed477ff9f2d1205cff0"
+    },
+    {
+      "path": "hermes/skills/productivity/google-workspace/scripts/google_api.py",
+      "source": "/home/wang/.hermes/skills/productivity/google-workspace/scripts/google_api.py",
+      "bytes": 47061,
+      "sha256": "a8f7f55db105155a8a5beda1558ede39e27c649150e2a412c31c78c203e832a6"
+    },
+    {
+      "path": "hermes/skills/productivity/google-workspace/scripts/gws_bridge.py",
+      "source": "/home/wang/.hermes/skills/productivity/google-workspace/scripts/gws_bridge.py",
+      "bytes": 4368,
+      "sha256": "6bba56ab6d49ddab3cd16c2e189950633cbf1a9f4907cb7db5225ebe28313aee"
+    },
+    {
+      "path": "hermes/skills/productivity/google-workspace/scripts/setup.py",
+      "source": "/home/wang/.hermes/skills/productivity/google-workspace/scripts/setup.py",
+      "bytes": 20231,
+      "sha256": "ace45d12de9bbc408f03b88e78b8d5ed2a37f36e992164bcbe9708c5ba49883d"
+    },
+    {
+      "path": "hermes/skills/productivity/maps/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/maps/SKILL.md",
+      "bytes": 6705,
+      "sha256": "775ef9f79be9cd147bc81e0c4a4ef952230a04736a6082f44dbac78554ef89ab"
+    },
+    {
+      "path": "hermes/skills/productivity/maps/scripts/maps_client.py",
+      "source": "/home/wang/.hermes/skills/productivity/maps/scripts/maps_client.py",
+      "bytes": 46678,
+      "sha256": "94960e451d549766070c999f4979bd69ea956381b40c4d5b05bfa6c0501e7ffb"
+    },
+    {
+      "path": "hermes/skills/productivity/meeting-action-items/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/meeting-action-items/SKILL.md",
+      "bytes": 3808,
+      "sha256": "1902f782551da96ee1f9b34d6f13af627f06150a498d874b0cc2a75d06d35aa8"
+    },
+    {
+      "path": "hermes/skills/productivity/notion/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/notion/SKILL.md",
+      "bytes": 14621,
+      "sha256": "e5aaf194f2688223890cb2eb6cf5ce866e6390082f1dff845c9e37a25fe0bfee"
+    },
+    {
+      "path": "hermes/skills/productivity/notion/references/block-types.md",
+      "source": "/home/wang/.hermes/skills/productivity/notion/references/block-types.md",
+      "bytes": 3021,
+      "sha256": "530379beca84804b53fe71834628f8d80ca14a6763dcbf53ff654a246fe67a78"
+    },
+    {
+      "path": "hermes/skills/productivity/nvidia-pipeline-ops/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/nvidia-pipeline-ops/SKILL.md",
+      "bytes": 19279,
+      "sha256": "2c5c088140d44f0ec9bdd8537610b1f7b1d78f6347deeecbe33072a96ccfa41d"
+    },
+    {
+      "path": "hermes/skills/productivity/nvidia-pipeline-ops/references/nvidia-frame-import-contract.md",
+      "source": "/home/wang/.hermes/skills/productivity/nvidia-pipeline-ops/references/nvidia-frame-import-contract.md",
+      "bytes": 6500,
+      "sha256": "21c1d9622b6347493a490bd6f25b1cee89553adeb24fec19e2ce38522d947241"
+    },
+    {
+      "path": "hermes/skills/productivity/nvidia-pipeline-ops/references/nvidia-frame-import-trial-run.md",
+      "source": "/home/wang/.hermes/skills/productivity/nvidia-pipeline-ops/references/nvidia-frame-import-trial-run.md",
+      "bytes": 3183,
+      "sha256": "84d4ecf7ef4d0bcabf2ea2fcfa90fe1b9e238ea910dc6233efe9100e8d1ae952"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/LICENSE",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/LICENSE",
+      "bytes": 1070,
+      "sha256": "8aa3c7717d57a68490c31eef4b57b6887e892f0566ff866078ebd76113d357e2"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/SKILL.md",
+      "bytes": 12489,
+      "sha256": "c16b9c159a3a0b49353bfcd10c498b02aef3d319207b1019aa7dc8db129d06ab"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/references/forms.md",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/references/forms.md",
+      "bytes": 3950,
+      "sha256": "471517e0b154fb765d04416f089b7e999103804b964a84675af49e2d53ee8da0"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/references/nano-pdf-editing.md",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/references/nano-pdf-editing.md",
+      "bytes": 1342,
+      "sha256": "2f0b15bd1ebbd45cf37ed257723ad63aa70b623b97f5242c886c14f8968cd773"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/references/ocr-extraction.md",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/references/ocr-extraction.md",
+      "bytes": 5615,
+      "sha256": "1bba1451fbaa50842890e7b75a1ad226dfe9791619cb4df3d705e2a38b606da6"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/_raster.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/_raster.py",
+      "bytes": 2614,
+      "sha256": "17ecfb8dd78b006e904d0f29e28172ce308a34588db99ec80b0f085d2a37b518"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/extract_marker.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/extract_marker.py",
+      "bytes": 3458,
+      "sha256": "a115ee1da5b88f7ab61c480ef9efb2b371350bed8f1cface7668898ba80aae38"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/extract_pymupdf.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/extract_pymupdf.py",
+      "bytes": 3671,
+      "sha256": "784d233ee9849ce78cddc8253c87172c06a0b62c41aff7215fd97b77766babc8"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_create.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_create.py",
+      "bytes": 4562,
+      "sha256": "2a7a7c06c608e82cc11684bb67ff9cdb3bf8cbe6df38c6f4b1096dd2686f993c"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_fill_form.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_fill_form.py",
+      "bytes": 3887,
+      "sha256": "d66d504d7f7fcb85c28881065c47dfbc6ac9b47294471531a7f013178c72a1ad"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_form_layout.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_form_layout.py",
+      "bytes": 7131,
+      "sha256": "f654e386a8b1e5a26a1530b16d36177310dd48c6cb589ec6cf3dc1898a8ccdf9"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_make_form.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_make_form.py",
+      "bytes": 5988,
+      "sha256": "a194791f2d6504da9e629976620ac227a18a6ea14784d428c4cf4f57fafd6c3d"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_merge.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_merge.py",
+      "bytes": 1686,
+      "sha256": "c1cf231f73b02790069227a4f711475b4b329c91e30e77826f24c05935674248"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_meta.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_meta.py",
+      "bytes": 4458,
+      "sha256": "989c2564bb31d8b20abd53a4d7f86a603c930bd868e0201ad4cdec92d5487460"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_page_image.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_page_image.py",
+      "bytes": 3589,
+      "sha256": "40ad843fd50bd6bd91af1fd53de1cff1faf885921294afd304d0abf0fe93e4e2"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_read.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_read.py",
+      "bytes": 5895,
+      "sha256": "7d623cbbb6319f9f161dd769972250b08c426c291ed0af1a8304bec20437bfb2"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_secure.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_secure.py",
+      "bytes": 2679,
+      "sha256": "65d0ba6733cb945e6147e4b46e0b6db0816096440b0f4fe24cc953307805e01b"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_split.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_split.py",
+      "bytes": 3045,
+      "sha256": "1e3d8f8e9aa8aa5445f8587e402e3bab65c785eb5b4aea120bc5b6216cb57cba"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_stamp.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_stamp.py",
+      "bytes": 5779,
+      "sha256": "e3bf6e29634be35ff99fee8a21a3e5f4f610298cb158942496d0949f0a941390"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/scripts/pdf_watermark.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/scripts/pdf_watermark.py",
+      "bytes": 1852,
+      "sha256": "d903977ee37194ad18bba205d2d96eefbbe6670519bcd8ae285f619645005ae2"
+    },
+    {
+      "path": "hermes/skills/productivity/pdf/tests/test_pdf_skill.py",
+      "source": "/home/wang/.hermes/skills/productivity/pdf/tests/test_pdf_skill.py",
+      "bytes": 17433,
+      "sha256": "a2f6dd5be18f4c63a90fe4688d717145e74821d83afdd9e781adc815806a9119"
+    },
+    {
+      "path": "hermes/skills/productivity/powerpoint/LICENSE",
+      "source": "/home/wang/.hermes/skills/productivity/powerpoint/LICENSE",
+      "bytes": 1070,
+      "sha256": "8aa3c7717d57a68490c31eef4b57b6887e892f0566ff866078ebd76113d357e2"
+    },
+    {
+      "path": "hermes/skills/productivity/powerpoint/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/powerpoint/SKILL.md",
+      "bytes": 10781,
+      "sha256": "b71d29d9809c4464d7f8d10afabf4f22f6a26c647cf7aacb6f9faf196ebe82f2"
+    },
+    {
+      "path": "hermes/skills/productivity/powerpoint/scripts/pptx_create.py",
+      "source": "/home/wang/.hermes/skills/productivity/powerpoint/scripts/pptx_create.py",
+      "bytes": 8579,
+      "sha256": "90e60c1fad8c5e7c209acf6ecdebee43c26609bbcf9a7dc063207ad8a3091485"
+    },
+    {
+      "path": "hermes/skills/productivity/powerpoint/scripts/pptx_edit.py",
+      "source": "/home/wang/.hermes/skills/productivity/powerpoint/scripts/pptx_edit.py",
+      "bytes": 17224,
+      "sha256": "feb5b09546f9f7fb5dfb4c9b2596b3acbaff9c021faf1985c42f618be0476f3f"
+    },
+    {
+      "path": "hermes/skills/productivity/powerpoint/scripts/pptx_from_template.py",
+      "source": "/home/wang/.hermes/skills/productivity/powerpoint/scripts/pptx_from_template.py",
+      "bytes": 3431,
+      "sha256": "8537205a777ba541c826082a4395066881dfa63c3033151127b82a8fd82fdb8f"
+    },
+    {
+      "path": "hermes/skills/productivity/powerpoint/scripts/pptx_read.py",
+      "source": "/home/wang/.hermes/skills/productivity/powerpoint/scripts/pptx_read.py",
+      "bytes": 4761,
+      "sha256": "b2a6e246e40a6728e5e0e8bf2c4cbe4f788ab8c40bdb1b89e339571a34fdbc71"
+    },
+    {
+      "path": "hermes/skills/productivity/powerpoint/scripts/pptx_render.py",
+      "source": "/home/wang/.hermes/skills/productivity/powerpoint/scripts/pptx_render.py",
+      "bytes": 3536,
+      "sha256": "49ebe77fa453b5fb21e0a39c0601187399c26f60a399726744277ee098f06dd7"
+    },
+    {
+      "path": "hermes/skills/productivity/powerpoint/tests/test_powerpoint_skill.py",
+      "source": "/home/wang/.hermes/skills/productivity/powerpoint/tests/test_powerpoint_skill.py",
+      "bytes": 19524,
+      "sha256": "da3262b8daa31ba2425845a8ce74adc033c89b8d2cf7b99f95a107f7e96b27f1"
+    },
+    {
+      "path": "hermes/skills/productivity/product-price-monitor/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/product-price-monitor/SKILL.md",
+      "bytes": 4400,
+      "sha256": "b87bf2102fed13d2c7c64759fa153f24f5e43a0afcf6f8ec5e13def92a6642ef"
+    },
+    {
+      "path": "hermes/skills/productivity/teams-meeting-pipeline/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/teams-meeting-pipeline/SKILL.md",
+      "bytes": 7206,
+      "sha256": "ae1b08f044d7dfd9abb01c643cac3b69e4a3a1cbe7fd5782dd17785964cdc441"
+    },
+    {
+      "path": "hermes/skills/productivity/weekly-review-planning/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/weekly-review-planning/SKILL.md",
+      "bytes": 3975,
+      "sha256": "a689257facb937cfca9bc5507dd9e729f287f0cd3f6abbf73448eb25f73fbaab"
+    },
+    {
+      "path": "hermes/skills/productivity/xlsx/LICENSE",
+      "source": "/home/wang/.hermes/skills/productivity/xlsx/LICENSE",
+      "bytes": 1070,
+      "sha256": "8aa3c7717d57a68490c31eef4b57b6887e892f0566ff866078ebd76113d357e2"
+    },
+    {
+      "path": "hermes/skills/productivity/xlsx/SKILL.md",
+      "source": "/home/wang/.hermes/skills/productivity/xlsx/SKILL.md",
+      "bytes": 9655,
+      "sha256": "b302d7ac997843a757ab3c11513ea012889ebdae32f842edb44faa9a4485f19b"
+    },
+    {
+      "path": "hermes/skills/productivity/xlsx/references/restructuring.md",
+      "source": "/home/wang/.hermes/skills/productivity/xlsx/references/restructuring.md",
+      "bytes": 3688,
+      "sha256": "cef18a6ce1835c0c95c447db57491ec9b84a75d6137e0002499eb626abc77626"
+    },
+    {
+      "path": "hermes/skills/productivity/xlsx/scripts/csv_to_xlsx.py",
+      "source": "/home/wang/.hermes/skills/productivity/xlsx/scripts/csv_to_xlsx.py",
+      "bytes": 3446,
+      "sha256": "c92331ed358a8ba762a67b408c594d4c12f19f571087a3605203fb68d8c8ca70"
+    },
+    {
+      "path": "hermes/skills/productivity/xlsx/scripts/xlsx_create.py",
+      "source": "/home/wang/.hermes/skills/productivity/xlsx/scripts/xlsx_create.py",
+      "bytes": 9858,
+      "sha256": "29d797b1cdb6a51ed72e13aca5e891fc4d281825344f895719136ab360a4e92f"
+    },
+    {
+      "path": "hermes/skills/productivity/xlsx/scripts/xlsx_edit.py",
+      "source": "/home/wang/.hermes/skills/productivity/xlsx/scripts/xlsx_edit.py",
+      "bytes": 10828,
+      "sha256": "05e9c12fa66610bf53909691c6852a7ee38216a6ffd018c0e4ac2da173ae6bd4"
+    },
+    {
+      "path": "hermes/skills/productivity/xlsx/scripts/xlsx_read.py",
+      "source": "/home/wang/.hermes/skills/productivity/xlsx/scripts/xlsx_read.py",
+      "bytes": 5806,
+      "sha256": "5f8dc99437e4b65d72cac4f99ef25d383b477926d5ae31e0e8aae6fa3266d935"
+    },
+    {
+      "path": "hermes/skills/productivity/xlsx/scripts/xlsx_recalc.py",
+      "source": "/home/wang/.hermes/skills/productivity/xlsx/scripts/xlsx_recalc.py",
+      "bytes": 4173,
+      "sha256": "e61d8ab12a330a1efd4339bcc419a2a2793bd9a64b87f264580f732cae62dbfa"
+    },
+    {
+      "path": "hermes/skills/productivity/xlsx/scripts/xlsx_restructure.py",
+      "source": "/home/wang/.hermes/skills/productivity/xlsx/scripts/xlsx_restructure.py",
+      "bytes": 13739,
+      "sha256": "062871f70d1c09d105f4aa4b1d3b420238b2997c8d52d1cfaa8e8cacdb1756db"
+    },
+    {
+      "path": "hermes/skills/productivity/xlsx/scripts/xlsx_to_csv.py",
+      "source": "/home/wang/.hermes/skills/productivity/xlsx/scripts/xlsx_to_csv.py",
+      "bytes": 2367,
+      "sha256": "1be6a866b20199e2b42e8937ad2ecfa2055c9877a34dac1b597bfa1d930720ea"
+    },
+    {
+      "path": "hermes/skills/productivity/xlsx/tests/test_xlsx_skill.py",
+      "source": "/home/wang/.hermes/skills/productivity/xlsx/tests/test_xlsx_skill.py",
+      "bytes": 21956,
+      "sha256": "b842edca940a1daf30aa141d4240fe815c85e37638d6784e7b1c539fa1665797"
+    },
+    {
+      "path": "hermes/skills/research/DESCRIPTION.md",
+      "source": "/home/wang/.hermes/skills/research/DESCRIPTION.md",
+      "bytes": 179,
+      "sha256": "a7bc842330a491de5f73cd63e87521e53724d94d4f53949bfa2171beb8200e18"
+    },
+    {
+      "path": "hermes/skills/research/arxiv/SKILL.md",
+      "source": "/home/wang/.hermes/skills/research/arxiv/SKILL.md",
+      "bytes": 10061,
+      "sha256": "9b41877bcb64166dc2355a43aedd3198c3e5214af67f09e1d1b717a989d92f72"
+    },
+    {
+      "path": "hermes/skills/research/arxiv/scripts/search_arxiv.py",
+      "source": "/home/wang/.hermes/skills/research/arxiv/scripts/search_arxiv.py",
+      "bytes": 4272,
+      "sha256": "68f0bcc09ef1f59ecd9be8a7693e47239fd99b19d62cecb80a92b8c476cca371"
+    },
+    {
+      "path": "hermes/skills/research/competitor-news-monitor/SKILL.md",
+      "source": "/home/wang/.hermes/skills/research/competitor-news-monitor/SKILL.md",
+      "bytes": 4619,
+      "sha256": "d8fd2a3a26ff45455709595132a092825a48f6c9dd3bcc98b06c1a43eaa7fcca"
+    },
+    {
+      "path": "hermes/skills/research/grounded-citations/SKILL.md",
+      "source": "/home/wang/.hermes/skills/research/grounded-citations/SKILL.md",
+      "bytes": 12652,
+      "sha256": "19fba3a4ceedf768af6851e094b268a66b62af750d4d0689c5d62d5d50c032b6"
+    },
+    {
+      "path": "hermes/skills/research/grounded-citations/references/citation-formats.md",
+      "source": "/home/wang/.hermes/skills/research/grounded-citations/references/citation-formats.md",
+      "bytes": 2418,
+      "sha256": "209312a46dd9516e44e78f617589f789e07d54660e347b6b3882e8ac60097d04"
+    },
+    {
+      "path": "hermes/skills/research/grounded-citations/references/grounding-rationale.md",
+      "source": "/home/wang/.hermes/skills/research/grounded-citations/references/grounding-rationale.md",
+      "bytes": 3127,
+      "sha256": "2835754857ea05a1c801e88a50d4c2b4cc6ebd52cc4cc1f5741dba05f5af73c1"
+    },
+    {
+      "path": "hermes/skills/research/grounded-citations/scripts/_hermes_home.py",
+      "source": "/home/wang/.hermes/skills/research/grounded-citations/scripts/_hermes_home.py",
+      "bytes": 836,
+      "sha256": "4bfa31ce48ffaca3ae3fdd2ba5f093a2bedc34b057eec22a38f46e2d68b333d4"
+    },
+    {
+      "path": "hermes/skills/research/grounded-citations/scripts/sources.py",
+      "source": "/home/wang/.hermes/skills/research/grounded-citations/scripts/sources.py",
+      "bytes": 25808,
+      "sha256": "a867ae6ba99166b4114bfef1c15b57036e286fe22c48534caec28cc8335bde0c"
+    },
+    {
+      "path": "hermes/skills/research/llm-wiki/SKILL.md",
+      "source": "/home/wang/.hermes/skills/research/llm-wiki/SKILL.md",
+      "bytes": 20121,
+      "sha256": "0229e37c1783fcac5b77cfb3242703666cf4aa472d2ae85b6bd5279756b515b6"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-changelog-audit/SKILL.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-changelog-audit/SKILL.md",
+      "bytes": 6747,
+      "sha256": "ffb908a4402f5617b2004708f159b58b885279c55d70ea8581210f63ffb068d6"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-cleanup-blocked/SKILL.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-cleanup-blocked/SKILL.md",
+      "bytes": 5012,
+      "sha256": "3abed339c0d3171c6bd434cfc729e1e9c411bd93ed8991b942ca9add8fc3299c"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-local-verify/SKILL.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-local-verify/SKILL.md",
+      "bytes": 91008,
+      "sha256": "39a25c067422bed0a6efa83f8a255a0381f125b058cb9f8774b8afaa03aed66a"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-local-verify/references/local-mysql-fixtures.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-local-verify/references/local-mysql-fixtures.md",
+      "bytes": 3607,
+      "sha256": "51b811b56db5864e8581c891dc244134d9e23424ba3e7c2dfc4807fac96c769f"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-local-verify/references/ocr-batch-review.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-local-verify/references/ocr-batch-review.md",
+      "bytes": 3943,
+      "sha256": "a1d48465900483efe436f1e1589341c2f4912479837e0968219dab76433ebf0f"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-local-verify/references/proxy-scripts-verify.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-local-verify/references/proxy-scripts-verify.md",
+      "bytes": 5344,
+      "sha256": "0483b4a83b8e748068ea954acb1eb85bd7fee8d941fa67a176a1fd8e64d8203d"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-local-verify/references/real-a100-cleanup-e2e.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-local-verify/references/real-a100-cleanup-e2e.md",
+      "bytes": 5355,
+      "sha256": "b6757d25f7e06659b888cfd4933024e8165ebcdf74f06b9ff52961643147200d"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-local-verify/references/real-mode-e2e.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-local-verify/references/real-mode-e2e.md",
+      "bytes": 14930,
+      "sha256": "3a75cd87cc7d274e9bc0155fc4337aa214df4e46e11874e7a9a0ac72eb1d9f61"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-local-verify/references/real-mode-run-recovery.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-local-verify/references/real-mode-run-recovery.md",
+      "bytes": 6800,
+      "sha256": "bd47d71ae9a826501c8abbd9843626f106f15ba00b45e15a42335a436aa6c3d4"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-processing-deploy/SKILL.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-processing-deploy/SKILL.md",
+      "bytes": 10681,
+      "sha256": "721e9567f8ecff54b47bc87b7f590eab254adf8638dd60e69ecb78b176229946"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-prod-delete-triage/SKILL.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-prod-delete-triage/SKILL.md",
+      "bytes": 5744,
+      "sha256": "e90bb47748441a38d7a854b04027fd30cfff04dcc4177e6ed0e7fee3adf9052e"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-prod-test-run/SKILL.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-prod-test-run/SKILL.md",
+      "bytes": 4926,
+      "sha256": "ec26a809c83c93d86fb8bed71c64073cd3cbc6c6d4bf6c0948cdaec16b2e0cc2"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-scene-ingest/SKILL.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-scene-ingest/SKILL.md",
+      "bytes": 7323,
+      "sha256": "96de60e89354782317a001d4864a50dadae91a5795dc0cda7806d9ac098c9041"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-status-check/SKILL.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-status-check/SKILL.md",
+      "bytes": 49666,
+      "sha256": "ae6c1090f754ed6d029f64749e9f5f2964d1f68dedbf2f5641ddb98e78836e52"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-status-check/references/nvidia-chunk-deletion.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-status-check/references/nvidia-chunk-deletion.md",
+      "bytes": 6451,
+      "sha256": "8c02b8d19378b736b13fc50b91181a143aefad8ef7cb629cf5992a585b6ad004"
+    },
+    {
+      "path": "hermes/skills/rosbag-catalog-supervisor/SKILL.md",
+      "source": "/home/wang/.hermes/skills/rosbag-catalog-supervisor/SKILL.md",
+      "bytes": 1274,
+      "sha256": "1f49585be7ca25bb8ddc9afe418f9867174257752063a82a98885c44bbf573b0"
+    },
+    {
+      "path": "hermes/skills/rosbag-dataset-frame-analytics/SKILL.md",
+      "source": "/home/wang/.hermes/skills/rosbag-dataset-frame-analytics/SKILL.md",
+      "bytes": 5926,
+      "sha256": "3cb8dd3def807f9022c091bd6910f174a35c0d87ec15957d665a56ad1defb704"
+    },
+    {
+      "path": "hermes/skills/rosbag-pipeline-data-bloat-audit/SKILL.md",
+      "source": "/home/wang/.hermes/skills/rosbag-pipeline-data-bloat-audit/SKILL.md",
+      "bytes": 7368,
+      "sha256": "348fbae57751921a2db88fc896acaa1452ae8c5f490a396ee887b5ae2b6523e2"
+    },
+    {
+      "path": "hermes/skills/security-and-hardening/SKILL.md",
+      "source": "/home/wang/.hermes/skills/security-and-hardening/SKILL.md",
+      "bytes": 17559,
+      "sha256": "2e3fc60eed5aba97fe416f3f3c9317fdb014a682925ec70a733c3ff99e4b9858"
+    },
+    {
+      "path": "hermes/skills/security-and-hardening/references/hardening-patterns.md",
+      "source": "/home/wang/.hermes/skills/security-and-hardening/references/hardening-patterns.md",
+      "bytes": 13036,
+      "sha256": "d8ba58cad151aeca4804e48fc768240af0dd6b0ecddd07fbf24a1562140ba97a"
+    },
+    {
+      "path": "hermes/skills/shipping-and-launch/SKILL.md",
+      "source": "/home/wang/.hermes/skills/shipping-and-launch/SKILL.md",
+      "bytes": 11404,
+      "sha256": "af610cf4892db7eab2e91c899e33feba90e1000bac4528b2f8dde930816ac125"
+    },
+    {
+      "path": "hermes/skills/social-media/DESCRIPTION.md",
+      "source": "/home/wang/.hermes/skills/social-media/DESCRIPTION.md",
+      "bytes": 151,
+      "sha256": "2ea0d50444337de4809a62dc618d6d9c35bd2ba30f17ec6a138a20f53f9974a7"
+    },
+    {
+      "path": "hermes/skills/social-media/xurl/SKILL.md",
+      "source": "/home/wang/.hermes/skills/social-media/xurl/SKILL.md",
+      "bytes": 16345,
+      "sha256": "5457319ee337284b1152dc9f60146c72685ade489299afed08e0b46ca5a97080"
+    },
+    {
+      "path": "hermes/skills/software-development/codebase-inspection/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/codebase-inspection/SKILL.md",
+      "bytes": 3612,
+      "sha256": "d62554263461919dff7d77c3c0c284c2190c894f312a84d7a770a030dab642dc"
+    },
+    {
+      "path": "hermes/skills/software-development/codex-independent-review/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/codex-independent-review/SKILL.md",
+      "bytes": 9727,
+      "sha256": "807f38b1ea0829f754a307caca464e0eb2d49330742c95799246fb764390f017"
+    },
+    {
+      "path": "hermes/skills/software-development/codex-independent-review/references/final-state-review.md",
+      "source": "/home/wang/.hermes/skills/software-development/codex-independent-review/references/final-state-review.md",
+      "bytes": 2515,
+      "sha256": "d63460a1acdb8530c368a4197ef39028c44fe6135f3d7de8a664d0224c6418e7"
+    },
+    {
+      "path": "hermes/skills/software-development/dogfood/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/dogfood/SKILL.md",
+      "bytes": 6324,
+      "sha256": "1b2793734493dbc624a1d1f1c0667cb510e191fa79b1c740d866706550190560"
+    },
+    {
+      "path": "hermes/skills/software-development/dogfood/references/issue-taxonomy.md",
+      "source": "/home/wang/.hermes/skills/software-development/dogfood/references/issue-taxonomy.md",
+      "bytes": 3682,
+      "sha256": "b90546fab5b59494ebea35b957ccc1d98bab8eaeaaa3529a142b15ea96df2b31"
+    },
+    {
+      "path": "hermes/skills/software-development/dogfood/templates/dogfood-report-template.md",
+      "source": "/home/wang/.hermes/skills/software-development/dogfood/templates/dogfood-report-template.md",
+      "bytes": 1528,
+      "sha256": "6db9127715d3d1482542e48dd2d71fcb25238e614b1e5739ec193fa143962a26"
+    },
+    {
+      "path": "hermes/skills/software-development/github/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/SKILL.md",
+      "bytes": 2446,
+      "sha256": "9d70e7c842fe7db75b5a50526552a69862f5bcfc1e59aa93785241649a09d5a3"
+    },
+    {
+      "path": "hermes/skills/software-development/github/references/auth.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/references/auth.md",
+      "bytes": 11586,
+      "sha256": "eba9d0edf896036718612bb557ec7a6432532a9395bd66277c3b7417d8960a37"
+    },
+    {
+      "path": "hermes/skills/software-development/github/references/ci-troubleshooting.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/references/ci-troubleshooting.md",
+      "bytes": 4936,
+      "sha256": "ada022d91c8abff55a15505fe630ba02abdece5afa3751433fa4014a33defa23"
+    },
+    {
+      "path": "hermes/skills/software-development/github/references/code-review.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/references/code-review.md",
+      "bytes": 13295,
+      "sha256": "11ad06e6d49bcfc3433530b40f95b72f568cae0a2d7ca6e2450b22d3e0626d7b"
+    },
+    {
+      "path": "hermes/skills/software-development/github/references/conventional-commits.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/references/conventional-commits.md",
+      "bytes": 2417,
+      "sha256": "2d71a3b701b08c2e5ed5248d17928eb11e27d7b357f9e2dca27caee9cc017aab"
+    },
+    {
+      "path": "hermes/skills/software-development/github/references/github-api-cheatsheet.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/references/github-api-cheatsheet.md",
+      "bytes": 6092,
+      "sha256": "a9081d4a108b67b4edd3c92c73d823fd1730e37e23be6f069d9bd67dd3b32486"
+    },
+    {
+      "path": "hermes/skills/software-development/github/references/issue-to-pr.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/references/issue-to-pr.md",
+      "bytes": 5638,
+      "sha256": "9fc6de82f9b8e65a1611a5e3eee9f6f35cc9118a90a9df3de547cb65f2766dab"
+    },
+    {
+      "path": "hermes/skills/software-development/github/references/issues.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/references/issues.md",
+      "bytes": 8981,
+      "sha256": "86cf4a98232ee6362cd7893e76bed6ed25c21eb660e878432c6df3286c02d6d8"
+    },
+    {
+      "path": "hermes/skills/software-development/github/references/pr-workflow.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/references/pr-workflow.md",
+      "bytes": 9746,
+      "sha256": "f75f8cc23266a3675a67c8d06385c561befab23a8e6a9683b5418c8b656bb2b5"
+    },
+    {
+      "path": "hermes/skills/software-development/github/references/repo-management.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/references/repo-management.md",
+      "bytes": 13416,
+      "sha256": "e5b92a6d2edf1dc317ed4d4ba1b37734b78f391438d58f3f86139df398996301"
+    },
+    {
+      "path": "hermes/skills/software-development/github/references/review-output-template.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/references/review-output-template.md",
+      "bytes": 2465,
+      "sha256": "4560662913e8f89d558c7ba4f34daf77a35a88367c2d480ad86de7085cbcaf34"
+    },
+    {
+      "path": "hermes/skills/software-development/github/scripts/gh-env.sh",
+      "source": "/home/wang/.hermes/skills/software-development/github/scripts/gh-env.sh",
+      "bytes": 2556,
+      "sha256": "eb04179d859635b56cdd0da71da59cd5d94d7a69c9a856f9f562d1cd5cb9412f"
+    },
+    {
+      "path": "hermes/skills/software-development/github/scripts/git-credential-token.py",
+      "source": "/home/wang/.hermes/skills/software-development/github/scripts/git-credential-token.py",
+      "bytes": 1788,
+      "sha256": "4c0f3dfdc75df9043fe7b62b0807e7b4392c59ee81082d2fcc8d39b75c593efb"
+    },
+    {
+      "path": "hermes/skills/software-development/github/templates/bug-report.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/templates/bug-report.md",
+      "bytes": 469,
+      "sha256": "4b3144ccf47a85dcec889c7610d6b739a7ae6f19aa8d4709942112ef09e11a5b"
+    },
+    {
+      "path": "hermes/skills/software-development/github/templates/feature-request.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/templates/feature-request.md",
+      "bytes": 598,
+      "sha256": "43962f5a398b4badeeb94280299ba4511940ad0e32afcfce5f2a6e1afd21c7a8"
+    },
+    {
+      "path": "hermes/skills/software-development/github/templates/pr-body-bugfix.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/templates/pr-body-bugfix.md",
+      "bytes": 513,
+      "sha256": "e8c31915b87dba0454d7520a3aa45ef8650fd0e50e48e277db855ff919e6251a"
+    },
+    {
+      "path": "hermes/skills/software-development/github/templates/pr-body-feature.md",
+      "source": "/home/wang/.hermes/skills/software-development/github/templates/pr-body-feature.md",
+      "bytes": 580,
+      "sha256": "875e815da6e0e3df2763a85c9c2a56a776461da39d4181a1487333c0bf5b9276"
+    },
+    {
+      "path": "hermes/skills/software-development/hermes-agent-skill-authoring/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/hermes-agent-skill-authoring/SKILL.md",
+      "bytes": 14504,
+      "sha256": "8c54eb31a49bf301ac1dc1756ac3426a6a6a0ef20d9804febcfe24538cd47a3a"
+    },
+    {
+      "path": "hermes/skills/software-development/inspecting-hermes-desktop-dom/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/inspecting-hermes-desktop-dom/SKILL.md",
+      "bytes": 6250,
+      "sha256": "8dfdcf2fe3797beec4297ce629e62395d7a69ec2691fc00ef25bc6273139cbc4"
+    },
+    {
+      "path": "hermes/skills/software-development/node-inspect-debugger/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/node-inspect-debugger/SKILL.md",
+      "bytes": 11065,
+      "sha256": "422eed9a0997182c5b197a8879ab194647799d69e573000e53b65b8708cf3a77"
+    },
+    {
+      "path": "hermes/skills/software-development/python-debugpy/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/python-debugpy/SKILL.md",
+      "bytes": 13366,
+      "sha256": "f31a02ca7256aeefb1280f56f8d5ef67f7b2e5d9b4ed91b73d7835304b4ff736"
+    },
+    {
+      "path": "hermes/skills/software-development/requesting-code-review/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/requesting-code-review/SKILL.md",
+      "bytes": 8781,
+      "sha256": "1e26ced9f05e357950e035b93ad1a937dd8a9e578a44d3c8d4fa734a09b7f814"
+    },
+    {
+      "path": "hermes/skills/software-development/simplify-code/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/simplify-code/SKILL.md",
+      "bytes": 14696,
+      "sha256": "9ee977c3362a1c07f2e327198e066ddb3c0ed67709706fc410165ee820b2ca01"
+    },
+    {
+      "path": "hermes/skills/software-development/spike/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/spike/SKILL.md",
+      "bytes": 8723,
+      "sha256": "573d8fc0d6699eaf5308e742402bc02c883152ffeebe14607f164c6c538495c2"
+    },
+    {
+      "path": "hermes/skills/software-development/systematic-debugging/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/systematic-debugging/SKILL.md",
+      "bytes": 14059,
+      "sha256": "bd480f51a2e9969c88544003c30b7539b7df0b7358703f99b0495514c2dd878a"
+    },
+    {
+      "path": "hermes/skills/software-development/test-driven-development/SKILL.md",
+      "source": "/home/wang/.hermes/skills/software-development/test-driven-development/SKILL.md",
+      "bytes": 10300,
+      "sha256": "649e6ab89bd8aaad2f9b162c60321f227cff8a8cda56393f07a81d1c6825a692"
+    },
+    {
+      "path": "hermes/skills/source-driven-development/SKILL.md",
+      "source": "/home/wang/.hermes/skills/source-driven-development/SKILL.md",
+      "bytes": 10038,
+      "sha256": "c59faf851377f0eeda45306398d16eb96d77ab1c2fd3e1a7fb58e9a0af33c1e9"
+    },
+    {
+      "path": "hermes/skills/spec-driven-development/SKILL.md",
+      "source": "/home/wang/.hermes/skills/spec-driven-development/SKILL.md",
+      "bytes": 12595,
+      "sha256": "f7129bca8742bad73f60209bd237e8b10dab6f1fae8576dc552fb1923bc1e721"
+    },
+    {
+      "path": "hermes/skills/ssh-remote-bootstrap/SKILL.md",
+      "source": "/home/wang/.hermes/skills/ssh-remote-bootstrap/SKILL.md",
+      "bytes": 2761,
+      "sha256": "de9b3f85b3baa94558dcec4982065c84910bdc958fabf76bc619ddcf19ca8266"
+    },
+    {
+      "path": "hermes/skills/test-driven-development/SKILL.md",
+      "source": "/home/wang/.hermes/skills/test-driven-development/SKILL.md",
+      "bytes": 16517,
+      "sha256": "7c0c6ac057c19d7f8be65d9f49c3a638703b868f4625c78b70da5439d5d74fca"
+    },
+    {
+      "path": "hermes/skills/using-agent-skills/SKILL.md",
+      "source": "/home/wang/.hermes/skills/using-agent-skills/SKILL.md",
+      "bytes": 10446,
+      "sha256": "30787ef2c77bf1a4729fffed0f6523ba6fcbe81bdc436b36371b78c21394d3c3"
+    },
+    {
+      "path": "hermes/skills/web/DESCRIPTION.md",
+      "source": "/home/wang/.hermes/skills/web/DESCRIPTION.md",
+      "bytes": 137,
+      "sha256": "1cee33fe7aaddc9d8ce9319f4452dc9a357952feba049810e392a8ecf67ea28e"
+    },
+    {
+      "path": "hermes/skills/web/blocked-page-recovery/SKILL.md",
+      "source": "/home/wang/.hermes/skills/web/blocked-page-recovery/SKILL.md",
+      "bytes": 5175,
+      "sha256": "b71179e82ff27c002e6593e792d9a64dad9a444901b8938f30204fa115592061"
+    },
+    {
+      "path": "hermes/skills/web/blocked-page-recovery/scripts/recover_page.py",
+      "source": "/home/wang/.hermes/skills/web/blocked-page-recovery/scripts/recover_page.py",
+      "bytes": 8481,
+      "sha256": "22b996996ae2bf252b31cfd2636231f08936729a381dce7ba8bfa4afb8ffe8c6"
+    },
+    {
+      "path": "hermes-role-runtime/.gitignore",
+      "source": "/home/wang/work/hermes-role-runtime/.gitignore",
+      "bytes": 34,
+      "sha256": "6f4ff2992c4e2558837e2e09c39ed2bba140658755b22d046aab810ea2c90ca0"
+    },
+    {
+      "path": "hermes-role-runtime/README.md",
+      "source": "/home/wang/work/hermes-role-runtime/README.md",
+      "bytes": 5677,
+      "sha256": "a0bac2a6a7e2973d31786477580a7e79a100c9184f8b991cef4d920a7584e050"
+    },
+    {
+      "path": "hermes-role-runtime/__init__.py",
+      "source": "/home/wang/work/hermes-role-runtime/__init__.py",
+      "bytes": 10288,
+      "sha256": "f11daeca4f4e20c8046fb772fdcf6e74e6f4bf9d2f7b0e1684700c1cad488e1e"
+    },
+    {
+      "path": "hermes-role-runtime/coord_queue.py",
+      "source": "/home/wang/work/hermes-role-runtime/coord_queue.py",
+      "bytes": 2429,
+      "sha256": "9584ea6fb958724585a40e8f5b5e5943e22124c373cdca7d0094be25675eceb4"
+    },
+    {
+      "path": "hermes-role-runtime/delivery_evidence.py",
+      "source": "/home/wang/work/hermes-role-runtime/delivery_evidence.py",
+      "bytes": 8392,
+      "sha256": "9d5576eda5b3fbe21b9d76b08e643e006bae54e9abd0e732a05e4b41f57030e1"
+    },
+    {
+      "path": "hermes-role-runtime/load_metrics.py",
+      "source": "/home/wang/work/hermes-role-runtime/load_metrics.py",
+      "bytes": 3261,
+      "sha256": "43fa7007ec9189b808434f3c69d89a00e76fc749adc08b61fc846a2a5b23922c"
+    },
+    {
+      "path": "hermes-role-runtime/operation_jobs.py",
+      "source": "/home/wang/work/hermes-role-runtime/operation_jobs.py",
+      "bytes": 10064,
+      "sha256": "1a484b7c04c7f319f7bc9b46609ee7f964d534be0ca9cc28d199e340fe44117a"
+    },
+    {
+      "path": "hermes-role-runtime/plugin.yaml",
+      "source": "/home/wang/work/hermes-role-runtime/plugin.yaml",
+      "bytes": 268,
+      "sha256": "682f069ad06b61721f47779cd1c9520b35a716ef6bad64eea52676677cc05583"
+    },
+    {
+      "path": "hermes-role-runtime/prefix_audit.py",
+      "source": "/home/wang/work/hermes-role-runtime/prefix_audit.py",
+      "bytes": 2316,
+      "sha256": "3db7106399c7032da2b9ca948cd021acb86e66e937b113a3e9c34652f461d9b9"
+    },
+    {
+      "path": "hermes-role-runtime/progress_display.py",
+      "source": "/home/wang/work/hermes-role-runtime/progress_display.py",
+      "bytes": 23829,
+      "sha256": "9481df9af0995accce5272c5b85e19f0d13bca18c1aeb90faca5e45c208ef7bf"
+    },
+    {
+      "path": "hermes-role-runtime/progress_projection.py",
+      "source": "/home/wang/work/hermes-role-runtime/progress_projection.py",
+      "bytes": 30560,
+      "sha256": "94425f29e624b49a4907c3644673b36cbc6b8271211fd72647134a08c0135d4f"
+    },
+    {
+      "path": "hermes-role-runtime/progress_query.py",
+      "source": "/home/wang/work/hermes-role-runtime/progress_query.py",
+      "bytes": 1915,
+      "sha256": "59136bb802dbb339a14a29488f397e2c2c6c7a4e04adf84391dd186e0bb7d6ed"
+    },
+    {
+      "path": "hermes-role-runtime/role_records.py",
+      "source": "/home/wang/work/hermes-role-runtime/role_records.py",
+      "bytes": 8163,
+      "sha256": "efe6689131d625cd7785c37c3012aee065af9008f8b9108a1a521022e3821037"
+    },
+    {
+      "path": "hermes-role-runtime/runtime_common.py",
+      "source": "/home/wang/work/hermes-role-runtime/runtime_common.py",
+      "bytes": 1639,
+      "sha256": "c19c54693558e5edb9c57156b8345d739d3a2a7d9346f55b91888ea132f43960"
+    },
+    {
+      "path": "hermes-role-runtime/runtime_tools.py",
+      "source": "/home/wang/work/hermes-role-runtime/runtime_tools.py",
+      "bytes": 7943,
+      "sha256": "cd12da40ae7b7fcbb1af2ee3276b5413a440a505a3887e6b3acf7ca1854a26bf"
+    },
+    {
+      "path": "hermes-role-runtime/task_observation.py",
+      "source": "/home/wang/work/hermes-role-runtime/task_observation.py",
+      "bytes": 14333,
+      "sha256": "2bf8dcb90da68520520b0aaf1b3aeb2fb40fb6e1012f83b3cf035d85891bba27"
+    },
+    {
+      "path": "hermes-role-runtime/tests/test_delivery_evidence.py",
+      "source": "/home/wang/work/hermes-role-runtime/tests/test_delivery_evidence.py",
+      "bytes": 6990,
+      "sha256": "3d4f6b548e09a7bfab99a7a632f4e5766e7f7845c0047058d045ef8bcdfb167d"
+    },
+    {
+      "path": "hermes-role-runtime/tests/test_interaction_contract.py",
+      "source": "/home/wang/work/hermes-role-runtime/tests/test_interaction_contract.py",
+      "bytes": 3886,
+      "sha256": "6135d5c6253fc7384e80733a5eccf3dc79b4954ab6e9f5787904366579f87acc"
+    },
+    {
+      "path": "hermes-role-runtime/tests/test_plugin.py",
+      "source": "/home/wang/work/hermes-role-runtime/tests/test_plugin.py",
+      "bytes": 11522,
+      "sha256": "447553409e2eb4b70a03767627f86915ba2200fc08fdda25d4265c3e329ed35c"
+    },
+    {
+      "path": "hermes-role-runtime/tests/test_progress.py",
+      "source": "/home/wang/work/hermes-role-runtime/tests/test_progress.py",
+      "bytes": 6689,
+      "sha256": "9c90e33366f721bec3b235470bb840633f19ecd621efad6975e83d701cd885a0"
+    },
+    {
+      "path": "hermes-role-runtime/tests/test_progress_projection.py",
+      "source": "/home/wang/work/hermes-role-runtime/tests/test_progress_projection.py",
+      "bytes": 19313,
+      "sha256": "67be37ff956ab0a96535549fd9a58fdfc0fe19e58d9cc4038858d8a8ca3822bb"
+    },
+    {
+      "path": "hermes-role-runtime/tests/test_role_records.py",
+      "source": "/home/wang/work/hermes-role-runtime/tests/test_role_records.py",
+      "bytes": 9816,
+      "sha256": "6d08c5d7da01d2c06265f6c39e34c94cb58200b487db06429ffe616fbef5a6e6"
+    },
+    {
+      "path": "hermes-role-runtime/tests/test_runtime.py",
+      "source": "/home/wang/work/hermes-role-runtime/tests/test_runtime.py",
+      "bytes": 9231,
+      "sha256": "1da21fdd822d4d86fbf717a926384d4c99b10627c0bc960beb71a10b43684a83"
+    },
+    {
+      "path": "hermes-role-runtime/tests/test_task_observation.py",
+      "source": "/home/wang/work/hermes-role-runtime/tests/test_task_observation.py",
+      "bytes": 9410,
+      "sha256": "ad65422cc4390ccdbfdbbb261ae2a774d5f394b6e58362c98f4207670914c165"
+    },
+    {
+      "path": "hermes-role-runtime/tests/test_time_accounting.py",
+      "source": "/home/wang/work/hermes-role-runtime/tests/test_time_accounting.py",
+      "bytes": 9671,
+      "sha256": "2243acbe4cad98569e7a5bbcdb69a77d60da19f5b60d9804feecae3103f23c48"
+    },
+    {
+      "path": "hermes-role-runtime/time_accounting.py",
+      "source": "/home/wang/work/hermes-role-runtime/time_accounting.py",
+      "bytes": 22980,
+      "sha256": "3c5ccc90b75b982a44f014ee11cfecd9669a061d9c307df0eef3d468f4417d67"
+    },
+    {
+      "path": "docs/SKILL-DEVELOPMENT-WORKFLOW.md",
+      "source": "/home/wang/work/doc/SKILL-DEVELOPMENT-WORKFLOW.md",
+      "bytes": 71485,
+      "sha256": "b765eca68ced10d2c4d7e3da90002f8376efe25af6b5ba54695507104349e8eb"
+    },
+    {
+      "path": "docs/skill-development-workflow/chat-runtime.svg",
+      "source": "/home/wang/work/doc/skill-development-workflow/chat-runtime.svg",
+      "bytes": 5415,
+      "sha256": "36c029220accc8e2ea8f0087ad94a24cc8325584ff27fce0156e151401a7c25e"
+    },
+    {
+      "path": "docs/skill-development-workflow/parallel-flow.svg",
+      "source": "/home/wang/work/doc/skill-development-workflow/parallel-flow.svg",
+      "bytes": 4830,
+      "sha256": "9a85d58f13536b3d596dec96b5cf119a2756d22822f9c0c50bab029a532249a0"
+    },
+    {
+      "path": "docs/skill-development-workflow/render_diagrams.py",
+      "source": "/home/wang/work/doc/skill-development-workflow/render_diagrams.py",
+      "bytes": 11998,
+      "sha256": "402d609abc4b4e83cf0e1573069b60381b830b38673ef845447d231491ae66d0"
+    },
+    {
+      "path": "docs/skill-development-workflow/requirement-routing.svg",
+      "source": "/home/wang/work/doc/skill-development-workflow/requirement-routing.svg",
+      "bytes": 3757,
+      "sha256": "f5a8f772eef5cc151f85f856cee0db47734d8b6a3d04fcad964fc55cd37ca5db"
+    },
+    {
+      "path": "docs/skill-development-workflow/task-flow.svg",
+      "source": "/home/wang/work/doc/skill-development-workflow/task-flow.svg",
+      "bytes": 5742,
+      "sha256": "98f460187f03905bd26d7706a13607dd9d83d1c1d0a0f0c1f875d42d2980812d"
+    },
+    {
+      "path": "docs/skill-development-workflow/trigger-flow.svg",
+      "source": "/home/wang/work/doc/skill-development-workflow/trigger-flow.svg",
+      "bytes": 5665,
+      "sha256": "c31f79d7026139ba918b26efda16be794608346c75206bb88c06e21a83cb52c0"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/api-and-interface-design/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/api-and-interface-design/SKILL.md",
+      "bytes": 14886,
+      "sha256": "e83d34f52ff12dd8a7c5134cd7e8140ea4541ec65e204f8a1e4cd366e30c4192"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/browser-testing-with-devtools/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/browser-testing-with-devtools/SKILL.md",
+      "bytes": 14539,
+      "sha256": "4e3aacd6a380cd25bc6c2d67fdd1c926a9b22535b8a62109ecd33cefd909e3d9"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/ci-cd-and-automation/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/ci-cd-and-automation/SKILL.md",
+      "bytes": 11332,
+      "sha256": "a6ed8ed56456b01ff8314c44eefc69897d9905ae4e06bb2b7036286efb79b5f0"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/code-review-and-quality/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/code-review-and-quality/SKILL.md",
+      "bytes": 20976,
+      "sha256": "2db1e850379f255fd3091ef278cde24cd6c7d2ba23e360cc52ea522c40d4396e"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/code-simplification/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/code-simplification/SKILL.md",
+      "bytes": 13545,
+      "sha256": "f0c5ed754057eb0c1e027e2587f59de816651feb5e837242296c43ea21cf621d"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/constraint-driven-development/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/constraint-driven-development/SKILL.md",
+      "bytes": 21008,
+      "sha256": "06479d4305f286d23cfb99f5dc85695896785269664e1f6a8d800e3b71e70c10"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/constraint-driven-development/references/floor-guard.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/constraint-driven-development/references/floor-guard.md",
+      "bytes": 10681,
+      "sha256": "59715dc6c3c6c36ec9177f9ced65c379e80a4539b36115456666bfabc43a6a9c"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/context-engineering/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/context-engineering/SKILL.md",
+      "bytes": 15486,
+      "sha256": "8b736cb9e55b82b265ab6ff78349c0e826e8a6df550deddf665b7fb3ff858b63"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/debugging-and-error-recovery/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/debugging-and-error-recovery/SKILL.md",
+      "bytes": 10913,
+      "sha256": "21f3960f5d7ae2cc95c40896545004dbbcbbd752ea65fc2d53962554d4174220"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/deprecation-and-migration/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/deprecation-and-migration/SKILL.md",
+      "bytes": 12642,
+      "sha256": "6a624f942e09c69863a4219b9bd5d56975026b67b0c70bc83385ffd2120b6142"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/documentation-and-adrs/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/documentation-and-adrs/SKILL.md",
+      "bytes": 10910,
+      "sha256": "b60d503925bbaacee7fd63935db70b9ced5b2514ff5a56a672130e01b9690bc5"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/doubt-driven-development/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/doubt-driven-development/SKILL.md",
+      "bytes": 16647,
+      "sha256": "6fa1fcd8420c28daf7e53c5b08b0f20b907911efd2a6d9bce0b9740da20a4008"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/frontend-ui-engineering/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/frontend-ui-engineering/SKILL.md",
+      "bytes": 11721,
+      "sha256": "29a3e53d57c0a128831a20730ae874a8c4fda40c001fcdc15f8e9ad4b5f72f1b"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/git-workflow-and-versioning/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/git-workflow-and-versioning/SKILL.md",
+      "bytes": 14141,
+      "sha256": "b7465d187935c52546d39fdc7bd6ac36d94eda25a9500ef8c18b767d2eb116ea"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/idea-refine/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/idea-refine/SKILL.md",
+      "bytes": 8111,
+      "sha256": "79e773058963adc7646b0115b4f8a4afc974c5ff95843e4ef1cafff3cb51899e"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/idea-refine/examples.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/idea-refine/examples.md",
+      "bytes": 20284,
+      "sha256": "563204bfbf2f80a444151695205af4cb759e722b3d1e5460e08f278a69c89ba1"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/idea-refine/frameworks.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/idea-refine/frameworks.md",
+      "bytes": 5404,
+      "sha256": "161ebc18fdf2d996bc62a87a2d747cf1bf53548354f8925de25c732c27f00309"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/idea-refine/refinement-criteria.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/idea-refine/refinement-criteria.md",
+      "bytes": 5738,
+      "sha256": "1ca2973a4d01b5cb37ab7ddb2eff77fa4e792634a33d0ce44961c068fc88d51a"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/idea-refine/scripts/idea-refine.sh",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/idea-refine/scripts/idea-refine.sh",
+      "bytes": 342,
+      "sha256": "f02a52408a4218047c032d221483abfbb48d11f090bb4915965c7419bf2e0e47"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/incremental-implementation/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/incremental-implementation/SKILL.md",
+      "bytes": 9629,
+      "sha256": "df66536610071727feae1ca95f3c391c248ad828041750ccd3699cce763aa00b"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/interview-me/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/interview-me/SKILL.md",
+      "bytes": 15080,
+      "sha256": "ace4b675999bb504593d572e0f73f3d7e803ad6fddf318445598c82c11939db2"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/observability-and-instrumentation/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/observability-and-instrumentation/SKILL.md",
+      "bytes": 13948,
+      "sha256": "e7fcb0820306d46268de9594d676ad98e35040858926c412b7000faa52a61f87"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/performance-optimization/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/performance-optimization/SKILL.md",
+      "bytes": 16678,
+      "sha256": "665a83a7218d6aebd02ca329a7b2422cf28f7c55cb56f870c05e12047770245c"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/performance-optimization/references/optimization-patterns.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/performance-optimization/references/optimization-patterns.md",
+      "bytes": 9692,
+      "sha256": "fbf724076ffb8ac1a28e1a2773c0b550f5361090024b2dd32e5a682c69b7945f"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/planning-and-task-breakdown/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/planning-and-task-breakdown/SKILL.md",
+      "bytes": 10564,
+      "sha256": "ed0f90cc5951ddd4bcab7f871f64efec93a49af9279ef93bc470da77ad8da3f7"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/security-and-hardening/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/security-and-hardening/SKILL.md",
+      "bytes": 17559,
+      "sha256": "2e3fc60eed5aba97fe416f3f3c9317fdb014a682925ec70a733c3ff99e4b9858"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/security-and-hardening/references/hardening-patterns.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/security-and-hardening/references/hardening-patterns.md",
+      "bytes": 13036,
+      "sha256": "2e1b93a502b4cdb0258404441f3aab029b0cce4003fbbcc61af9a2de18bab9ab"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/shipping-and-launch/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/shipping-and-launch/SKILL.md",
+      "bytes": 11515,
+      "sha256": "726f3e546369db289160b8d42195590f00b6432887e17bf19070dcc9a347fe39"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/source-driven-development/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/source-driven-development/SKILL.md",
+      "bytes": 10038,
+      "sha256": "c59faf851377f0eeda45306398d16eb96d77ab1c2fd3e1a7fb58e9a0af33c1e9"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/spec-driven-development/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/spec-driven-development/SKILL.md",
+      "bytes": 13096,
+      "sha256": "c4b97ce3d7f24be0e67fd612c7595f65504872e3a9f8d338d098b2363fdb66ef"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/test-driven-development/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/test-driven-development/SKILL.md",
+      "bytes": 16517,
+      "sha256": "7c0c6ac057c19d7f8be65d9f49c3a638703b868f4625c78b70da5439d5d74fca"
+    },
+    {
+      "path": "codex/plugins/agent-skills/skills/using-agent-skills/SKILL.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/skills/using-agent-skills/SKILL.md",
+      "bytes": 10446,
+      "sha256": "30787ef2c77bf1a4729fffed0f6523ba6fcbe81bdc436b36371b78c21394d3c3"
+    },
+    {
+      "path": "codex/plugins/agent-skills/references/accessibility-checklist.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/references/accessibility-checklist.md",
+      "bytes": 5206,
+      "sha256": "61c759d94d52296231f5f310b92b401f56c44e4430dc3cc95ebac5d7b1d5ffac"
+    },
+    {
+      "path": "codex/plugins/agent-skills/references/definition-of-done.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/references/definition-of-done.md",
+      "bytes": 3798,
+      "sha256": "d1c75d2ae65d2c7a9cd01f93fa8de63e00e75f2fe5d08be224d576157054dcee"
+    },
+    {
+      "path": "codex/plugins/agent-skills/references/observability-checklist.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/references/observability-checklist.md",
+      "bytes": 5129,
+      "sha256": "25fcd0e854596a5ab6f11b002050d245bf78f5ae0fcbd1df699b89451ae0e1e8"
+    },
+    {
+      "path": "codex/plugins/agent-skills/references/orchestration-patterns.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/references/orchestration-patterns.md",
+      "bytes": 18201,
+      "sha256": "61e543d86f19f86b83074f8c1c769455c7085a2c72dd47b1da21a8c63785be4a"
+    },
+    {
+      "path": "codex/plugins/agent-skills/references/performance-checklist.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/references/performance-checklist.md",
+      "bytes": 13139,
+      "sha256": "40f564d1e62341e277c01ba42c42d95264b9ef3b8e5a23249dc6e121a7e70067"
+    },
+    {
+      "path": "codex/plugins/agent-skills/references/security-checklist.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/references/security-checklist.md",
+      "bytes": 14360,
+      "sha256": "37774056502fe8970dcd2fd27dca5fa31f2a55232649fc3056c89c3af7d62755"
+    },
+    {
+      "path": "codex/plugins/agent-skills/references/testing-patterns.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/references/testing-patterns.md",
+      "bytes": 7460,
+      "sha256": "f0bf05acd0edcadc27297ad5b74f104c8103ccfedba1a05cd6d6ae4af8364c56"
+    },
+    {
+      "path": "codex/plugins/agent-skills/LICENSE",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/LICENSE",
+      "bytes": 1068,
+      "sha256": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7"
+    },
+    {
+      "path": "codex/plugins/agent-skills/README.md",
+      "source": "/home/wang/.codex/plugins/cache/agent-skills/agent-skills/0.6.12/README.md",
+      "bytes": 25768,
+      "sha256": "1721f3d97679a2d7e6208e7f9af3ed891a4dd29de9a56ccbb6fd7d971cb8c9d4"
+    },
+    {
+      "path": "hermes/LICENSE",
+      "source": "/home/wang/.hermes/hermes-agent/LICENSE",
+      "bytes": 1070,
+      "sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6"
+    }
+  ],
+  "excluded": [
+    {
+      "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/__pycache__",
+      "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
+    },
+    {
+      "source": "/home/wang/.hermes/skills/.bundled_manifest",
+      "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
+    },
+    {
+      "source": "/home/wang/.hermes/skills/.curator_ledger.jsonl",
+      "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
+    },
+    {
+      "source": "/home/wang/.hermes/skills/.curator_state",
+      "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
+    },
+    {
+      "source": "/home/wang/.hermes/skills/.hub",
+      "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
+    },
+    {
+      "source": "/home/wang/.hermes/skills/.locks",
+      "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
+    },
+    {
+      "source": "/home/wang/.hermes/skills/.usage.json",
+      "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
+    },
+    {
+      "source": "/home/wang/.hermes/skills/.usage.json.lock",
+      "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
+    },
+    {
+      "source": "/home/wang/work/hermes-role-runtime/.git",
+      "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
+    },
+    {
+      "source": "/home/wang/work/hermes-role-runtime/__pycache__",
+      "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
+    },
+    {
+      "source": "/home/wang/work/hermes-role-runtime/tests/__pycache__",
+      "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
+    }
+  ],
+  "note": "Snapshot only; no credentials, machine config, sessions database or cron bindings exported. Absolute local paths in source documents are retained."
+}

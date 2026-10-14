@@ -1,0 +1,6 @@
+interface:
+  display_name: "飞书消息与进度样式"
+  short_description: "统一飞书角色会话与进度汇报，用加粗标题、单层列表突出重点和下一步。"
+  default_prompt: "使用 $feishu-progress-style，按飞书统一样式整理当前回复或进度报告。"
+policy:
+  allow_implicit_invocation: true

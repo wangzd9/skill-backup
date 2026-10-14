@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+<title id="title">飞书怎么用：随时交流，执行共用同一身份</title><desc id="desc">人工对话由模型处理；脚本只做机械工作。群和后台共用文档、租约与任务身份，原审核门禁保留。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker></defs>
+<style>text{font-family:"Noto Sans CJK SC","Microsoft YaHei","PingFang SC",sans-serif;fill:#0f172a}.heading{font-size:21px;font-weight:700}.line{font-size:16px}.note{font-size:14px;fill:#475569}</style>
+<rect width="1200" height="900" fill="#ffffff" rx="16"/>
+<text x="32" y="35" class="heading">飞书怎么用：随时交流，执行共用同一身份</text>
+<rect x="35" y="75" width="330" height="120" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+<text x="53" y="104" class="heading">你在协调者群发消息</text>
+<text x="53" y="130" class="line">问进展 / 解释原因 / 讨论方向</text>
+<text x="53" y="153" class="line">明确要求执行已有计划</text>
+<text x="53" y="176" class="line">无需先停后台或记命令</text>
+<polyline points="365,135 425,135" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="425" y="75" width="730" height="120" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+<text x="443" y="104" class="heading">原生群模型：读取按角色生成的统一报告材料</text>
+<text x="443" y="130" class="line">协调者进度完整七区；执行 / 测试仅自身和必要依赖</text>
+<text x="443" y="153" class="line">手动和自动进度结构相同；单一原因问题直接回答</text>
+<text x="443" y="176" class="line">人工问句不入业务队列；忙碌或服务排队仍可能延迟</text>
+<polyline points="700,195 700,240" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="425" y="240" width="730" height="115" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="443" y="269" class="heading">只有明确业务动作才记录一次待办</text>
+<text x="443" y="295" class="line">原消息 ID、原文、引用 / 附件身份；不把讨论当执行授权</text>
+<text x="443" y="318" class="line">群会话与后台 cron 共用 COORDINATOR 租约，忙碌只排队</text>
+<polyline points="700,355 700,400" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="425" y="400" width="730" height="115" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+<text x="443" y="429" class="heading">取得执行权 → 复读任务 → 按原门禁处理</text>
+<text x="443" y="455" class="line">重读 TODO / 派单 / ACK / decision 与实际 task / attempt</text>
+<text x="443" y="478" class="line">已处理不重做；崩溃先对账，外部操作保留原幂等身份</text>
+<polyline points="700,515 700,560" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="425" y="560" width="730" height="115" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="443" y="589" class="heading">共享文档与独立执行角色</text>
+<text x="443" y="615" class="line">协调派单 → A / B / C 各自开发 → 测试者独立验证</text>
+<text x="443" y="638" class="line">开发自测 / 独立测试 / 串行 OCR / 适用强审 / 合入与生产授权</text>
+<rect x="35" y="240" width="330" height="195" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="53" y="269" class="heading">后台脚本与定时协调</text>
+<text x="53" y="295" class="line">每5分钟脚本比较相关文档</text>
+<text x="53" y="318" class="line">无变化不调用模型</text>
+<text x="53" y="341" class="line">有新事件，按租约接续</text>
+<text x="53" y="364" class="line"></text>
+<text x="53" y="387" class="line">只停止夜间主动通知</text>
+<text x="53" y="410" class="line">人工问答不转交夜间 cron</text>
+<rect x="35" y="480" width="330" height="195" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="53" y="509" class="heading">可选机械命令</text>
+<text x="53" y="535" class="line">/progress：当次共同事实简报</text>
+<text x="53" y="558" class="line">/llm-load：直接 GET 指标</text>
+<text x="53" y="581" class="line"></text>
+<text x="53" y="604" class="line">突出结论与关键状态</text>
+<text x="53" y="627" class="line">时间不足标待核实</text>
+<text x="53" y="650" class="line">完整证据按需展开</text>
+<rect x="35" y="725" width="1120" height="100" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="53" y="754" class="heading">避免混淆：同一逻辑角色，不是同一聊天内存</text>
+<text x="53" y="780" class="line">问答不用等执行锁；写业务必须互斥并复核已有动作。租约本身不保证所有外部操作只执行一次。</text>
+<text x="53" y="803" class="line">普通私聊、无关群和其他角色群保持原生入口；不修改共享模型并发或降低审核要求。</text>
+<text x="35" y="870" class="note">节流边界：削减空巡检、重复执行、机械查询和等待空转；保留人工语义交互及必要的证据核对。</text>
+</svg>

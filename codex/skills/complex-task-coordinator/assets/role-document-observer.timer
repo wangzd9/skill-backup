@@ -1,0 +1,11 @@
+[Unit]
+Description=Check role documents every five minutes independently of model jobs
+
+[Timer]
+OnCalendar=*-*-* *:0/5:10
+AccuracySec=1s
+Persistent=true
+Unit=role-document-observer.service
+
+[Install]
+WantedBy=timers.target

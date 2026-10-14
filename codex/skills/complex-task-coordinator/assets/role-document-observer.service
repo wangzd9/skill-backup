@@ -1,0 +1,8 @@
+[Unit]
+Description=Five-role document scan without model calls
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/role_observer.py scan --registry /home/wang/.hermes/role-projects.json
+TimeoutStartSec=60
+UMask=0077

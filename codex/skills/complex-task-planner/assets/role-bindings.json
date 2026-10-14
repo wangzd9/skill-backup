@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "skill_version": "1.6.0",
+  "project_root": "由规划者填入本需求完整绝对根，根下含TODO/inbox/回执；未绑定不编造运行状态",
+  "timezone": "Asia/Shanghai",
+  "control": "PAUSED",
+  "runtime_script": "部署时填入协调者 Skill scripts/role_runtime.py 绝对路径",
+  "roles": {
+    "COORDINATOR": {
+      "skill": "complex-task-coordinator",
+      "chat_id": null,
+      "poll_job_id": null,
+      "report_job_id": null,
+      "session_file": "sessions/COORDINATOR.md",
+      "idle_report_job_id": null,
+      "report_policy": "coordinator_day20m_morning08",
+      "skill_version": "1.10.0",
+      "morning_report_job_id": null
+    },
+    "A": {
+      "skill": "complex-task-executor",
+      "chat_id": null,
+      "poll_job_id": null,
+      "report_job_id": null,
+      "session_file": "sessions/A.md",
+      "idle_report_job_id": null,
+      "report_policy": "phase_11_15_18",
+      "skill_version": "1.5.1"
+    },
+    "B": {
+      "skill": "complex-task-executor",
+      "chat_id": null,
+      "poll_job_id": null,
+      "report_job_id": null,
+      "session_file": "sessions/B.md",
+      "idle_report_job_id": null,
+      "report_policy": "phase_11_15_18",
+      "skill_version": "1.5.1"
+    },
+    "C": {
+      "skill": "complex-task-executor",
+      "chat_id": null,
+      "poll_job_id": null,
+      "report_job_id": null,
+      "session_file": "sessions/C.md",
+      "idle_report_job_id": null,
+      "report_policy": "phase_11_15_18",
+      "skill_version": "1.5.1"
+    },
+    "TESTER": {
+      "skill": "complex-task-tester",
+      "chat_id": null,
+      "poll_job_id": null,
+      "report_job_id": null,
+      "session_file": "sessions/TESTER.md",
+      "idle_report_job_id": null,
+      "report_policy": "phase_11_15_18",
+      "skill_version": "1.5.1"
+    }
+  },
+  "legacy_runs": [],
+  "presentation_skill": "feishu-progress-style",
+  "presentation_version": "1.5.1",
+  "strong_review_runtime": "部署时填入协调者 Skill scripts/strong_review.py 绝对路径",
+  "development_log": "DEVELOPMENT-LOG.md",
+  "report_policy": {
+    "timezone": "Asia/Shanghai",
+    "quiet_hours": "21:00-08:00",
+    "coordinator_day_minutes": 20,
+    "coordinator_morning": "08:00",
+    "executor_tester_slots": [
+      "11:00",
+      "15:00",
+      "18:00"
+    ],
+    "no_agent": true,
+    "activity_root": "inbox/control/runtime/activity",
+    "digest_root": "inbox/control/runtime/digests",
+    "snapshot_root": "inbox/control/runtime/snapshots",
+    "facts_command": "部署时填入绑定的 runtime_tools.py progress-facts --project ROOT",
+    "facts_root": "inbox/control/runtime/progress/facts.json"
+  },
+  "observer_runtime": "/home/wang/.codex/skills/complex-task-coordinator/scripts/role_observer.py",
+  "runtime_policy_version": "quiet-digest-v2",
+  "poll_policy": {
+    "minutes": 5,
+    "script_check": true,
+    "idle_model_wake": false,
+    "ack_after_handling": true
+  }
+}

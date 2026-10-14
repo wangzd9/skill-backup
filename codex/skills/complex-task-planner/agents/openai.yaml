@@ -1,0 +1,6 @@
+interface:
+  display_name: "复杂任务规划者"
+  short_description: "复杂需求规划与架构设计：当用户要求复杂任务开发设计、拆成三并发、设计最小链路和交接任务时使用。产出可供协调者、执行者与测"
+  default_prompt: "使用 $complex-task-planner，按我的角色和当前项目继续工作。"
+policy:
+  allow_implicit_invocation: true

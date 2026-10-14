@@ -1,0 +1,6 @@
+interface:
+  display_name: "复杂任务协调者"
+  short_description: "复杂任务协调者：在 Hermes 群中声明协调者/调度者或恢复文档协作时使用。负责派单接续、串行 OCR、证据审核、批准"
+  default_prompt: "使用 $complex-task-coordinator，按我的角色和当前项目继续工作。"
+policy:
+  allow_implicit_invocation: true

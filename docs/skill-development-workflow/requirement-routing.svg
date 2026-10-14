@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="710" viewBox="0 0 1200 710" role="img" aria-labelledby="title desc">
+<title id="title">规划入口：先确定需求边界，再生成文档</title><desc id="desc">独立需求同级建包，原目标返修和后续阶段在原包；文档交付与角色激活分别核实。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker></defs>
+<style>text{font-family:"Noto Sans CJK SC","Microsoft YaHei","PingFang SC",sans-serif;fill:#0f172a}.heading{font-size:21px;font-weight:700}.line{font-size:16px}.note{font-size:14px;fill:#475569}</style>
+<rect width="1200" height="710" fill="#ffffff" rx="16"/>
+<text x="32" y="35" class="heading">规划入口：先确定需求边界，再生成文档</text>
+<rect x="400" y="65" width="400" height="95" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+<text x="418" y="94" class="heading">用户提出需求</text>
+<text x="418" y="120" class="line">目标、代码仓与指定路径</text>
+<polyline points="600,160 600,200" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="400" y="200" width="400" height="100" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+<text x="418" y="229" class="heading">判断与原目标的关系</text>
+<text x="418" y="255" class="line">同仓、同角色不能决定文档归属</text>
+<polyline points="600,300 600,325 210,325 210,350" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="600,300 600,325 600,325 600,350" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="600,300 600,325 990,325 990,350" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="35" y="350" width="350" height="120" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="53" y="379" class="heading">新增独立目标</text>
+<text x="53" y="405" class="line">在 doc/prd 下新建同级需求包</text>
+<text x="53" y="428" class="line">各自 PRD / TODO 与交互记录</text>
+<rect x="425" y="350" width="350" height="120" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="443" y="379" class="heading">满足原 AC 的返修 / 补证</text>
+<text x="443" y="405" class="line">更新原需求包和原任务</text>
+<text x="443" y="428" class="line">保留任务 ID、attempt 与证据</text>
+<rect x="815" y="350" width="350" height="120" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="833" y="379" class="heading">同一目标的后续阶段 / 批次</text>
+<text x="833" y="405" class="line">原包按阶段、任务或批次组织</text>
+<text x="833" y="428" class="line">独立目标再拆包，版本不决定归属</text>
+<polyline points="210,470 210,505 600,505 600,535" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="600,470 600,505 600,505 600,535" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="990,470 990,505 600,505 600,535" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="145" y="535" width="910" height="100" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+<text x="163" y="564" class="heading">冻结范围与契约 → 拆任务 → DESIGN_READY</text>
+<text x="163" y="590" class="line">核权威 TODO 和跨包产物；另核角色绑定，不自动建群或迁移</text>
+<text x="35" y="682" class="note">用户指定结构优先；已有包保留路径接续。真实运行根、注册表、cron 和恢复入口需一致。</text>
+</svg>
