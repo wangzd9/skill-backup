@@ -16,7 +16,7 @@
 
 ## 消费之后才确认
 
-被唤醒模型先读当次`runtime_tools.py progress-facts --project ROOT`共同事实包与pending，按需重读相关权威材料；完整pending和watch在observer文件内，12个定位条目不是完整覆盖限制。安全检查点、当前派单交付/阻塞记录后检查是否新增待处理输入。未读新输入不得清空队列。
+被唤醒模型先读当次`runtime_tools.py report-input --project ROOT --role ROLE`本角色报告契约与pending，按需重读相关权威材料；完整pending和watch在observer文件内，12个定位条目不是完整覆盖限制。安全检查点、当前派单交付/阻塞记录后检查是否新增待处理输入。未读新输入不得清空队列。
 
 处理本轮输入之后、final之前执行：
 
@@ -28,11 +28,19 @@ python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/role_observer.
 
 ## 汇报与部署
 
-报告沿用[夜间静默与时段总结](reporting-policy.md)：协调者08:00夜间汇总/白天20分钟；个人11/15/18，全部no_agent。21–08只落盘，工作不暂停。脚本刷新runtime/activity观察，时长是状态估算；等待、阻塞、未知不算空闲。报告不重跑测试、不读全部历史。模型与脚本共用`progress_projection.py build_projection(project, at=None)`生成的当前事实，字段保留来源与真实时间；冲突写明不同来源各自结论，刷新时间不当业务进展。
+报告沿用[夜间静默与时段总结](reporting-policy.md)：协调者08:00夜间汇总/白天20分钟；个人11/15/18，全部no_agent。21–08只落盘，工作不暂停。脚本刷新runtime/activity观察，时长是状态估算；等待、阻塞、未知不算空闲。报告不重跑测试、不读全部历史。模型与脚本从同一权威投影取得本角色报告契约，完整投影仅按需取证，字段保留来源与真实时间；冲突写明不同来源各自结论，刷新时间不当业务进展。
 
 独立timer与原生poll都使用同一短锁/持久游标，检查重复不会重复启动模型或消费事件。保留poll job ID、5分钟错峰、origin/deliver、在途任务与门禁；迁移只更新必要prompt，不重启gateway或正在开发的worker。旧轮自然结束后，新轮加载更新规则。结束专项后由协调者停止专项job；scanner只读注册项目控制，不启动非ACTIVE业务。
 
 验收覆盖：无变化零模型、新文档入队、同角色忙碌不再启动、反复检查去重、旧ack不能吞新输入、重启保留pending、暂停不开展业务、真实timer在模型长回合期间仍执行。文档/脚本校验、自然运行检查和真实业务验收分别记录；不能用配置已部署宣称功能已完成。
+
+## OCR 终态接续（2026-10-15）
+
+协调者额外观察 `inbox/control/runtime/ocr/*.json` 注册运行，以及 `reviews` 内带受支持 `coordinator.ocr-run/v1` spec 的历史运行。只将冻结身份、生命周期、终态/失败纳入语义指纹；`updated_at`、session mtime、正常批次推进与日志追加不触发重复模型回合。运行状态保存在同一快照的 `ocr_runs`，真实 `state.json` 路径进入原pending，不另建任务队列。
+
+若原状态仍RUNNING而绑定PID/start已退出或专属cgroup不匹配，快照投影为INTERRUPTED；身份无法核实为UNKNOWN。保留原JSON，不kill、不重启、不推断通过。完成、失败、身份不匹配、状态缺失或读取损坏必须可见；只观察受项目路径约束的材料，不跟随越界索引。已有owner忙时保留pending，后续空闲poll接续；旧ACK不能吞掉新终态。首次部署会合并历史运行通知，先核是否已有对应快照的裁决，不重复审查或返修，不能提前批量ACK。
+
+`AWAITING_DECISION`不是通过。协调者用 `ocr_runtime.py results --run RUN_DIR` 读取批次结果及原始证据，材料不足保持门禁。夜间同样处理，只抑制主动群通知。脚本发现到原生可唤醒通常0—5分钟，实际开始仍受角色占用、cron错峰与模型排队影响。
 
 ## 新增观察源：群请求与工程操作
 

@@ -236,6 +236,138 @@ def process_health(lease, identity=None):
     return {'state': state, 'pid': pid, 'start': start, 'owner': lease['owner']}
 
 
+def ocr_process_state(state, spec):
+    """Verify worker disappearance without systemd polling or trusting a TTL."""
+    if state['state'] != 'RUNNING':
+        return 'not_applicable'
+    pid = state.get('pid')
+    if pid is None:
+        return 'unbound'
+    if type(pid) is not int or pid <= 0:
+        raise ValueError('OCR worker PID is invalid')
+    identity = runtime.pid_identity(pid)
+    if identity is None:
+        return 'exited_or_reused'
+    if identity == 'UNVERIFIABLE':
+        return 'unverified'
+    if state.get('process_start_ticks'):
+        return 'alive' if identity == str(state['process_start_ticks']) else 'exited_or_reused'
+    # Legacy v1 runs recorded a unique dedicated unit cgroup but no worker
+    # start ticks. PID absence is sufficient to flag interruption; PID presence
+    # alone is not sufficient to claim liveness after PID reuse.
+    cgroup, unit = state.get('cgroup'), spec.get('unit')
+    if isinstance(cgroup, str) and isinstance(unit, str) and ('/'+unit) in cgroup:
+        try:
+            actual = Path(f'/proc/{pid}/cgroup').read_text().strip()
+            return 'alive' if actual == cgroup.strip() else 'exited_or_reused'
+        except (FileNotFoundError, ProcessLookupError):
+            return 'exited_or_reused'
+        except OSError:
+            return 'unverified'
+    return 'unverified'
+
+
+def ocr_observations(root):
+    """Read bounded OCR metadata, never invoke OCR or infer an acceptance.
+
+    Old runs in reviews with the supported frozen spec are included even if
+    their launcher predates the runtime index. All inputs are project-confined;
+    an unreadable registered run remains an actionable error, not "no change".
+    Ordinary batch progress and log growth do not enter the notification key.
+    """
+    def confined(path):
+        path = Path(path)
+        path = (root/path if not path.is_absolute() else path).resolve()
+        if not path.is_relative_to(root):
+            raise ValueError('OCR observation path outside project: ' + str(path))
+        return path
+
+    def object_read(path):
+        path = confined(path)
+        source = str(path.relative_to(root))
+        try:
+            if path.stat().st_size > 4*1024*1024:
+                raise ValueError('metadata exceeds 4 MiB')
+            value = json.loads(text_read(path))
+            if not isinstance(value, dict):
+                raise ValueError('expected JSON object')
+            return value
+        except (OSError, ValueError, TypeError) as exc:
+            raise ValueError('OCR observation unavailable: ' + source + ': ' + short(str(exc), 100)) from exc
+
+    registered = {}
+    for index in sorted((root/'inbox/control/runtime/ocr').glob('*.json')):
+        record = object_read(index)
+        if not isinstance(record.get('run'), str) or not record['run']:
+            raise ValueError('OCR index needs run path: ' + str(index.relative_to(root)))
+        directory = confined(record['run'])
+        if directory in registered and registered[directory].get('unit') != record.get('unit'):
+            raise ValueError('OCR conflicting runtime index: ' + str(index.relative_to(root)))
+        registered[directory] = record
+    directories = set(registered)
+    for spec_path in sorted((root/'reviews').rglob('spec.json')):
+        # Supported legacy means the same v1 frozen OCR contract without an
+        # index. Other review tools' valid JSON specs are outside this observer.
+        spec = object_read(spec_path)
+        if spec.get('schema') == 'coordinator.ocr-run/v1':
+            directories.add(confined(spec_path.parent))
+
+    active_states = {'PREPARED', 'SUBMITTED', 'RUNNING'}
+    known_states = active_states | {'AWAITING_DECISION', 'REVIEW_COMPLETE', 'LAUNCH_FAILED',
+        'CANCELLED', 'HARD_DEADLINE', 'REVIEW_INCOMPLETE', 'BLOCKED', 'UNKNOWN', 'INTERRUPTED', 'FAILED'}
+    observations, watch = [], {}
+    for directory in sorted(directories):
+        spec = object_read(directory/'spec.json')
+        state_path = directory/'state.json'
+        source = str(state_path.relative_to(root))
+        if spec.get('schema') != 'coordinator.ocr-run/v1':
+            raise ValueError('OCR unsupported registered spec: ' + str(directory.relative_to(root)))
+        if not isinstance(spec.get('project'), str) or Path(spec['project']).resolve() != root:
+            raise ValueError('OCR spec project mismatch: ' + source)
+        for field in ('run_id', 'review_identity', 'base', 'head', 'task', 'attempt'):
+            if not isinstance(spec.get(field), str) or not spec[field]:
+                raise ValueError('OCR spec needs ' + field + ': ' + source)
+        state = object_read(state_path)
+        if state.get('state') not in known_states:
+            raise ValueError('OCR unknown lifecycle state: ' + source)
+        for field in ('run_id', 'unit'):
+            if field in state and state[field] != spec.get(field):
+                raise ValueError('OCR state identity mismatch (' + field + '): ' + source)
+        if directory in registered and registered[directory].get('unit') not in (None, spec.get('unit')):
+            raise ValueError('OCR index unit mismatch: ' + source)
+        batches = state.get('batches', [])
+        if not isinstance(batches, list) or any(not isinstance(item, dict) for item in batches):
+            raise ValueError('OCR invalid batch results: ' + source)
+        for batch in batches:
+            if (not isinstance(batch.get('id'), str) or not batch['id']
+                    or batch.get('state') not in known_states
+                    or not isinstance(batch.get('files'), list)
+                    or not all(isinstance(item, str) for item in batch['files'])):
+                raise ValueError('OCR invalid batch identity/state/files: ' + source)
+        # On an active run, completing a normal batch is progress, not a reason
+        # to start a coordinator worker. A failed batch is immediately actionable
+        # even before the worker's final overall-state write.
+        results = [{k: batch[k] for k in ('id', 'files', 'state', 'returncode', 'session_file', 'error') if k in batch}
+                   for batch in batches if (state['state'] not in active_states
+                       or batch.get('state') not in active_states | {'REVIEW_COMPLETE'})]
+        identity = {k: spec.get(k) for k in ('run_id', 'review_identity', 'task', 'attempt', 'base', 'head')}
+        process = ocr_process_state(state, spec)
+        effective_state = ('INTERRUPTED' if process == 'exited_or_reused'
+                           else 'UNKNOWN' if process == 'unverified' else state['state'])
+        semantic = {**identity, 'spec_sha256': digest(spec), 'state': effective_state,
+                    'recorded_state': state['state'], 'worker_process_state': process,
+                    'gate_decision': state.get('gate_decision', 'NOT_EVALUATED'),
+                    'error': state.get('error'), 'batches': results}
+        watch[source] = digest(semantic)
+        observations.append({**identity, 'source': source, 'state': effective_state,
+                             'recorded_state': state['state'], 'worker_process_state': process,
+                             'gate_decision': state.get('gate_decision', 'NOT_EVALUATED'),
+                             'error': state.get('error'), 'batches': results,
+                             'ended_at': state.get('ended_at'), 'updated_at': state.get('updated_at'),
+                             'action': 'Review actual findings and coverage; result readiness is not PASS.'})
+    return observations, watch
+
+
 def collect(root, role):
     root, binding = runtime.binding(root)
     if role not in binding['roles']:
@@ -354,6 +486,10 @@ def collect(root, role):
                     from progress_projection import TASK_PATTERN
                     if owned_tasks.intersection(re.findall(TASK_PATTERN, str(p.relative_to(root)) + '\n' + body[:1800])):
                         watch[str(p.relative_to(root))] = hashlib.sha256(body.encode()).hexdigest()
+    ocr_runs = []
+    if role == 'COORDINATOR':
+        ocr_runs, ocr_watch = ocr_observations(root)
+        watch.update(ocr_watch)
     legacy = {who: runtime.legacy_busy(binding, who) for who in selected}
     # Expires naturally without a file mutation. Status reads the existing ledger, never calls Codex.
     strong = None
@@ -387,6 +523,7 @@ def collect(root, role):
                                         'source': r['source'], 'summary': short(r['text'],180)} for r in requests]
     snapshot['operations'] = operations
     snapshot['task_observations'] = task_observations
+    snapshot['ocr_runs'] = ocr_runs
     return snapshot, watch
 
 
@@ -415,7 +552,10 @@ def observe(root, role, clock=time.time):
             oldwatch = ack.get('watch', {})
             changes = [p for p in sorted(set(watch)|set(oldwatch)) if watch.get(p) != oldwatch.get(p)]
             if not ack:
-                changes = ['TODO.md', 'inbox/PROTOCOL.md'] + [v['source'] for v in snapshot['dispatches'].values()] + [v['source'] for v in snapshot['events'].values()]
+                changes = (['TODO.md', 'inbox/PROTOCOL.md']
+                           + [v['source'] for v in snapshot['dispatches'].values()]
+                           + [v['source'] for v in snapshot['events'].values()]
+                           + [v['source'] for v in snapshot.get('ocr_runs', [])])
             # Durable, coalesced notification queue; never a second task-state store.
             # An independent scanner can enqueue changes while this role's native job
             # is busy. Repeated observations do not consume them or launch a worker.

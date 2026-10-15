@@ -1,8 +1,10 @@
 name: role-workflow-runtime
-version: 0.4.0
-description: "原生人工对话与共享执行权；机械指标直读、可选清晰简报、提示指纹只读观察"
+version: 0.6.2
+description: "原生人工对话与共享执行权；飞书模型切换、本地资源保护、机械指标直读及提示指纹观察"
 provides_hooks:
   - pre_gateway_dispatch
   - pre_api_request
   - post_api_request
   - api_request_error
+  - resolve_model_route
+  - pre_gateway_busy_dispatch

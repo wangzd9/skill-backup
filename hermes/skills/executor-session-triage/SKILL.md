@@ -1,6 +1,6 @@
 ---
 name: executor-session-triage
-description: 执行者长会话判活、挂起处置与完成未冻结残留接管。Use when 多角色开发中执行者长时间无产出。
+description: 多角色开发的会话判活、租约接管与残留处置。Use when 执行者长时间无产出、需接管过期租约或处理完成未冻结残留。
 metadata:
   version: "1.0.0"
 ---
@@ -37,8 +37,23 @@ metadata:
 
 升级处置顺序：核对 CLI 参数面（`--help` + 关键子命令如 `--preview` 实测，新增参数不影响既有用法才放行）→ 同步门禁与测试 fixture 的版本字符串 → 跑该入口自带的全套隔离回归（零真实模型调用）→ 在版本基线引用文档记录核对结果 → 放行下一次真实 run 并核其 spec 记录的新版本。历史 run spec 里的旧版本及其裁决不受影响，不重审。
 
+## 过期/死 owner 租约的接管（协调者机械动作）
+
+判定与接管分两步，**租约到期不等于 owner 已停**：
+
+1. 先核实旧 owner 真已停：lease 文件里的 `expires_at`/`pid`/`process_start`、`role_runtime.py status` 的 `owner_process_state`、按 owner 名搜进程、以及该角色**最近一次 canonical 落账时间**。把这几项写成证据文件（放 scratch，别放仓库文档目录）。
+2. 接管顺序固定为 `recover` → `claim`，两者参数都有硬要求，写错白跑：
+   ```bash
+   role_runtime.py recover --project ROOT --role ROLE --owner <旧owner全名> --confirmed-stopped --evidence <证据文件>
+   role_runtime.py claim  --project ROOT --role ROLE --owner <新owner名> --ttl 600   # ttl 只接受 30–600
+   ```
+   `recover` **必须传 `--owner` 且与当前 lease 里的 owner 完全一致**，否则返回 `Recovery owner does not match; recheck status`——所以先 `status` 读 owner 再 recover，不要凭记忆拼。`claim` 不传 `ttl` 或超出 30–600 直接报错不执行。接管后用同一 token 收尾，完成后 `release`。
+
+业务指令的记账链路固定为三步，顺序不能颠倒：`request`（保存原生 message_id/chat_id/user_id/原文）→ 执行动作 → `role-record`（canonical session + 唯一事件）→ `queue-ack --request-id <完整ID> --evidence <ROOT 内处理记录>`。`queue-ack` 要求有效租约**且**证据文件在项目根内，否则拒绝；`HANDLED` 只代表已处理并留证，不代表回复已送达。
+
 ## 判活/处置通用坑
 
 - 判断"在途任务进度"用磁盘产物+会话日志的**内容时间**，不用巡检 tick 时间或 sessions 文件 mtime 冒充进展。
 - 长会话中途不刷 sessions 文件；in-flight 真相在 cron 执行记录（`executions.db` status/pid）+ 进程树 + 子进程活动。
 - 手动重触发被 "already running" 挡住 ≠ 故障，先查该轮是否正在跑长模型/长命令。
+- `role-record` 的发生时间只有两种合法写法：刚发生用 `"occurrence":{"kind":"now"}`（脚本取系统时间），有来源的历史行为用 `"occurrence":{"source":"<项目内证据文件>","field":"<时间字段>"}`；缺证据就整个省略。**别把"17:0x"这类模糊钟点写进 summary 当时间**——脚本会以"禁止模糊钟点"直接拒绝整条记录。

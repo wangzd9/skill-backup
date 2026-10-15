@@ -37,7 +37,9 @@ description: "授权后发布 rosbag-catalog 到处理机：干净工作区部�
 
 - 处理机：backend/mysql/frontend `Up (healthy)`、`http://127.0.0.1:18000/health/ready` 与 `http://192.168.2.134:8180` Web `environment=production`。
 - 本地：主工作区 `local_stack.sh test` 全链路 PUBLISHED、revision 对账 `changed=[] stale=false`，本地 platform revision 等于生产。
-- 有滞留 run 待收尾时（如 A100 已 DONE 但平台 FAILED）：新代码上线后对 run 发普通 retry（`X-Idempotency-Key` 带日期后缀），挂监视器到终态并核对 `artifacts` 列表补全——产物登记 422 类修复只有在 attempt N+1 真实走完收尾才算验证通过，不是"已部署"就算修好。**部署后滞留 run 的首次 retry 是 A100 sshd 限流的高风险窗口**（帧导入步骤发数千条 SSH）：若失败签名是"数据缺失类"（如 `infer 下没有 clip 目录`），先按 `rosbag-catalog-status-check` 第 8 条做 SSH 连发探针排除掩盖式瞬断，不要当新代码回归反复改码重部。
+- **部署源不一定是 main**：`--apply --production` 同步的是**当前工作区**内容。工作区检出于功能分支（或别人的 worktree）时，生产会跑一个任何远端都没有的提交，而 main/origin 仍停在别处——这会让后续所有「生产 = main = 已发布」的推断失效。部署后必须同时记录三项身份：工作区 `git rev-parse HEAD`、deploy 目录特征文件的 sha256、main 与 origin/main 的 tip；生产版本不在 main 线上时，明确写进 HANDOFF 与汇报，不要只写一个 sha。`.deployed-git-revision` 只记录写入意图（会被后续同步/回滚覆盖），核实生产真实内容一律用特征文件 sha256 对账，方法见 `rosbag-catalog-status-check` 技能的多环境版本对账参考文件（env-version-reconcile）。
+- **`local_stack.sh status` 的 `stale=false` 不等于本地栈已收敛到目标版本**：它只对比主仓记录值与容器声明的 revision；本地栈被其他 worktree `up` 过之后，容器实际跑的是那个 worktree 的代码，status 仍稳定报旧值（页面渲染出的版本号也只代表 backend 容器所在目录）。声称「本地已收敛到生产同版本」前，逐容器查 `com.docker.compose.project.working_dir` 并在容器内对关键文件 sha256 对账。
+- **有滞留 run 待收尾时（如 A100 已 DONE 但平台 FAILED）：新代码上线后对 run 发普通 retry（`X-Idempotency-Key` 带日期后缀），挂监视器到终态并核对 `artifacts` 列表补全——产物登记 422 类修复只有在 attempt N+1 真实走完收尾才算验证通过，不是"已部署"就算修好。**部署后滞留 run 的首次 retry 是 A100 sshd 限流的高风险窗口**（帧导入步骤发数千条 SSH）：若失败签名是"数据缺失类"（如 `infer 下没有 clip 目录`），先按 `rosbag-catalog-status-check` 第 8 条做 SSH 连发探针排除掩盖式瞬断，不要当新代码回归反复改码重部。
 - **重新生成部署快照**：`./scripts/check_processing_machine.sh > /tmp/pm_check.txt && python3 scripts/generate_deployment_snapshot.py --check-output /tmp/pm_check.txt`。`docs/deployment-snapshot.md` 是部署版本（平台 revision、Alembic 迁移、A100 脚本锚点）的唯一事实来源，由脚本生成、禁止手工编辑；漏了这步，架构/状态页之外的 Agent 会继续引用过期版本。
 - HANDOFF 顶部记录：处理机 revision、本地 revision、代理新 PID 与启动时间、changelog release 编号与 commit、滞留 run 的收尾结果、快照已重新生成；单独 commit 并推送。
 

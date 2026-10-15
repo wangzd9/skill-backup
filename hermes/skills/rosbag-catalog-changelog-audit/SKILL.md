@@ -24,6 +24,10 @@ description: "rosbag-catalog 更新日志盘点：对账 commit 范围与已认�
    - stage 会拒绝：commit 已被 released/approved 其他条目总结、feature_key 已在非 pending 状态、编号跨功能重复。撞了就是分类错了，回第 3 步。
 6. **收尾**：`python3 scripts/changelog.py validate` + `render`（自动刷新 `changelog/REVIEW.md`），报告审查编号入口；纯 `changelog/` 目录提交（AGENTS.md 明确豁免 OCR）。commit 信息格式参考既有：`Stage changelog audit for <range>: merge N commits into F-xxx... and add F-yyy...`（N 用**候选实际覆盖的 commit 数**=范围总数−跳过数，不写范围原始数）。**推送前必须 `git log --oneline github/main..main | wc -l` 披露实际推送范围**：本仓 origin=GitLab、github=镜像 remote 更新滞后，`git push github main` 会一次推走区间内所有并行会话的积压 commit（几十上百个），向用户的汇报要写清"本次推送含 N 个既有场景线积压 commit + 本 changelog"，只报 1 个 commit 会误导。
 
+## 合并分叉代码线时的编号冲突
+- 两条线各自新增候选、且都用了当前 `F-(max+1)`（同一编号）时：**顺延到下一个空闲编号**，新条目的 `status` 保持 pending，不改已有一侧；改完跑 `validate` + `render`，只接受该条目范围的 diff。绝不因为“两边都写过 F-0xx”就删一侧或自行改编号。
+- 日志类文件（`HANDOFF.md` 等）两侧都要保留，按时间顺序拼接；用脚本改不手改，改完再全仓 grep 冲突标记自检——`git status` 干净不等于没残留 `<<<<<<<`。
+
 ## 大批量范围的 commit 分配
 - 范围 90+ commit 时用 execute_code 脚本做全集对账：候选分配 dict + skip 集合，程序断言 `dup=[]、missing=[]、extra=[]`（每个未认领 commit 恰好归一处、无越界 sha）后才写 yaml——人肉比对在这个量级必漏。merge commit 与功能 commit 同归一个候选（用户可见面在功能侧）。
 

@@ -56,6 +56,8 @@ def main():
     p=sub.add_parser('queue'); p.add_argument('--project',required=True)
     p=sub.add_parser('progress-facts'); p.add_argument('--project',required=True)
     p.add_argument('--json',action='store_true',help='输出完整可核验事实；默认只显示定位与指纹')
+    p=sub.add_parser('report-input'); p.add_argument('--project',required=True)
+    p.add_argument('--role',required=True,choices=('COORDINATOR','A','B','C','TESTER'))
     p=sub.add_parser('queue-ack'); p.add_argument('--project',required=True); p.add_argument('--request-id',required=True)
     p.add_argument('--evidence',required=True); p.add_argument('--token-file',required=True)
     p=sub.add_parser('doctor'); p.add_argument('--cwd',required=True); p.add_argument('--storage-path',action='append',default=[])
@@ -84,6 +86,11 @@ def main():
                 raise ValueError('请求必须来自当前绑定协调群的原生消息')
             value=enqueue(root,**{k:request.get(k) for k in ('message_id','chat_id','user_id','text','context')})
         elif args.action=='queue': value=pending_requests(args.project)
+        elif args.action=='report-input':
+            from report_contract import build_report, render_report
+            packet=refresh_progress_facts(args.project)
+            value=build_report(packet,args.role)
+            value['markdown']=render_report(value)
         elif args.action=='progress-facts':
             root=Path(args.project).resolve()
             destination=root/'inbox/control/runtime/progress/facts.json'

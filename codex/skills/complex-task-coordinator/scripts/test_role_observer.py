@@ -332,6 +332,165 @@ class ObserverTests(unittest.TestCase):
         self.ack('COORDINATOR')
         self.assertFalse(observer.observe(self.root,'COORDINATOR')['wakeAgent'])
         self.assertFalse(observer.observe(self.root,'COORDINATOR',clock=lambda:observer.time.time()+1801)['wakeAgent'])
+
+    def ocr_run(self, name='run-1', state='RUNNING', registered=True):
+        directory='reviews/TASK-02/ocr-'+name
+        spec={'schema':'coordinator.ocr-run/v1','project':str(self.root),'run_id':name,
+              'review_identity':'identity-'+name,'task':'TASK-02','attempt':'attempt-1',
+              'base':'a'*40,'head':'b'*40,'unit':'coordinator-ocr-'+name+'.service',
+              'batches':[{'id':'b01','files':['app/service.py']}],
+              'provider':'vllm-local','model':'test'}
+        self.write(directory+'/spec.json',json.dumps(spec))
+        record={'state':state,'run_id':name,'unit':spec['unit'],'updated_at':'2026-10-15T01:00:00+08:00',
+                'batches':[{'id':'b01','files':['app/service.py'],'state':'RUNNING','pid':11}],
+                'gate_decision':'NOT_EVALUATED'}
+        path=self.write(directory+'/state.json',json.dumps(record))
+        if registered:
+            self.write('inbox/control/runtime/ocr/'+spec['review_identity']+'.json',
+                       json.dumps({'run':str(path.parent),'unit':spec['unit'],'updated_at':record['updated_at']}))
+        return path,record,spec
+
+    def test_ocr_terminal_result_wakes_coordinator_and_remains_pending_until_ack(self):
+        path,record,_=self.ocr_run();self.ack('COORDINATOR')
+        record.update(state='AWAITING_DECISION',ended_at='2026-10-15T01:59:00+08:00')
+        record['batches'][0].update(state='REVIEW_COMPLETE',returncode=0,session_file='/external/session.jsonl')
+        path.write_text(json.dumps(record))
+        result=observer.observe(self.root,'COORDINATOR')
+        self.assertTrue(result['wakeAgent'])
+        self.assertIn(str(path.relative_to(self.root)),result['pending']['changed_sources'])
+        self.assertTrue(observer.observe(self.root,'COORDINATOR')['wakeAgent'])
+        snapshot=observer.refresh(self.root,'COORDINATOR')
+        self.assertEqual(snapshot['ocr_runs'][0]['state'],'AWAITING_DECISION')
+        self.assertEqual(snapshot['ocr_runs'][0]['gate_decision'],'NOT_EVALUATED')
+        observer.acknowledge(self.root,'COORDINATOR',snapshot['fingerprint'])
+        self.assertFalse(observer.observe(self.root,'COORDINATOR')['wakeAgent'])
+
+    def test_ocr_heartbeat_batch_progress_and_log_appends_do_not_wake(self):
+        path,record,_=self.ocr_run();self.ack('COORDINATOR')
+        record.update(updated_at='2026-10-15T01:05:00+08:00',heartbeat=99)
+        record['batches'][0].update(session_mtime=123,session_file='/external/new-session.jsonl',pid=12)
+        record['batches'].append({'id':'b02','files':['app/next.py'],'state':'RUNNING'})
+        path.write_text(json.dumps(record))
+        self.write(str(path.parent.relative_to(self.root))+'/b01.log','new progress\n'*2000)
+        self.assertFalse(observer.observe(self.root,'COORDINATOR')['wakeAgent'])
+
+    def test_ocr_failure_and_identity_change_wake(self):
+        path,record,_=self.ocr_run();self.ack('COORDINATOR')
+        record['batches'][0].update(state='HARD_DEADLINE',returncode=1)
+        path.write_text(json.dumps(record))
+        self.assertTrue(observer.observe(self.root,'COORDINATOR')['wakeAgent'])
+        self.ack('COORDINATOR')
+        spec_path=path.with_name('spec.json');spec=json.loads(spec_path.read_text());spec['head']='c'*40
+        spec_path.write_text(json.dumps(spec))
+        self.assertTrue(observer.observe(self.root,'COORDINATOR')['wakeAgent'])
+
+    def test_ocr_legacy_unregistered_run_is_observed_and_other_roles_are_isolated(self):
+        path,record,_=self.ocr_run(registered=False)
+        for role in observer.ROLES:self.ack(role)
+        record.update(state='BLOCKED',error='snapshot changed');path.write_text(json.dumps(record))
+        self.assertTrue(observer.observe(self.root,'COORDINATOR')['wakeAgent'])
+        for role in ('A','B','C','TESTER'):
+            self.assertFalse(observer.observe(self.root,role)['wakeAgent'])
+
+    def test_ocr_terminal_queues_while_owner_alive_and_survives_release(self):
+        path,record,_=self.ocr_run();self.ack('COORDINATOR')
+        lease=self.write('inbox/control/runtime/leases/COORDINATOR.json',json.dumps({
+            'owner':'human-role','pid':os.getpid(),'process_start':observer.runtime.pid_identity(os.getpid())}))
+        record['state']='AWAITING_DECISION';path.write_text(json.dumps(record))
+        result=observer.observe(self.root,'COORDINATOR')
+        self.assertFalse(result['wakeAgent'])
+        self.assertEqual(result['reason'],'queued_while_role_owner_alive')
+        self.assertIn(str(path.relative_to(self.root)),result['pending']['changed_sources'])
+        lease.unlink()
+        self.assertTrue(observer.observe(self.root,'COORDINATOR')['wakeAgent'])
+
+    def test_ocr_terminal_ack_race_cannot_consume_unseen_result(self):
+        path,record,_=self.ocr_run();old=self.ack('COORDINATOR')
+        record['state']='AWAITING_DECISION';path.write_text(json.dumps(record))
+        with self.assertRaisesRegex(ValueError,'STALE_OBSERVATION'):
+            observer.acknowledge(self.root,'COORDINATOR',old['fingerprint'])
+        self.assertTrue(observer.observe(self.root,'COORDINATOR')['wakeAgent'])
+
+    def test_ocr_bound_worker_exit_wakes_without_final_state_write(self):
+        path,record,_=self.ocr_run()
+        record.update(pid=99,process_start_ticks='100');path.write_text(json.dumps(record))
+        with patch('role_runtime.pid_identity',return_value='100'):
+            self.ack('COORDINATOR')
+            self.assertFalse(observer.observe(self.root,'COORDINATOR')['wakeAgent'])
+        for identity in (None,'101','UNVERIFIABLE'):
+            with self.subTest(identity=identity),patch('role_runtime.pid_identity',return_value=identity):
+                result=observer.observe(self.root,'COORDINATOR')
+                self.assertTrue(result['wakeAgent'])
+                run=observer.refresh(self.root,'COORDINATOR')['ocr_runs'][0]
+                self.assertEqual(run['recorded_state'],'RUNNING')
+                self.assertEqual(run['state'],'UNKNOWN' if identity=='UNVERIFIABLE' else 'INTERRUPTED')
+                self.assertEqual(json.loads(path.read_text())['state'],'RUNNING')
+
+    def test_ocr_legacy_missing_worker_is_interrupted_without_claiming_completion(self):
+        path,record,spec=self.ocr_run(registered=False)
+        record.update(pid=999999999,cgroup='0::/app.slice/'+spec['unit']);path.write_text(json.dumps(record))
+        result=observer.observe(self.root,'COORDINATOR')
+        self.assertTrue(result['wakeAgent'])
+        run=observer.refresh(self.root,'COORDINATOR')['ocr_runs'][0]
+        self.assertEqual(run['state'],'INTERRUPTED')
+        self.assertEqual(run['gate_decision'],'NOT_EVALUATED')
+
+    def test_ocr_legacy_live_pid_needs_matching_dedicated_cgroup(self):
+        state={'state':'RUNNING','pid':99,'cgroup':'0::/app.slice/coordinator-ocr-test.service'}
+        spec={'unit':'coordinator-ocr-test.service'}
+        with patch('role_runtime.pid_identity',return_value='100'):
+            with patch.object(Path,'read_text',return_value=state['cgroup']+'\n'):
+                self.assertEqual(observer.ocr_process_state(state,spec),'alive')
+            with patch.object(Path,'read_text',return_value='0::/another.service\n'):
+                self.assertEqual(observer.ocr_process_state(state,spec),'exited_or_reused')
+            with patch.object(Path,'read_text',side_effect=PermissionError()):
+                self.assertEqual(observer.ocr_process_state(state,spec),'unverified')
+
+    def test_ocr_malformed_state_and_outside_registered_path_fail_closed(self):
+        path,_,spec=self.ocr_run();self.ack('COORDINATOR');path.write_text('{broken')
+        result=observer.observe(self.root,'COORDINATOR')
+        self.assertEqual(result['reason'],'observer_unavailable')
+        self.assertIn('OCR',result['error'])
+        self.assertIn('state.json',result['error'])
+        self.write('inbox/control/runtime/ocr/'+spec['review_identity']+'.json',json.dumps({'run':'/tmp/outside-ocr'}))
+        result=observer.observe(self.root,'COORDINATOR')
+        self.assertEqual(result['reason'],'observer_unavailable')
+        self.assertIn('outside project',result['error'])
+
+    def test_ocr_missing_state_invalid_index_and_escaped_symlink_do_not_silently_skip(self):
+        path,record,spec=self.ocr_run();self.ack('COORDINATOR')
+        path.unlink()
+        result=observer.observe(self.root,'COORDINATOR')
+        self.assertEqual(result['reason'],'observer_unavailable')
+        self.assertIn('state.json',result['error'])
+        path.write_text(json.dumps(record))
+        index=self.root/('inbox/control/runtime/ocr/'+spec['review_identity']+'.json')
+        original=index.read_text();index.write_text('[]')
+        self.assertEqual(observer.observe(self.root,'COORDINATOR')['reason'],'observer_unavailable')
+        index.write_text(original)
+        with tempfile.TemporaryDirectory() as outside:
+            target=Path(outside)/'state.json';target.write_text(json.dumps(record))
+            path.unlink();path.symlink_to(target)
+            result=observer.observe(self.root,'COORDINATOR')
+            self.assertEqual(result['reason'],'observer_unavailable')
+            self.assertIn('outside project',result['error'])
+
+    def test_ocr_ready_legacy_run_is_in_initial_notification_sources(self):
+        path,_,_=self.ocr_run(state='AWAITING_DECISION',registered=False)
+        result=observer.observe(self.root,'COORDINATOR')
+        self.assertTrue(result['wakeAgent'])
+        self.assertIn(str(path.relative_to(self.root)),result['pending']['changed_sources'])
+
+    def test_ocr_result_observation_does_not_override_paused_control(self):
+        path,record,_=self.ocr_run()
+        binding=self.root/'ROLE-BINDINGS.json';data=json.loads(binding.read_text());data['control']='PAUSED';binding.write_text(json.dumps(data))
+        self.ack('COORDINATOR')
+        record['state']='AWAITING_DECISION';path.write_text(json.dumps(record))
+        result=observer.observe(self.root,'COORDINATOR')
+        self.assertEqual(result['control'],'PAUSED')
+        with self.assertRaisesRegex(ValueError,'not ACTIVE'):
+            observer.runtime.guard(data,'COORDINATOR')
+        self.assertEqual(json.loads(path.read_text())['gate_decision'],'NOT_EVALUATED')
     def test_running_work_without_changes_does_not_start_second_round(self):
         self.write('events/A/real.json',json.dumps({'event_id':'work','status':'RUNNING','task':'TASK-01'}))
         self.ack()

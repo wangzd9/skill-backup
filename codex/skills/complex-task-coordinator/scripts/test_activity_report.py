@@ -14,6 +14,34 @@ def at(text):
 
 
 class ActivityTests(unittest.TestCase):
+    def test_acked_running_is_working_not_unknown_or_waiting(self):
+        self.assertEqual('working', report.event_state('ACKED_RUNNING'))
+        with tempfile.TemporaryDirectory() as temp:
+            snapshot={'project':temp,'role':'TESTER','observed_at':at('08:05:00').isoformat(),
+                      'events':{'TESTER':{'status':'ACKED_RUNNING','task':'TASK-01',
+                          'attempt':'attempt-1','occurred_at':at('08:00:00').isoformat()}},
+                      'processes':{'TESTER':{'state':'alive'}}}
+            self.assertEqual('working',report.sample(snapshot)['category'])
+
+    def test_closed_dispatch_edit_does_not_turn_working_phase_unknown(self):
+        for status in ('ACCEPTED','DONE','CANCELLED','REPLACED'):
+            with self.subTest(status=status),tempfile.TemporaryDirectory() as temp:
+                snapshot={'project':temp,'role':'TESTER','observed_at':at('08:05:00').isoformat(),
+                          'events':{'TESTER':{'status':'TESTING','task':'TASK-02',
+                              'attempt':'attempt-1','occurred_at':at('08:00:00').isoformat()}},
+                          'dispatches':{'TESTER':{'status':status,'source':'inbox/TESTER/old.md',
+                              'mtime':at('08:04:00').timestamp()}},'processes':{}}
+                self.assertEqual('working',report.sample(snapshot)['category'])
+
+    def test_new_unacknowledged_dispatch_still_requires_matching_checkpoint(self):
+        with tempfile.TemporaryDirectory() as temp:
+            snapshot={'project':temp,'role':'TESTER','observed_at':at('08:05:00').isoformat(),
+                      'events':{'TESTER':{'status':'TESTING','task':'TASK-02',
+                          'occurred_at':at('08:00:00').isoformat()}},
+                      'dispatches':{'TESTER':{'status':'PENDING','source':'inbox/TESTER/new.md',
+                          'mtime':at('08:04:00').timestamp()}},'processes':{}}
+            self.assertEqual('unknown',report.sample(snapshot)['category'])
+
     def legacy_fixture(self, root, *, role='B', status='IDLE', task='TASK-01', summary='等待独立审核'):
         source=root/f'events/{role}/legacy.json';source.parent.mkdir(parents=True)
         event={'role':role,'event_id':role+':legacy','status':status,'task':task,'attempt':'1',
@@ -24,6 +52,14 @@ class ActivityTests(unittest.TestCase):
         activity=root/f'inbox/control/runtime/activity/2026-10-13/{role}.jsonl'
         activity.parent.mkdir(parents=True);activity.write_text(json.dumps(sample)+'\n')
         return source,event,activity,sample
+
+    def test_legacy_acked_running_recovers_only_from_matching_original_evidence(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);self.legacy_fixture(root,status='ACKED_RUNNING')
+            rows,_,_=report.points(root,'B',at('08:00:00'),at('08:05:00'))
+            self.assertEqual('working',rows[0]['category'])
+            self.assertIn('legacy_status_mapping_recovered',rows[0]['classification_reason'])
+            self.assertIn('legacy_status_evidence',rows[0])
 
     def test_legacy_source_identity_recovers_waiting_never_confirmed_idle(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -99,7 +135,8 @@ class ActivityTests(unittest.TestCase):
         self.assertEqual(1,len(report.display_segments(item)))
         self.assertIn('接收配置验证',text)
         self.assertNotIn('fingerprint',text)
-        self.assertIn('\n\n**执行者 A**\n\n',text)
+        self.assertIn('**当前工作**',text)
+        self.assertEqual(text.count('**当前工作**'),1)
         self.assertLessEqual(max(map(len,text.splitlines())),180)
 
     def test_subminute_display_never_prints_identical_minute_range(self):
@@ -135,7 +172,7 @@ class ActivityTests(unittest.TestCase):
         self.assertIn('1012整批生产水雾测试',text)
         self.assertNotIn('水雾生产首包',text)
         self.assertIn('任务最终完成仍以验收裁决为准',text)
-        self.assertIn('独立联合验收 · 已领取',text)
+        self.assertIn('独立联合验收，**已领取**',text)
         self.assertIn('2026-10-13 12:40',text)
         for hidden in ('12:3x','raw-state-secret','raw-delivery-secret','业务已完成'):
             self.assertNotIn(hidden,text)
@@ -143,7 +180,7 @@ class ActivityTests(unittest.TestCase):
     def test_current_task_title_is_usable_but_narrative_done_is_not_structural_state(self):
         item,data=self.display_fixture({'tasks':[{'task':'TASK-99','title':'场景获取','state':'已交付，正文提到DONE'}]})
         text=report.render_digest(data)
-        self.assertIn('场景获取 · 结构状态待核',text)
+        self.assertIn('场景获取，**业务状态未明确记录**',text)
         self.assertNotIn('已交付，正文提到DONE',text)
 
     def test_empty_current_tasks_only_confirm_idle_with_explicit_confirmation(self):
@@ -167,7 +204,9 @@ class ActivityTests(unittest.TestCase):
         text=report.render_digest(data)
         current=[line for line in text.splitlines() if line.startswith('- **当前任务：**')]
         delivered=[line for line in text.splitlines() if line.startswith('- **本期角色记录：**')]
-        self.assertEqual(3,len(current))
+        self.assertEqual(0,len(current))
+        self.assertEqual(4,len([line for line in text.splitlines() if line.startswith('- **关联事项：**')]))
+        self.assertEqual(1,len([line for line in text.splitlines() if line.startswith('- **最近完成：**')]))
         self.assertEqual(3,len(delivered))
         self.assertTrue(all('旧完成项' not in line for line in current))
         self.assertIn('完整集合见证据',text)
@@ -187,7 +226,8 @@ class ActivityTests(unittest.TestCase):
                 text=report.render_digest(data)
                 self.assertIn(f'**{label}：** 1分钟',text)
                 self.assertIn(f'{label} · 整体任务跟进',text)
-                self.assertIn('整体任务跟进 · 已恢复，待继续',text)
+                if role != 'COORDINATOR':
+                    self.assertIn('整体任务跟进，**已恢复推进**',text)
                 self.assertNotIn('聚合',text)
                 self.assertNotIn('开发/测试/协调阶段',text)
                 self.assertEqual('聚合',item['task_functions']['TASK-16'])
@@ -210,8 +250,8 @@ class ActivityTests(unittest.TestCase):
         original=json.dumps(data,sort_keys=True)
         text=report.render_digest(data)
         self.assertIn('共同进度事实',text)
-        self.assertIn('查询/API · 已交付，独立验证已通过，等待审查接受',text)
-        self.assertIn('流水线详情 · 开发交付已接受，尚未合入主分支',text)
+        self.assertIn('查询/API，**已交付，独立验证有通过记录，等待核对并接受**',text)
+        self.assertIn('流水线详情，**开发交付已接受，尚未合入主分支**',text)
         self.assertIn('same-read-evidence.json',text)
         self.assertNotIn('当前派单/状态待核',text)
         self.assertNotIn('快照回退',text)
@@ -368,7 +408,7 @@ class ActivityTests(unittest.TestCase):
                 self.assertEqual(item['totals_seconds']['idle'], 0)
                 self.assertEqual(item['totals_seconds']['unknown'], 11 * 3600)
             text = report.render_digest(data)
-            self.assertIn('近60分钟 0/5', text)
+            self.assertIn('近 60 分钟 0/5', text)
             self.assertTrue((root / data['artifact']).is_file())
 
     def test_summary_uses_real_completed_events_and_deduplicates_ids(self):
@@ -395,3 +435,99 @@ class ActivityTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class PrimaryWorkDisplayTests(unittest.TestCase):
+    def test_background_responsibility_is_not_a_second_current_development_task(self):
+        def fact(value): return {'value':value}
+        data={'observed_at':'2026-10-14 16:00 +08:00','roles':{'A':{
+            'tasks':fact(['TASK-16C-A','TASK-11S-BATCH-1012']),
+            'primary_task':fact('TASK-16C-A'),'related_tasks':fact(['TASK-11S-BATCH-1012']),
+            'recent_completed':fact([])}},'tasks':{
+            'TASK-16C-A':{'title':fact('查询/API'),'state':fact('DELIVERED_FROZEN'),'testing':fact('RECORDED_PASSED')},
+            'TASK-11S-BATCH-1012':{'title':fact('生产批次观察'),'state':fact('RUNNING')}}}
+        item={'role':'A','segments':[],'totals_seconds':{},'delivery_records':[],
+              'unverified_sources':[],'task_functions':{}}
+        text=report.render_digest({'role':'A','kind':'phase','generated_at':'2026-10-14T16:00:00+08:00',
+            'start':'2026-10-14T15:00:00+08:00','end':'2026-10-14T16:00:00+08:00',
+            'roles':[item],'current':{},'progress_facts':data,'artifact':'digest.json'})
+        self.assertEqual(text.count('**当前任务：**'),1)
+        self.assertIn('**关联事项：** 生产批次观察',text)
+        self.assertIn('查询/API',text)
+        self.assertNotIn('执行者 B',text)
+
+
+class UnifiedDigestContractTests(unittest.TestCase):
+    def fixture(self, role='COORDINATOR'):
+        fact=lambda value:{'value':value,'source':'TODO.md'}
+        identities={'COORDINATOR':'TASK-16','A':'TASK-16C-A','B':'TASK-16C-B',
+                    'C':'TASK-16C-C','TESTER':'TASK-16D'}
+        names={'COORDINATOR':'整体任务','A':'查询服务','B':'Bag视图','C':'详情页面','TESTER':'独立验收'}
+        packet={'goal':fact('完成界面最小闭环'),'observed_at':'2026-10-13 11:00 +08:00',
+                'roles':{},'tasks':{},'ocr':{'runs':[],'declared':[]},'strong_review':{}}
+        items=[]
+        for index,who in enumerate(identities):
+            task=identities[who]
+            packet['roles'][who]={'tasks':fact([task]),'primary_task':fact(task),'related_tasks':fact([]),
+                                  'recent_completed':fact([])}
+            packet['tasks'][task]={'title':fact(names[who]),'state':fact('RUNNING'),'testing':fact('NOT_CONFIRMED')}
+            items.append({'role':who,'segments':[{'start':at('08:00:00').isoformat(),
+                'end':at('08:01:00').isoformat(),'category':'working','task':task,'reason':''}],
+                'totals_seconds':{'working':60,'waiting':120,'blocked':180,'idle':240,'unknown':300},
+                'delivery_records':[],'unverified_sources':[],'task_functions':{task:names[who]},
+                'time_accounting':{'dimensions':{
+                    'client_model_wait':{'observed_seconds':360,'requests':[{}],
+                        'not_observed_api_occupancy_seconds':420,'open_requests':[{}]},
+                    'role_task_dispatch':{'records':[{}],'schedule_delay_seconds':480,
+                        'dispatch_wait_seconds':540,'execution_seconds':600}}}})
+        return {'generated_at':at('11:00:00').isoformat(),'kind':'phase','role':role,
+                'start':at('08:00:00').isoformat(),'end':at('11:00:00').isoformat(),
+                'roles':items,'progress_facts':packet,'current':{},'artifact':'digest.json'}
+
+    def test_coordinator_digest_keeps_seven_sections_and_each_executor_in_one_group(self):
+        from report_contract import COORDINATOR_SECTIONS
+        data=self.fixture()
+        original=json.dumps(data,sort_keys=True)
+        text=report.render_digest(data)
+        headings=[title for _,title in COORDINATOR_SECTIONS]
+        self.assertEqual([text.index('**'+title+'**') for title in headings],
+                         sorted(text.index('**'+title+'**') for title in headings))
+        for who in ('A','B','C'):
+            self.assertEqual(text.count('**执行者 '+who+'**'),1)
+        self.assertNotIn('**证据与接续**',text)
+        self.assertEqual(original,json.dumps(data,sort_keys=True))
+
+    def test_all_timing_dimensions_and_unknown_evidence_remain_visible_without_combining_them(self):
+        data=self.fixture()
+        text=report.render_digest(data)
+        for label,count in (('确认空闲',4),('等待任务/外部处理/审核',2),('阻塞',3),
+                            ('待补证据',5),('模型响应',6),('调度滞后',8),('派发等待',9),('执行区间',10)):
+            self.assertEqual(text.count('**'+label+'：** '+str(count)+'分钟'),5)
+        self.assertEqual(text.count('**未结束请求：** 1条'),5)
+        self.assertEqual(text.count('**未观测到 API 响应占用：** 7分钟'),5)
+        self.assertIn('不可相加',text)
+        self.assertEqual(data['roles'][0]['totals_seconds']['unknown'],300)
+
+    def test_worker_digest_excludes_other_roles_even_when_artifact_contains_every_role(self):
+        for role in ('A','B','C','TESTER'):
+            with self.subTest(role=role):
+                data=self.fixture(role)
+                text=report.render_digest(data)
+                for title in ('当前工作','本次完成','阻塞与依赖','下一步计划'):
+                    self.assertIn('**'+title+'**',text)
+                self.assertNotIn('**执行者进度**',text)
+                self.assertNotIn('**强审查情况**',text)
+                self.assertEqual(text.count('**模型响应：** 6分钟'),1)
+                others={'A':'查询服务','B':'Bag视图','C':'详情页面','TESTER':'独立验收'}
+                for who,feature in others.items():
+                    if who!=role:
+                        self.assertNotIn(feature,text)
+
+    def test_morning_evening_supplement_stays_with_its_role_without_duplicate_groups(self):
+        data=self.fixture()
+        data['kind']='morning'
+        data['evening_supplement']=data['roles']
+        text=report.render_digest(data)
+        self.assertEqual(text.count('**晚间补充（前日18:00–21:00）：**'),5)
+        for who in ('A','B','C'):
+            self.assertEqual(text.count('**执行者 '+who+'**'),1)

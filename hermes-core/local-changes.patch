@@ -1,0 +1,401 @@
+diff --git a/agent/request_routing.py b/agent/request_routing.py
+new file mode 100644
+index 0000000..4db2c75
+--- /dev/null
++++ b/agent/request_routing.py
+@@ -0,0 +1,54 @@
++"""Apply an explicit plugin route before building each physical model request.
++
++The native switch keeps transport, compressor and billing metadata coherent. Routing
++does not rebuild the conversation's frozen system prompt or replay tool execution.
++"""
++from __future__ import annotations
++
++
++def apply_model_route(agent):
++    from hermes_cli.plugins import has_hook, invoke_hook
++    if not has_hook('resolve_model_route'):
++        return
++    results = invoke_hook(
++        'resolve_model_route', session_id=agent.session_id or '',
++        platform=agent.platform or '', model=agent.model, provider=agent.provider,
++        base_url=agent.base_url, api_mode=agent.api_mode,
++    )
++    for result in results:
++        if not isinstance(result, dict):
++            continue
++        if result.get('error'):
++            raise RuntimeError(str(result['error']))
++        if result.get('action') == 'block':
++            raise RuntimeError(str(result.get('message') or 'Model routing policy blocked this request.'))
++        if 'runtime' in result and not isinstance(result['runtime'], dict):
++            raise RuntimeError('Model route is malformed; original provider was not called.')
++    # A policy veto wins even when a preceding callback proposed a valid route.
++    for result in results:
++        if not isinstance(result, dict) or 'runtime' not in result:
++            continue
++        runtime = result['runtime']
++        required = ('model', 'provider', 'base_url', 'api_mode', 'api_key')
++        if any(not runtime.get(k) for k in required):
++            raise RuntimeError('Model route is incomplete; original provider was not called.')
++        signature = tuple(runtime[k] for k in required)
++        current = tuple(getattr(agent, k, None) for k in required)
++        if signature != current:
++            frozen_prompt = getattr(agent, '_cached_system_prompt', None)
++            agent.switch_model(
++                new_model=runtime['model'], new_provider=runtime['provider'],
++                api_key=runtime['api_key'], base_url=runtime['base_url'], api_mode=runtime['api_mode'],
++                capabilities=runtime.get('capabilities'),
++            )
++            agent._cached_system_prompt = frozen_prompt
++        if 'request_overrides' in runtime:
++            agent.request_overrides = dict(runtime['request_overrides'] or {})
++            primary = getattr(agent, '_primary_runtime', None)
++            if isinstance(primary, dict):
++                primary['request_overrides'] = dict(agent.request_overrides)
++        # An explicit routing policy owns fallback too; otherwise an old fallback can
++        # re-enable a provider that the policy just excluded.
++        agent._fallback_chain = []
++        agent._fallback_model = None
++        return
+diff --git a/agent/turn_api_request.py b/agent/turn_api_request.py
+index b00934c..1fa27e7 100644
+--- a/agent/turn_api_request.py
++++ b/agent/turn_api_request.py
+@@ -100,6 +100,9 @@ def build_api_request(
+     from agent.conversation_loop import (
+         _moa_client_consumes_prepared_request, _redecorate_prompt_cache_for_provider,
+     )
++    from agent.request_routing import apply_model_route
++
++    apply_model_route(agent)
+ 
+     agent._reset_stream_delivery_tracking()
+     # Per-attempt first-chunk timestamp so a stale value never leaks into post_api_request.
+diff --git a/cron/scheduler_delivery.py b/cron/scheduler_delivery.py
+index fae3908..fce2e73 100644
+--- a/cron/scheduler_delivery.py
++++ b/cron/scheduler_delivery.py
+@@ -1912,6 +1912,13 @@ def _deliver_result(
+     ``failure_deliver`` override when present (NS-788). Returns None on success, else an error."""
+     job.pop("_bot_chat_delivery_receipts", None)
+     job.pop("_notification_all_targets_suppressed", None)
++    # User-requested role quiet hours apply at delivery time, including delayed results.
++    from cron.role_reporting_policy import suppress_role_delivery
++    if suppress_role_delivery(job):
++        job["_notification_all_targets_suppressed"] = True
++        _record_delivery_verification(job, [])
++        logger.info("Job '%s': role quiet hours; output retained, notification suppressed", job.get("id"))
++        return None
+     targets = _resolve_delivery_targets(job, for_failure=for_failure)
+     if not targets:
+         _record_delivery_verification(job, [])
+diff --git a/gateway/plugin_busy_control.py b/gateway/plugin_busy_control.py
+new file mode 100644
+index 0000000..3f69dd6
+--- /dev/null
++++ b/gateway/plugin_busy_control.py
+@@ -0,0 +1,7 @@
++"""Control-only plugin interception after authorization, before the busy queue."""
++
++
++async def handle_plugin_busy_control(gateway, event):
++    from hermes_cli.lifecycle import ainvoke_hook
++    results = await ainvoke_hook('pre_gateway_busy_dispatch', event=event, gateway=gateway)
++    return any(isinstance(result, dict) and result.get('action') == 'skip' for result in results)
+diff --git a/gateway/run_busy.py b/gateway/run_busy.py
+index aecd7b2..4d44a76 100644
+--- a/gateway/run_busy.py
++++ b/gateway/run_busy.py
+@@ -791,6 +791,10 @@ class GatewayBusySessionMixin:
+             return True
+         event._bot_loop_admitted = True
+ 
++        from gateway.plugin_busy_control import handle_plugin_busy_control
++        if await handle_plugin_busy_control(self, event):
++            return True
++
+         effective_mode = self._effective_busy_input_mode(event.source)
+         if self._draining:  # gateway restarting/stopping
+             await self._send_busy_drain_notice(event, session_key, effective_mode)
+diff --git a/hermes_cli/plugins.py b/hermes_cli/plugins.py
+index 274deb1..6ed63ff 100644
+--- a/hermes_cli/plugins.py
++++ b/hermes_cli/plugins.py
+@@ -106,6 +106,11 @@ def _install_plugin_debug_handler(force: bool = False) -> None:
+ _install_plugin_debug_handler()
+ 
+ VALID_HOOKS: Set[str] = {
++    # Return {runtime: {model, provider, base_url, api_mode, api_key, ...}} or
++    # {error: message} before a physical model request is built. None keeps its route.
++    "resolve_model_route",
++    # Authorized busy-session controls may return {action: skip} before FIFO/steer.
++    "pre_gateway_busy_dispatch",
+     "pre_tool_call", "post_tool_call", "transform_terminal_output", "transform_tool_result",
+     # transform_llm_output: return a replacement string (first non-None wins) or None.
+     "transform_llm_output", "pre_llm_call", "post_llm_call",
+diff --git a/hermes_cli/plugins_dispatch.py b/hermes_cli/plugins_dispatch.py
+index 78c3927..b086fa3 100644
+--- a/hermes_cli/plugins_dispatch.py
++++ b/hermes_cli/plugins_dispatch.py
+@@ -46,7 +46,7 @@ _HOOK_TIMEOUT_BOUNDED_HOOKS: Set[str] = {
+ }
+ 
+ # Policy hooks: timeout / still-running must fail closed (block the tool).
+-_HOOK_TIMEOUT_FAIL_CLOSED_HOOKS: Set[str] = {"pre_tool_call"}
++_HOOK_TIMEOUT_FAIL_CLOSED_HOOKS: Set[str] = {"pre_tool_call", "resolve_model_route"}
+ # Documented parent-thread serialization contract — never run on a timeout worker (hooks.md).
+ _HOOK_CALLER_THREAD_HOOKS: Set[str] = {"subagent_stop"}
+ # After a timeout, suppress the same callback this long so a hung hook cannot pile up threads.
+@@ -230,7 +230,9 @@ class PluginDispatchMixin:
+                     ret = self._run_hook_callback_bounded(hook_name, cb, kwargs, timeout)
+                     if ret is _HOOK_SKIPPED:
+                         if fail_closed:  # policy hook: fail closed with a block directive
+-                            results.append({"action": "block", "message": _PRE_TOOL_CALL_TIMEOUT_BLOCK_MESSAGE})
++                            message = ("Model routing policy timed out; original provider was not called."
++                                       if hook_name == "resolve_model_route" else _PRE_TOOL_CALL_TIMEOUT_BLOCK_MESSAGE)
++                            results.append({"action": "block", "message": message})
+                         continue
+                 else:
+                     ret = self._invoke_hook_callback(cb, kwargs)
+@@ -509,7 +511,9 @@ class PluginDispatchMixin:
+             except asyncio.TimeoutError:
+                 logger.warning("Hook '%s' callback %s timed out after %.0fs", hook_name, callback_name, timeout)
+                 if fail_closed:  # policy hook: fail closed with a block directive
+-                    results.append({"action": "block", "message": _PRE_TOOL_CALL_TIMEOUT_BLOCK_MESSAGE})
++                    message = ("Model routing policy timed out; original provider was not called."
++                               if hook_name == "resolve_model_route" else _PRE_TOOL_CALL_TIMEOUT_BLOCK_MESSAGE)
++                    results.append({"action": "block", "message": message})
+             except (Exception, SystemExit) as exc:
+                 # Same isolation + failure contract as the sync path (#111922 warn-once, #109624
+                 # a raising policy guard fails closed).
+diff --git a/tests/agent/test_request_routing.py b/tests/agent/test_request_routing.py
+new file mode 100644
+index 0000000..f35bf3d
+--- /dev/null
++++ b/tests/agent/test_request_routing.py
+@@ -0,0 +1,86 @@
++from types import SimpleNamespace
++from unittest.mock import Mock, patch
++
++import unittest
++
++from agent.request_routing import apply_model_route
++
++
++def agent():
++    a = SimpleNamespace(session_id='role', platform='feishu', model='local', provider='custom:local',
++                        base_url='http://localhost/v1', api_mode='chat_completions',
++                        api_key='local-key', _cached_system_prompt='stable prefix', _fallback_chain=[])
++    def switch_model(**kwargs):
++        a.model=kwargs['new_model']; a.provider=kwargs['new_provider']
++        a.base_url=kwargs['base_url'];a.api_mode=kwargs['api_mode'];a.api_key=kwargs['api_key']
++        a._cached_system_prompt=None
++    a.switch_model=Mock(side_effect=switch_model)
++    return a
++
++
++def test_route_switch_preserves_prompt_and_rechecks_next_request():
++    a=agent()
++    runtime={'model':'cloud','provider':'custom:cloud','base_url':'https://cloud/v1',
++             'api_mode':'codex_responses','api_key':'cloud-key','request_overrides':{'extra_body':{'store':False}}}
++    with patch('hermes_cli.plugins.has_hook',return_value=True), \
++         patch('hermes_cli.plugins.invoke_hook',return_value=[{'runtime':runtime}]):
++        apply_model_route(a)
++        apply_model_route(a)
++    a.switch_model.assert_called_once()
++    assert a.model=='cloud'
++    assert a._cached_system_prompt=='stable prefix'
++    assert a.request_overrides=={'extra_body':{'store':False}}
++
++
++def test_block_does_not_call_original_provider():
++    a=agent()
++    with patch('hermes_cli.plugins.has_hook',return_value=True), \
++         patch('hermes_cli.plugins.invoke_hook',return_value=[{'error':'protected'}]):
++        with unittest.TestCase().assertRaisesRegex(RuntimeError,'protected'): apply_model_route(a)
++    a.switch_model.assert_not_called()
++
++
++def test_no_policy_leaves_original_route_untouched():
++    a=agent()
++    with patch('hermes_cli.plugins.has_hook',return_value=False): apply_model_route(a)
++    a.switch_model.assert_not_called()
++
++
++def test_later_policy_veto_wins_over_a_valid_route():
++    a = agent()
++    runtime = {'model': 'cloud', 'provider': 'custom:cloud', 'base_url': 'https://cloud/v1',
++               'api_mode': 'chat_completions', 'api_key': 'cloud-key'}
++    with patch('hermes_cli.plugins.has_hook', return_value=True), \
++         patch('hermes_cli.plugins.invoke_hook', return_value=[{'runtime': runtime}, {'action': 'block'}]):
++        with unittest.TestCase().assertRaises(RuntimeError):
++            apply_model_route(a)
++    a.switch_model.assert_not_called()
++
++
++def test_malformed_route_never_falls_back_to_original_provider():
++    for result in ({'runtime': None}, {'runtime': {'model': 'cloud'}}):
++        a = agent()
++        with patch('hermes_cli.plugins.has_hook', return_value=True), \
++             patch('hermes_cli.plugins.invoke_hook', return_value=[result]):
++            with unittest.TestCase().assertRaises(RuntimeError):
++                apply_model_route(a)
++        a.switch_model.assert_not_called()
++
++
++def test_policy_callback_exception_fails_closed():
++    from hermes_cli.plugins import PluginManager
++    manager=PluginManager()
++    def broken(**kwargs): raise ValueError('broken policy')
++    manager._hooks['resolve_model_route']=[broken]
++    with patch('hermes_cli.plugins._resolve_hook_callback_timeout',return_value=0):
++        results=manager.invoke_hook('resolve_model_route',session_id='role')
++    assert results[0]['action']=='block'
++    a=agent()
++    with patch('hermes_cli.plugins.has_hook',return_value=True), \
++         patch('hermes_cli.plugins.invoke_hook',return_value=results):
++        with unittest.TestCase().assertRaises(RuntimeError): apply_model_route(a)
++    a.switch_model.assert_not_called()
++
++
++def load_tests(loader, tests, pattern):
++    return unittest.TestSuite(unittest.FunctionTestCase(fn) for name, fn in globals().items() if name.startswith("test_") and callable(fn))
+diff --git a/website/docs/developer-guide/plugins/index.md b/website/docs/developer-guide/plugins/index.md
+index b1e6e26..7298c72 100644
+--- a/website/docs/developer-guide/plugins/index.md
++++ b/website/docs/developer-guide/plugins/index.md
+@@ -1028,6 +1028,8 @@ Each hook is documented in full on the **[Event Hooks reference](../../user-guid
+ | [`pre_llm_call`](../../user-guide/features/hooks.md#pre_llm_call) | Once per turn, before the tool-calling loop | `session_id: str, user_message: str, conversation_history: list, is_first_turn: bool, model: str, platform: str` | [context injection](#pre_llm_call-context-injection) |
+ | [`post_llm_call`](../../user-guide/features/hooks.md#post_llm_call) | Once per turn, after the tool-calling loop (successful turns only) | `session_id: str, user_message: str, assistant_response: str, conversation_history: list, model: str, platform: str` | ignored |
+ | `pre_api_request` | Before each raw provider API request (several per turn when the model calls tools) | `session_id: str, model: str, provider: str, base_url: str, api_mode: str, api_call_count: int, message_count: int, tool_count: int, approx_input_tokens: int, max_tokens: int, request: dict` | ignored |
++| `resolve_model_route` | Before constructing each physical main-model request, including retries | `session_id, platform, model, provider, base_url, api_mode` | `None`, `{"runtime": {...}}`, `{"error": "..."}`, or `{"action": "block", "message": "..."}`; policy failures block the original request |
++| `pre_gateway_busy_dispatch` | After native user/bot admission, before busy queueing or steering | `event, gateway` | `{"action": "skip"}` handles a control message immediately; otherwise native busy processing continues |
+ | `post_api_request` | After each raw provider API request returns | `pre_api_request` fields plus `api_duration: float, finish_reason: str, response_model: str \| None, usage: dict, response: dict, assistant_content_chars: int, assistant_tool_call_count: int` | ignored |
+ | `api_request_error` | A provider API call raised | correlation fields plus `status_code: int \| None, retry_count: int \| None, max_retries: int \| None, retryable: bool \| None, reason: str \| None, error: dict, request: dict` | ignored |
+ | `pre_auxiliary_call` | Before each provider attempt of an auxiliary LLM call (titling, compression, MoA, vision, approval, ...); not a `pre_api_request` | `aux_task: str` plus the `pre_api_request` fields (`session_id`/`task_id`/`turn_id` are the parent turn's or empty, `api_request_id: str`, `retry_count: int`, `streaming: bool`, `request: dict`) | ignored |
+@@ -1041,7 +1043,9 @@ Each hook is documented in full on the **[Event Hooks reference](../../user-guid
+ | `kanban_task_completed` | A kanban task completes (worker process) | `task_id, board, assignee, run_id, profile_name, summary: str \| None` | ignored |
+ | `kanban_task_blocked` | A kanban task is blocked (worker process) | `task_id, board, assignee, run_id, profile_name, reason: str \| None` | ignored |
+ 
+-Most hooks are fire-and-forget observers — their return values are ignored. The exceptions are `pre_llm_call`, which can inject context into the conversation, and `pre_tool_call`, which can return a block/approve directive.
++Most hooks are fire-and-forget observers. Behavior-changing hooks include context injection, tool policies, model routing, and gateway dispatch controls.
++
++`resolve_model_route` is a policy hook, separate from the observer-only API hooks. A runtime must contain `model`, `provider`, `base_url`, `api_mode`, and `api_key`; it may include `capabilities` and `request_overrides`. Any veto wins; otherwise the first route wins. The agent uses native `switch_model`, retains the frozen system prompt and executed tool results, replaces request overrides, and clears stale provider fallbacks. Return an empty `request_overrides` mapping when leaving a route with custom parameters. Credentials are internal return values and must never be logged. Callback errors and bounded timeouts fail closed. Without a routing policy there is no behavior change. Auxiliary LLM calls are outside this hook.
+ 
+ All callbacks should accept `**kwargs` for forward compatibility. If a hook callback crashes, it's logged and skipped. Other hooks and the agent continue normally.
+ 
+@@ -1051,7 +1055,7 @@ The **API request hooks** are observers for the raw provider request, one level
+ 
+ ### `pre_llm_call` context injection
+ 
+-This is the only hook whose return value matters. When a `pre_llm_call` callback returns a dict with a `"context"` key (or a plain string), Hermes injects that text into the **current turn's user message**. This is the mechanism for memory plugins, RAG integrations, guardrails, and any plugin that needs to provide the model with additional context.
++This hook contributes context through its return value. When a `pre_llm_call` callback returns a dict with a `"context"` key (or a plain string), Hermes injects that text into the **current turn's user message**. This is the mechanism for memory plugins, RAG integrations, guardrails, and any plugin that needs to provide the model with additional context.
+ 
+ #### Return format
+ 
+diff --git a/website/docs/user-guide/features/hooks.md b/website/docs/user-guide/features/hooks.md
+index 59975d1..47d6b56 100644
+--- a/website/docs/user-guide/features/hooks.md
++++ b/website/docs/user-guide/features/hooks.md
+@@ -1210,6 +1210,12 @@ With heavy delegation (e.g. orchestrator roles × 5 leaves × nested depth), `su
+ 
+ ### `pre_gateway_dispatch`
+ 
++For control messages that must work while a session is busy, Python plugins can also
++register `pre_gateway_busy_dispatch(event, gateway, **kwargs)`. It runs after native
++user authorization and bot admission, before queueing/steering. Return
++`{"action": "skip"}` after handling the control; return `None` to keep native behavior.
++Plugins should limit this interception to exact controls and their owned conversations.
++
+ Fires **once per incoming `MessageEvent`** in the gateway, after the internal-event guard but **before** auth/pairing and agent dispatch. This is the interception point for gateway-level message-flow policies (listen-only windows, human handover, per-chat routing, etc.) that don't fit cleanly into any single platform adapter.
+ 
+ **Callback signature:**
+diff --git a/cron/role_reporting_policy.py b/cron/role_reporting_policy.py
+new file mode 100644
+index 0000000..2e1d9b0
+--- /dev/null
++++ b/cron/role_reporting_policy.py
+@@ -0,0 +1,19 @@
++"""Local role cron notification quiet hours; execution and evidence stay active."""
++from datetime import datetime
++import json
++from pathlib import Path
++from zoneinfo import ZoneInfo
++from hermes_cli.config import get_hermes_home
++
++ROLE_SKILLS = {'complex-task-coordinator', 'complex-task-executor', 'complex-task-tester'}
++
++
++def suppress_role_delivery(job, at=None):
++    if not ROLE_SKILLS.intersection(job.get('skills') or []):
++        return False
++    policy_path = Path(get_hermes_home()) / 'role-reporting-policy.json'
++    if not policy_path.exists():
++        return False
++    policy = json.loads(policy_path.read_text())
++    at = (at or datetime.now(ZoneInfo(policy['timezone']))).astimezone(ZoneInfo(policy['timezone']))
++    return at.hour >= policy['quiet_start_hour'] or at.hour < policy['quiet_end_hour']
+diff --git a/tests/cron/test_role_reporting_policy.py b/tests/cron/test_role_reporting_policy.py
+new file mode 100644
+index 0000000..f8fccc4
+--- /dev/null
++++ b/tests/cron/test_role_reporting_policy.py
+@@ -0,0 +1,57 @@
++import json
++from datetime import datetime
++from unittest.mock import patch
++
++from cron import role_reporting_policy as policy
++from cron import scheduler_delivery
++from cron.scheduler import _classify_delivery_outcome
++
++
++def test_local_policy_boundaries_and_unrelated_jobs(tmp_path):
++    (tmp_path / 'role-reporting-policy.json').write_text(json.dumps({
++        'timezone': 'Asia/Shanghai', 'quiet_start_hour': 21, 'quiet_end_hour': 8}))
++    job = {'skills': ['complex-task-executor']}
++    with patch.object(policy, 'get_hermes_home', return_value=tmp_path):
++        for time, expected in [('07:59:59', True), ('08:00:00', False),
++                               ('20:59:59', False), ('21:00:00', True)]:
++            at = datetime.fromisoformat('2026-10-13T' + time + '+08:00')
++            assert policy.suppress_role_delivery(job, at) is expected
++        assert not policy.suppress_role_delivery({'skills': ['unrelated']}, at)
++
++
++def test_missing_policy_keeps_existing_delivery(tmp_path):
++    with patch.object(policy, 'get_hermes_home', return_value=tmp_path):
++        assert not policy.suppress_role_delivery({'skills': ['complex-task-tester']})
++
++
++def test_quiet_hours_suppress_actual_delivery_even_for_failed_or_delayed_runs():
++    for failed in (False, True):
++        job = {'id': 'quiet-test', 'skills': ['complex-task-coordinator']}
++        with patch.object(policy, 'suppress_role_delivery', return_value=True), \
++                patch.object(scheduler_delivery, '_record_delivery_verification') as verification, \
++                patch.object(scheduler_delivery, '_resolve_delivery_targets') as targets:
++            assert scheduler_delivery._deliver_result(job, 'late report', for_failure=failed) is None
++            assert job['_notification_all_targets_suppressed'] is True
++            targets.assert_not_called()
++            verification.assert_called_once_with(job, [])
++
++
++def test_suppression_is_not_recorded_as_sent():
++    result = _classify_delivery_outcome(delivery_error=None, should_deliver=True,
++                                       unresolved_origin=False, normalized_deliver='feishu:test',
++                                       incident_acked=False, success=True, notification_suppressed=True)
++    assert result == 'suppressed'
++
++
++def test_queued_daytime_result_is_suppressed_when_drained_at_night():
++    from cron import delivery_queue
++    job = {'id': 'quiet-queued', 'skills': ['complex-task-executor']}
++    delivery_queue.enqueue('one-delivery', job, 'daytime report')
++    with patch.object(policy, 'suppress_role_delivery', return_value=True), \
++            patch.object(scheduler_delivery, '_record_delivery_verification'), \
++            patch.object(scheduler_delivery, '_resolve_delivery_targets') as targets:
++        assert delivery_queue.drain(lambda queued, content, failed:
++            scheduler_delivery._deliver_result(queued, content, for_failure=failed)) == 1
++        targets.assert_not_called()
++    assert delivery_queue.get_status('one-delivery')['status'] == 'suppressed'
++    assert delivery_queue.enqueue('one-delivery', job, 'retry')['status'] == 'suppressed'

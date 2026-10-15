@@ -15,6 +15,7 @@ import time
 import uuid
 
 from ocr_session_status import diagnose
+from ocr_results import inspect_results, execution_spec
 
 
 OCR = Path('/home/wang/.npm-global/bin/ocr')
@@ -23,7 +24,9 @@ SESSIONS = Path('/home/wang/.opencodereview/sessions')
 GLOBAL_LOCK = Path('/home/wang/.local/state/ocr-runtime/ocr.lock')
 PROVIDER = 'vllm-local'
 ENDPOINT = 'http://192.168.2.45:8002/v1'
-VERSION = '1.5.0'
+VERSION = '1.6.0'
+MODEL_SELECTOR = Path('/home/wang/work/hermes-role-runtime/ocr_model_route.py')
+ROUTING_PYTHON = Path('/home/wang/.hermes/hermes-agent/venv/bin/python')
 PARAMS = ['--audience', 'agent', '--format', 'json', '--provider', PROVIDER,
           '--timeout', '60', '--max-tokens', '0', '--effort', 'medium', '--concurrency', '1']
 SERVICE_KEYS = ['ActiveState', 'SubState', 'MainPID', 'ControlGroup', 'Result', 'ExecMainStatus']
@@ -79,6 +82,24 @@ def environment():
     env['PATH'] = '/home/wang/.local/bin:/home/wang/.npm-global/bin:' + env.get('PATH', '')
     env['OCR_LLM_TIMEOUT'] = '900'
     return env
+
+
+def select_model_route(project):
+    return json.loads(run_command([str(ROUTING_PYTHON), str(MODEL_SELECTOR),
+                                  'select', str(project), '--ocr-config', str(CONFIG)]))
+
+
+def batch_route(spec):
+    policy = spec.get('model_routing')
+    if not policy:
+        return None
+    if digest(MODEL_SELECTOR.read_bytes()) != policy['selector_sha256']:
+        raise RuntimeError('MODEL_SELECTOR_CHANGED')
+    route = select_model_route(Path(spec['project']))
+    if not route:
+        raise RuntimeError('MODEL_ROUTING_DISABLED: 不回退到固定本地供应商')
+    execution_spec(spec, {'execution_route': route})
+    return {key: value for key, value in route.items() if key != 'allowed_routes'}
 
 
 def preview(repo, base, head, excludes=(), background=None):
@@ -171,7 +192,9 @@ def load_spec(directory):
     if digest(raw) != (directory / 'spec.sha256').read_text().strip():
         raise RuntimeError('SPEC_CHANGED: 创建新run，不改冻结材料')
     spec = json.loads(raw)
-    if spec.get('schema') != 'coordinator.ocr-run/v1' or spec.get('runtime_version') != VERSION:
+    version = spec.get('runtime_version')
+    if (spec.get('schema') != 'coordinator.ocr-run/v1' or version not in ('1.5.0', VERSION)
+            or (version == '1.5.0' and spec.get('model_routing'))):
         raise RuntimeError('SPEC_VERSION_UNSUPPORTED')
     for name, expected in spec['artifacts'].items():
         if digest((directory / name).read_bytes()) != expected:
@@ -214,6 +237,10 @@ def prepare(args):
             'diff_sha256': digest(run_command(['git', '-C', str(repo), 'diff', '--binary', base, head])),
             'created_at': now(), 'global_lock': str(GLOBAL_LOCK),
             'project_lock': str(project / 'inbox/ocr.lock'), 'artifacts': {}}
+    route = select_model_route(project)
+    if route:
+        spec['model_routing'] = {'selector_sha256': digest(MODEL_SELECTOR.read_bytes()),
+                                 'allowed_routes': route['allowed_routes']}
     validate_snapshot(spec)
     background = args.background_file.read_bytes()
     if not background.strip():
@@ -245,7 +272,8 @@ def prepare(args):
         prepared.append(batch)
     identity = digest(json.dumps({'repo': str(repo), 'base': base, 'head': head,
                       'files': sorted(paths), 'background': digest(background), 'config': cfg_hash,
-                      'rules': [b['rules_sha256'] for b in prepared]},
+                      'rules': [b['rules_sha256'] for b in prepared],
+                      'model_routing': spec.get('model_routing')},
                      sort_keys=True).encode())
     spec['review_identity'] = identity
     spec['retry_depth'] = 0
@@ -272,8 +300,11 @@ def prepare(args):
             for entry in previous_status['recorded_state'].get('batches', []):
                 if (entry.get('state') == 'REVIEW_COMPLETE' and entry.get('returncode') == 0
                         and set(entry['files']) == set(batch['files']) and entry.get('session_file')):
-                    if assess_session(Path(entry['session_file']), spec, batch)['coverage_complete']:
+                    if assess_session(Path(entry['session_file']), spec, batch,
+                                      entry.get('execution_route'))['coverage_complete']:
                         batch['reuse_session'] = entry['session_file']
+                        if entry.get('execution_route'):
+                            batch['reuse_execution_route'] = entry['execution_route']
     # 所有机械预检成功后才创建材料目录；不调用模型。
     directory.mkdir(parents=True)
     run_id = uuid.uuid4().hex
@@ -284,6 +315,7 @@ def prepare(args):
     artifacts = {'background.md': background,
                  'diff.patch': run_command(['git', '-C', str(repo), 'diff', '--binary', base, head]),
                  'ocr_runtime.py': Path(__file__).read_bytes(),
+                 'ocr_results.py': Path(__file__).with_name('ocr_results.py').read_bytes(),
                  'ocr_session_status.py': Path(__file__).with_name('ocr_session_status.py').read_bytes()}
     for name, data in artifacts.items():
         (directory / name).write_bytes(data)
@@ -361,7 +393,8 @@ def find_session(before, repo, base, head):
     return matches[0] if matches else None
 
 
-def assess_session(path, spec, batch):
+def assess_session(path, spec, batch, route=None):
+    spec = execution_spec(spec, {'execution_route': route})
     value = diagnose(path)
     manifest = {}
     for line in path.read_text().splitlines():
@@ -394,6 +427,7 @@ def worker(directory):
     signal.signal(signal.SIGTERM, lambda *_: cancelled.__setitem__(0, True))
     signal.signal(signal.SIGINT, lambda *_: cancelled.__setitem__(0, True))
     result = {'state': 'RUNNING', 'updated_at': now(), 'pid': os.getpid(), 'cgroup': cgroup.strip(),
+              'process_start_ticks': Path('/proc/self/stat').read_text().rsplit(')', 1)[1].split()[19],
               'run_id': spec['run_id'], 'unit': spec['unit'], 'batches': [], 'gate_decision': 'NOT_EVALUATED'}
     atomic_json(directory / 'state.json', result)
     child = None
@@ -423,23 +457,34 @@ def worker(directory):
             if rules_digest(rules) != batch['rules_sha256']:
                 raise RuntimeError('REVIEW_RULES_CHANGED')
             if batch.get('reuse_session'):
-                diagnosis = assess_session(Path(batch['reuse_session']), spec, batch)
+                diagnosis = assess_session(Path(batch['reuse_session']), spec, batch,
+                                           batch.get('reuse_execution_route'))
                 if not diagnosis['coverage_complete']:
                     raise RuntimeError('REUSE_COVERAGE_CHANGED')
                 atomic_json(directory / (batch['id'] + '-diagnosis.json'), diagnosis)
                 result['batches'].append({'id': batch['id'], 'files': batch['files'],
                     'state': 'REVIEW_COMPLETE', 'returncode': 0, 'reused': True,
                     'session_file': batch['reuse_session']})
+                if batch.get('reuse_execution_route'):
+                    result['batches'][-1]['execution_route'] = batch['reuse_execution_route']
                 atomic_json(directory / 'state.json', result)
                 continue
             entry = {'id': batch['id'], 'files': batch['files'], 'state': 'RUNNING', 'started_at': now()}
+            route = batch_route(spec)
+            if route:
+                entry['execution_route'] = route
             result['batches'].append(entry)
             output = directory / (batch['id'] + '.log')
             if output.exists():
                 raise RuntimeError('LOG_ALREADY_EXISTS')
             before = session_files(Path(spec['repo']))
-            command = [str(OCR), 'review', '--from', spec['base'], '--to', spec['head'], *PARAMS,
-                       '--model', spec['model'], '--background-file', str(directory / 'background.md')]
+            parameters = list(PARAMS)
+            if route:
+                parameters[parameters.index('--provider') + 1] = route['provider']
+                parameters[parameters.index('--effort') + 1] = route['effort']
+            command = [str(OCR), 'review', '--from', spec['base'], '--to', spec['head'], *parameters,
+                       '--model', route['model'] if route else spec['model'],
+                       '--background-file', str(directory / 'background.md')]
             if batch['exclude']:
                 command += ['--exclude', ','.join(batch['exclude'])]
             started = time.monotonic()
@@ -472,7 +517,7 @@ def worker(directory):
             complete = False
             if path:
                 entry['session_file'] = str(path)
-                diagnosis = assess_session(path, spec, batch)
+                diagnosis = assess_session(path, spec, batch, route)
                 atomic_json(directory / (batch['id'] + '-diagnosis.json'), diagnosis)
                 complete = diagnosis['coverage_complete']
             cfg_hash, _ = configuration()
@@ -518,7 +563,10 @@ def status(directory):
     if status_value in ('SUBMITTED', 'RUNNING') and info.get('ActiveState') not in ('active', 'activating'):
         status_value = 'UNKNOWN' if info.get('ActiveState') == 'unknown' else 'INTERRUPTED'
     return {'state': status_value, 'run': str(directory), 'unit': spec['unit'],
-            'service': info, 'recorded_state': state, 'gate_decision': 'NOT_EVALUATED'}
+            'service': info, 'recorded_state': state, 'gate_decision': 'NOT_EVALUATED',
+            'findings_evaluated': False,
+            'results_command': ['python3', str(Path(__file__).resolve()), 'results', '--run', str(directory)],
+            'note': 'status只证明运行/覆盖状态；接受前必须读取results并逐项裁决真实comments。'}
 
 
 def stop(directory):
@@ -538,7 +586,7 @@ def main():
     prepare_parser.add_argument('--batches-file', type=Path, help='二维JSON文件清单，必须覆盖全部入选文件')
     prepare_parser.add_argument('--reuse-run', type=Path, help='仅身份完全一致的已退出失败链，可复用成功批')
     prepare_parser.add_argument('--retry-reason', help='说明失败根因、实质处理和仍有效的调用授权')
-    for action in ('start', 'status', 'stop', '_worker'):
+    for action in ('start', 'status', 'results', 'stop', '_worker'):
         sub.add_parser(action).add_argument('--run', type=Path, required=True)
     args = parser.parse_args()
     try:
@@ -546,13 +594,14 @@ def main():
             result = prepare(args)
         else:
             directory = args.run.resolve()
-            result = {'start': launch, 'status': status, 'stop': stop, '_worker': worker}[args.action](directory)
+            result = {'start': launch, 'status': status, 'results': inspect_results,
+                      'stop': stop, '_worker': worker}[args.action](directory)
         print(json.dumps(result, ensure_ascii=False, indent=2))
     except Exception as exc:
         print(json.dumps({'state': 'BLOCKED', 'error': str(exc) if isinstance(exc, RuntimeError)
                           else type(exc).__name__, 'gate_decision': 'NOT_EVALUATED'}, ensure_ascii=False))
         return 2
-    return 0
+    return 2 if result.get('evidence_state') == 'INSUFFICIENT_EVIDENCE' else 0
 
 
 if __name__ == '__main__':

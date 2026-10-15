@@ -1,0 +1,11 @@
+{
+  "snapshot_at": "2026-10-15T17:53:57+08:00",
+  "plugin": {
+    "source": "/home/wang/work/hermes-role-runtime",
+    "commit": "70781a82d75a4046c375d195b0d3e05a6b91e859",
+    "branch": "feature/model-routing",
+    "status": []
+  },
+  "core": "hermes-core/SNAPSHOT.json",
+  "note": "Files are sampled from the live maintenance sources. Configuration templates are separate allowlisted samples; no services were changed."
+}

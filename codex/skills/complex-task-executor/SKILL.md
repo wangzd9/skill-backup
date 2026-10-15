@@ -2,7 +2,7 @@
 name: complex-task-executor
 description: 复杂任务开发执行者：在 Hermes 群声明执行者、开发者、1/2/3号或 A/B/C 并领取既有派单时使用。只在自己的分支开发、自测与返修，不做总体调度、OCR 或批准合入。
 metadata:
-  version: "1.5.2"
+  version: "1.6.0"
 ---
 
 # 复杂任务开发执行者
@@ -35,15 +35,10 @@ metadata:
 
 ## 巡检与汇报
 
-- 每5分钟由独立脚本检查本角色相关文档与owner身份，比较内容指纹并记录真实巡检时间；有变化先落pending，无变化不启动模型。原生job或既有owner忙碌时只排队，不并行重启同角色；当前工作结束后接续。被事件唤醒时先读当前事实包和pending，按需读相关权威材料；完整规则见 [脚本巡检与短快照](../complex-task-coordinator/references/script-observer.md)。模型处理完输入后确认本轮观察指纹，业务ACK/租约/门禁仍按原协议执行。
-- 按 [夜间静默与时段总结](../complex-task-coordinator/references/reporting-policy.md) 执行：北京时间21:00–次日08:00不主动群报或事件通知，工作、派单、验证及文档记录照常；用户主动提问可答复。执行者/测试者仅在11:00、15:00、18:00定时总结（含空闲）；协调者08:00汇总全部角色夜间工作，白天08:20–20:40保持20分钟报告。普通巡检发现有意义的新完成/交付/失败/阻塞变化/返修/实质问题或需用户决策时，白天先落稳定event_id及证据，再即时群报一次；仅正常心跳/持续在途/自产回声/纯等待/重复进展时final仅`[SILENT]`。poll沿用原群投递，不自行send_message双发，人工群问答正常回复。
-- 在领取、开工、返修、等待、阻塞/解除及交付时，更新自身session与带稳定event_id、task/attempt、状态、证据和下一步的实质事件。内部时间用系统生成的带时区ISO，分开occurred_at/observed_at/recorded_at；面向用户统一YYYY-MM-DD HH:MM +08:00，已有可靠分钟时间可显示，发生时刻未知就写未知，禁止10:2x/10:1x等占位或拿补录时间冒充发生时间。空闲需经任务及owner核对；等待/阻塞/未知不算空闲，采集缺口不倒填工时。完整时间段保存在runtime/activity与runtime/digests。
-- 飞书群内普通回复、READY、任务事件与周期汇报统一加载 `feishu-progress-style`（Hermes 用 skill_view；其他环境读对应 SKILL.md）。将内部原文转成已确认的具体功能名与结果，不复制恢复摘要或“A 叶/三叶”等简称；原始证据、代码、路径、ID保持原样。执行者只报告自身范围，参考“结论、最新变化、开发状态、阻塞、下一步”加粗分区及单层短列表，不套协调者七区；单一事件可更短。默认隐藏工程取证明细，保持事实、证据和门禁。
-- cron 输出由 Hermes 自动投递，禁止再 send_message 重复投递；普通群回合在本群回复。文档落盘后由同一五分钟检查接续；只有确认不会重新启用已暂停job的原生唤醒入口才可提前触发。当前trigger_job会启用job，禁止用它绕过暂停；重复运行仍按原生claim和角色租约去重。
-- 定时回合不得新建/更新 cron。首次配置由交互启动/迁移过程完成；长任务使用可恢复检查点或已有后台能力，长工作与独立5分钟scan分开，不能阻塞检查。未完成工作需分回合接续时，先落实质检查点与下一动作；final前检查pending，新指纹未经处理不得ack。
-- PAUSED/CANCELLED/COMPLETE 时停止新业务领取，记录恢复入口；协调者安排关闭该专项重复巡检/汇报，最后结论落盘并按当前静默规则投递。
-
-- 周期汇报由绑定脚本当次生成共同事实包并直接投递，当前进展与时段/夜间总结均no_agent，不新增模型汇报定时请求。模型汇报先运行同一`runtime_tools.py progress-facts --project ROOT --json`，直接消费工具返回正文；无`--json`仅有索引不能算已读。长工作结束后、最终汇报前刷新一次并核对最新相关原文。每字段保留来源与发生/观测/记录时间，来源冲突明确指出各自差异，不用刷新时间冒充进展。时段总结分别呈现角色阶段、LLM客户端响应时间、任务排队、经核实空闲，缺数据说明原因和补采动作，详见[报告协议](../complex-task-coordinator/references/reporting-policy.md)。原生人工问答持续可响应；只有明确业务动作才按现有租约与授权执行，落盘事件不等于必须群报。
+- 巡检接续按[脚本巡检协议](../complex-task-coordinator/references/script-observer.md)，事实范围、时点和静默按[报告协议](../complex-task-coordinator/references/reporting-policy.md)执行；无变化poll仅`[SILENT]`，已有owner忙时只排pending，实际处理完输入才ack。
+- 要报告进度时运行 `runtime_tools.py report-input --project ROOT --role ROLE`（ROLE用绑定的A、B或C）并读取本角色契约，按 `feishu-progress-style` 只报告本人开发、自测、交付和返修及真实必要依赖，不复述其他角色的完整进度；工程取证按契约来源读取，不把全局事实包和历史回执作为默认报告材料。
+- 领取、开工、返修、阻塞和交付先按现有租约安全更新自身session及稳定事件；固定记账与可信时间见[工具入口](../complex-task-coordinator/references/runtime-helpers.md)，时段计时和未知原因按报告协议记录。
+- 定时回合不新建/更改cron，长工作记录检查点并与五分钟scan分开；暂停或结束时停止新领取并保存恢复材料。cron final由原群自动投递，不另发第二条，人工问答保留原生响应。
 
 ## 确定性运行工具（按需）
 

@@ -60,7 +60,7 @@ preflight 在每个巡检回合更新真实检查时间并报告 ACTIVE/PAUSED�
 
 事件落盘后由同一五分钟检查/poll接续，已运行目标不重启。只有原生提前唤醒入口不会启用已暂停job时才使用；当前trigger_job会重新启用job，不用它绕过暂停。定时回合不创建或更改定时任务；巡检回合只有用户有效授权且明确需要时才通过统一限额脚本调用Codex，二十分钟报告仍只读不起跑。
 
-统一显示由 `feishu-progress-style`（/home/wang/.codex/skills/feishu-progress-style/SKILL.md）维护，普通群回复、READY、事件和周期报告均加载。协调者整体进度按整体目标与进度、执行者进度、测试者进度、OCR情况与后续、强审查情况、风险与阻塞、下一步七个加粗分区组织，各区用单层短列表。普通问答和单一事件不强行填全报告。默认不展示diff数量、完整commit、grant/call/token等取证明细，需要时给详情链接；不用“叶/聚合/冻结head/机械全绿”等内部表达。TASK事实和门禁仍以原权威文档为准，样式不改变职责。
+用户可见进度统一读取本角色报告契约，再按 `feishu-progress-style` 呈现。协调者所有进度入口保留完整七区；执行者/测试者仅本人工作、成果、阻塞依赖及下一步。事实范围、时点及静默遵循complex-task-coordinator/references/reporting-policy.md，工程证据按需核对；报告不决定门禁或修改任务事实。
 
 无变化、正常心跳、纯等待、自写回声与重复进展不主动群报，poll final仅[SILENT]；有意义的新完成、交付、失败、阻塞变化、返修、实质发现或待决策事项先落唯一事件，白天允许一条即时通报。人工询问正常答复。周期报告不是重复事件，不伪造时间线业务进展。实际排队延迟如实记录，5 分钟是调度周期而非模型运行时限。
 
@@ -94,7 +94,7 @@ Hermes现有report_job_id沿用，旧idle_report_job_id停用；协调者独立m
 
 人工自然语言保留Hermes原生模型会话，问答/进展/方向讨论不自动入业务队列、不等五分钟巡检；夜间用户主动问话可答复。明确业务动作才保存原生消息身份与原文，群或cron获得同一协调角色租约后复读任务/attempt、派单、ACK及处理证据，已处理不重做。空闲时群可直接协调；owner忙时保留待办并解释，不抢占或恢复暂停。旧队列证据保留，observer ack不能消费业务请求。具体工具见complex-task-coordinator/references/runtime-helpers.md。
 
-仅显式/progress为可选脚本简报；模型与脚本当次都读取绑定的`runtime_tools.py progress-facts --project ROOT --json`共同事实包（`progress_projection.py build_projection(project, at=None)`），字段保留来源及发生/观测/记录时间。当前事实落盘在`inbox/control/runtime/progress/facts.json`，仍须当次生成或核对来源时效，不把保存的旧投影冒充当前。协调者整体进度先给加粗结论，再按显示Skill七个分区呈现；自然语言进展仍由原生模型回复。来源冲突明确写各来源差异及核对动作，不用读取刷新时间冒充业务进展，长路径和原始日志按需给详情。机械负载直接GET指标；环境/恢复/长工程操作使用既有helpers。工程成功不等于业务PASS，OCR/强审专用入口和原审核/生产门禁保留。未部署或未验证插件时，不仅凭模板声称实际已生效。
+显式/progress可生成无模型进度，自然语言仍由原生模型答复。报告先运行绑定的`runtime_tools.py report-input --project ROOT --role ROLE`并读取本角色材料，长操作后最终汇报前刷新一次。完整`progress-facts --project ROOT --json`仅按需取证，不默认注入执行者/测试者上下文。各事实保留来源和可信时间，缺失/冲突具体说明，TODO、测试回执、OCR裁决与授权各负其责；不通过正文转换推断当前状态。机械负载直接GET指标，环境/恢复/长操作复用现有helpers；测试、审查及生产门禁不变。未部署或未验证时，不仅凭模板声称实际生效。
 
 
 ## 确定性观察、记账和时间

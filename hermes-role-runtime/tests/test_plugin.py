@@ -108,6 +108,45 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
     async def test_native_approval_passes_through(self):
         self.assertIsNone(await self.plugin.on_message(self.event('/approve x'),gateway=self.gateway))
 
+    async def test_model_control_is_immediate_and_never_calls_model_or_queue(self):
+        with patch.object(self.plugin.router,'command',return_value='已切换云端') as command:
+            result=await self.plugin.on_message(self.event('切换到云端模型','a'),gateway=self.gateway)
+        self.assertEqual(result['action'],'skip')
+        command.assert_called_once_with('cloud')
+        self.assertIn('已切换云端',self.adapter.messages[-1][1])
+        self.assertFalse(pending_requests(self.project))
+
+    async def test_model_control_cannot_cross_authorization_or_group_boundary(self):
+        with patch.object(self.plugin.router,'command',side_effect=AssertionError('not authorized')):
+            self.assertIsNone(await self.plugin.on_message(self.event('/llm cloud','other'),gateway=self.gateway))
+            self.gateway._is_user_authorized=lambda source:False
+            self.assertIsNone(await self.plugin.on_message(self.event('/llm cloud'),gateway=self.gateway))
+
+    async def test_native_busy_path_applies_control_without_waiting_or_interrupting(self):
+        from gateway.run_busy import GatewayBusySessionMixin
+        self.gateway._is_user_authorized_for_source=lambda source:True
+        self.gateway._admit_bot_message_for_source=lambda source:True
+        event=self.event('/llm cloud')
+        event.allow_gateway_control=True
+        async def invoke(name,**kw):
+            self.assertEqual(name,'pre_gateway_busy_dispatch')
+            return [await self.plugin.on_busy_message(**kw)]
+        with patch('hermes_cli.lifecycle.ainvoke_hook',side_effect=invoke), \
+             patch.object(self.plugin.router,'command',return_value='已切换云端') as command:
+            handled=await GatewayBusySessionMixin._handle_active_session_busy_message(self.gateway,event,'busy')
+        self.assertTrue(handled)
+        command.assert_called_once_with('cloud')
+        self.assertFalse(pending_requests(self.project))
+
+    async def test_busy_noncontrol_stays_on_native_queue_path(self):
+        self.assertIsNone(await self.plugin.on_busy_message(self.event('继续开发'),gateway=self.gateway))
+
+    def test_routing_error_blocks_bound_role_and_leaves_other_sessions_alone(self):
+        with patch.object(self.plugin,'api_identity',side_effect=lambda sid: {'role':'A'} if sid=='role' else None), \
+             patch.object(self.plugin.router,'config',side_effect=ValueError('bad config')):
+            self.assertIsNone(self.plugin.on_route(session_id='other'))
+            self.assertIn('error',self.plugin.on_route(session_id='role'))
+
     async def test_explicit_progress_uses_live_projection_without_business_queue(self):
         with patch('cron.jobs.get_job',return_value={'enabled':False}), \
              patch.object(module,'progress_answer',return_value='**最新文档简报**') as reader:

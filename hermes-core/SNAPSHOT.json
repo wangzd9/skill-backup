@@ -1,0 +1,22 @@
+{
+  "upstream": "https://github.com/NousResearch/hermes-agent",
+  "base_commit": "5f47c35d37a40fb651e4a00571d03e12b23d11f9",
+  "head_commit": "a101a612e3b7a119f47507cb21e1e1772276dc8d",
+  "branch": "feature/model-routing",
+  "working_tree_changes_included": true,
+  "files": [
+    "agent/request_routing.py",
+    "agent/turn_api_request.py",
+    "cron/scheduler_delivery.py",
+    "gateway/plugin_busy_control.py",
+    "gateway/run_busy.py",
+    "hermes_cli/plugins.py",
+    "hermes_cli/plugins_dispatch.py",
+    "tests/agent/test_request_routing.py",
+    "website/docs/developer-guide/plugins/index.md",
+    "website/docs/user-guide/features/hooks.md",
+    "cron/role_reporting_policy.py",
+    "tests/cron/test_role_reporting_policy.py"
+  ],
+  "verification": "Patch applies to base and reproduces every saved file byte-for-byte."
+}

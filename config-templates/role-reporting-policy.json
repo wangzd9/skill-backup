@@ -1,0 +1,5 @@
+{
+  "timezone": "Asia/Shanghai",
+  "quiet_start_hour": 21,
+  "quiet_end_hour": 8
+}

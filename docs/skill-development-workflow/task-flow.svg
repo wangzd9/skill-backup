@@ -40,8 +40,8 @@
 <polyline points="590,680 590,705" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
 <rect x="380" y="705" width="420" height="110" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
 <text x="398" y="734" class="heading">⑥ 协调者：审核与收口</text>
-<text x="398" y="760" class="line">OCR 固定入口 → 独立服务 → 核覆盖</text>
-<text x="398" y="783" class="line">核测试、发现与适用强审查，批准后合入</text>
+<text x="398" y="760" class="line">OCR 独立服务 → 终态排队 → results</text>
+<text x="398" y="783" class="line">覆盖与问题分别核；原门禁满足再合入</text>
 <rect x="840" y="600" width="325" height="112" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
 <text x="858" y="629" class="heading">按风险追加强审查</text>
 <text x="858" y="655" class="line">授权内自动 / 无授权人工</text>

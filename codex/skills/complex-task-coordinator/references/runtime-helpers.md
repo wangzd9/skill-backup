@@ -18,15 +18,23 @@ python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/runtime_tools.
 
 request仅保存一次，按chat/message ID去重、不拿业务租约、不开启暂停job；queue-ack必须有效协调租约与项目内非空处理证据。原群消息身份冲突拒绝覆盖。observer ack只确认变化通知，不能消费业务指令；HANDLED只代表处理/转派/阻塞已有证据，不证明业务完成或回复送达。崩溃后先对账已有动作，外部操作继续用原幂等身份，不能靠租约宣称exactly-once。旧队列记录保留，不批量作废。
 
-只有用户显式发送/progress才走可选脚本简报，当次读当前文档；自然语言进展仍由模型回应。脚本读取失败不显示旧数据为当前。两种答复先读同一`progress-facts`当前事实包，再按显示Skill呈现；协调者整体进度固定七个加粗分区与简短条目，证据详情按需展开。主动问答走群路径，不受夜间cron主动通知抑制；被暂停的业务不由聊天自动恢复。原生slash控制/审批不拦截。
+显式`/progress`可生成无模型进度，其他人工问答仍走原生模型；不拦截slash控制或审批。角色的报告范围与时点按[报告协议](reporting-policy.md)，显示按绑定的feishu-progress-style。
 
-## 当前进度的共同事实入口
+## 报告输入与按需取证
+
+```text
+python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/runtime_tools.py report-input --project ROOT --role ROLE
+```
+
+命令默认返回JSON，无需`--json`；读取`sections`、同源`markdown`基稿与`evidence_reference`后，再组织用户可见进度，解释不得超出本角色事实范围。执行者使用绑定的A/B/C，测试者使用TESTER，协调者使用COORDINATOR；不是把完整全项目包交给所有角色。长操作后、最终汇报前刷新一次，身份、来源或时效缺口按原协议说明。
+
+对具体风险或版本按报告契约的来源读取工程证据，需要完整投影时使用：
 
 ```text
 python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/runtime_tools.py progress-facts --project ROOT --json
 ```
 
-模型答复和脚本报告均读取本次生成的事实包，入口实现为`progress_projection.py build_projection(project, at=None)`。当前事实落盘在`inbox/control/runtime/progress/facts.json`，仍须当次生成或核对来源时效，不把保存的旧投影冒充当前。每字段保留来源与有依据的发生/观测/记录时间；来源缺失、过旧或矛盾不静默覆盖，指出具体差异及核对动作。事实包是文档投影，不替代原测试/OCR/强审查证据，也不获取业务写租约或生成新业务事件。标题/读取时间不能充当进展发生时间。
+完整事实不默认进入报告上下文，也不替代原测试/OCR/强审证据。两个只读入口均不获取业务写租约、不生成任务事件或批准状态，标题及读取时间不冒充实际进展时间。
 
 ## 机械负载直接读指标
 
@@ -100,3 +108,12 @@ python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/runtime_tools.
 ```
 
 记录前后commit、index/worktree/未跟踪文件、声明输入/配置/环境指纹、命令身份、实际退出码及日志hash。完整argv保存在原冻结spec，凭据继续用受控文件。状态和日志放代码Git仓库外。`mechanical_match=true`仅表示声明范围与快照匹配，不是业务PASS；未声明的ignored文件、远端服务和测试覆盖不在机械证明中，必要独立测试/合入回归/OCR/强审仍进行。代码变化或失败不借旧证据放行。
+
+
+## 角色租约续期与恢复（2026-10-15）
+
+`role_runtime.py status`显示 `owner_process_state`；租约到期不证明角色已停止。同一会话仍持有匹配token时可直接 `renew --ttl 300` 后继续，不sleep等待过期或另建owner。已确认长期Hermes worker PID时，可在claim或同token的renew加`--pid`绑定PID/start；不能拿终端shell、短命helper或共享gateway充当本会话worker。旧未绑定租约保持兼容，不能据此自动抢占。
+
+已绑定owner的PID/start明确退出、变为僵尸或被复用时，claim可立即恢复并留下无token审计；存活或不可核实者拒绝抢占。死owner遗留token不得继承续期/写入。旧未绑定owner仍需核实停止、到期及现有recover证据；不自动kill或重派。短控制run仍最多90秒，长测试/工程步骤用原operation runner，OCR用原专用入口。
+
+阶段计时新增明确的`ACKED_RUNNING`工作分类；已关闭派单的mtime变化不把当前检查点改成“未领取”。旧数据仅在原任务/attempt/事件内容与可信时间一致时重新解释映射遗漏，不补造时间或改写原活动记录。客户端模型响应仍不能等同纯服务端排队。

@@ -1,0 +1,39 @@
+{
+  "custom_providers": {
+    "vllm-local": {
+      "url": "http://192.168.2.45:8002/v1",
+      "protocol": "openai",
+      "model": "/home/sysadmin/data/disk02/jc/models/qwen3.8-27b-fp8"
+    },
+    "hermes-sub2api": {
+      "url": "https://sub.vankit.top/v1",
+      "model": "deepseek-v4.1-flash",
+      "protocol": "openai-responses",
+      "api_key_cmd": "/home/wang/.hermes/hermes-agent/venv/bin/python /home/wang/work/hermes-role-runtime/ocr_model_route.py --home /home/wang/.hermes key SUB2API_API_KEY",
+      "extra_body": {
+        "store": false
+      }
+    },
+    "hermes-xcoding": {
+      "url": "https://x-coding.net/v1",
+      "model": "gpt-6.1-sol",
+      "protocol": "openai-responses",
+      "api_key_cmd": "/home/wang/.hermes/hermes-agent/venv/bin/python /home/wang/work/hermes-role-runtime/ocr_model_route.py --home /home/wang/.hermes key XCODING_API_KEY",
+      "extra_body": {
+        "store": false,
+        "reasoning": {
+          "effort": "high"
+        }
+      }
+    },
+    "hermes-numenume": {
+      "url": "https://sub.numenume.site/v1",
+      "model": "deepseek-v4-pro",
+      "protocol": "openai",
+      "api_key_cmd": "/home/wang/.hermes/hermes-agent/venv/bin/python /home/wang/work/hermes-role-runtime/ocr_model_route.py --home /home/wang/.hermes key NUMENUME_API_KEY",
+      "extra_body": {
+        "store": false
+      }
+    }
+  }
+}

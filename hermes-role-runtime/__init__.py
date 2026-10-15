@@ -12,6 +12,7 @@ from prefix_audit import PrefixAudit
 from .progress_query import progress_query, progress_answer
 from runtime_common import read_json
 from time_accounting import record_api_start, record_api_end, record_api_error
+from model_routing import ModelRouter, parse_command
 
 logger=logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ class RuntimePlugin:
         self.registry=Path(registry); self.metrics_url=metrics_url; self.home=Path(home)
         self.coordinator_chat_ids=set(coordinator_chat_ids)
         self.audit=PrefixAudit(self.home/'runtime/prefix-audit')
+        self.router=ModelRouter(self.home,metrics_url)
 
     def api_identity(self, session_id):
         """Attribute only registered role sessions; no prompt or message access."""
@@ -88,14 +90,20 @@ class RuntimePlugin:
         platform=getattr(getattr(source,'platform',None),'value',None)
         if platform!='feishu' or getattr(source,'is_bot',False): return None
         # 控制/审批 slash 原样走 Hermes，不能被入队拦截造成死锁。
-        if text.startswith('/') and text not in ('/llm-load','/progress'): return None
+        routing_action=parse_command(text)
+        if text.startswith('/') and text not in ('/llm-load','/progress') and routing_action is None: return None
         # Hook 位于原生鉴权之前，必须复用同一原生鉴权；失败不自行授予权限。
-        if not gateway._is_user_authorized(source): return None
+        authorize=getattr(gateway,'_is_user_authorized_for_source',None) or gateway._is_user_authorized
+        if not authorize(source): return None
         try:
             bindings=self.bindings()
             matches=[r for r in bindings if r['chat_id']==source.chat_id]
             # 只处理实际角色绑定；诊断私聊/普通群不因查询文本被纳入工作流。
             if not matches: return None
+            if routing_action is not None:
+                answer=await asyncio.to_thread(self.router.command,routing_action)
+                await self.reply(gateway,event,answer)
+                return {'action':'skip','reason':'role-runtime-model-control'}
             if load_query(text):
                 try:
                     snapshot=await asyncio.to_thread(collect,self.metrics_url,self.home/'runtime/qwen-load.json')
@@ -131,12 +139,18 @@ class RuntimePlugin:
                 '群与cron共用COORDINATOR租约，取得租约后重读任务和处理证据；'
                 '群会话取得租约可直接接续，owner忙则只保存待办并解释。'
                 '不得抢占、恢复暂停、重复执行或跳过原审核/生产门禁。'
-                '答复突出加粗结论、重点进展、阻塞和下一步，不贴原始材料。\n'
+                '问进度时先执行绑定runtime_tools.py report-input --project '+str(item['root'])+' --role COORDINATOR，'
+                '读取sections和同源markdown，按显示Skill完整七区逐点答复；单一问题正常直答。\n'
                 '原生身份：chat_id='+str(source.chat_id)+'；user_id='+str(source.user_id)+'；message_id='+str(event.message_id)+'\n'
                 '用户原文及附件/引用如下：\n'+(event.text or ''))
             return {'action':'rewrite','text':note,'reason':'role-runtime-native-coordinator'}
         except Exception:
             logger.exception('角色入口核对失败')
+            if routing_action is not None:
+                # A failed control command must never fall through to an LLM pretending it switched.
+                try: await self.reply(gateway,event,'模型切换失败，未确认设置生效；请检查本机配置。')
+                except Exception: logger.exception('模型控制失败提示投递失败')
+                return {'action':'skip','reason':'role-runtime-model-control-error'}
             if not load_query(text) and not progress_query(text):
                 # 绑定故障不能把人工会话再次封死；模型必须先核绑定再做写操作。
                 return None
@@ -159,6 +173,22 @@ class RuntimePlugin:
                         session_id,row['system_changed'],row['tools_changed'])
         return None
 
+    def on_route(self,session_id='',**metadata):
+        try:
+            if not self.api_identity(session_id): return None
+            config=self.router.config()
+            if not config.get('enabled',False): return None
+            decision=self.router.decision(config)
+            runtime=self.router.runtime(config,decision['route'])
+            return {'runtime':runtime,'reason':decision['reason']}
+        except Exception:
+            logger.warning('角色模型选路失败；阻止本次请求，避免绕过本地保护',exc_info=True)
+            return {'error':'角色模型选路失败；请检查云端凭据和供应商配置。未自动抢占本地模型。'}
+
+    async def on_busy_message(self,event,gateway=None,**kwargs):
+        if parse_command(event.text or '') is None: return None
+        return await self.on_message(event,gateway=gateway,**kwargs)
+
 
 def register(ctx):
     from hermes_constants import get_hermes_home
@@ -170,3 +200,5 @@ def register(ctx):
     ctx.register_hook('pre_api_request',plugin.on_api)
     ctx.register_hook('post_api_request',plugin.on_api_end)
     ctx.register_hook('api_request_error',plugin.on_api_error)
+    ctx.register_hook('resolve_model_route',plugin.on_route)
+    ctx.register_hook('pre_gateway_busy_dispatch',plugin.on_busy_message)

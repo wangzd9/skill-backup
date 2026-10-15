@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """无模型的活动观察、分时段总结与夜间汇总；不写业务状态或发送消息。"""
 import argparse
+from copy import deepcopy
 from datetime import datetime, timedelta
 from functools import lru_cache
 import hashlib
@@ -46,7 +47,7 @@ def quiet(at=None):
 
 def event_state(status):
     s = str(status or '').upper()
-    if s in {'RUNNING', 'ACK', 'ACKED', 'IN_PROGRESS', 'DEVELOPING', 'TESTING', 'REWORK', 'FIXING', 'STARTED', 'PREP', 'PREPARING', 'VERIFYING'}:
+    if s in {'RUNNING', 'ACK', 'ACKED', 'ACKED_RUNNING', 'IN_PROGRESS', 'DEVELOPING', 'TESTING', 'REWORK', 'FIXING', 'STARTED', 'PREP', 'PREPARING', 'VERIFYING'}:
         return 'working'
     if 'BLOCK' in s or s in {'NEEDS_REVIEW', 'WAITING_AUTH'}:
         return 'blocked'
@@ -74,7 +75,8 @@ def sample(snapshot, tick=None):
         reason = 'reported_idle_assignment_or_owner_not_verified'
     dispatch = snapshot.get('dispatches', {}).get(role)
     new_dispatch = False
-    if dispatch:
+    if dispatch and str(dispatch.get('status', '')).upper() not in {
+            'ACCEPT', 'ACCEPTED', 'DONE', 'MERGED', 'COMPLETED', 'CLOSED', 'CANCELLED', 'CANCELED', 'REPLACED'}:
         try:
             evidence_time=event.get('occurred_at') or event.get('observed_at')
             new_dispatch = not event or dispatch['mtime'] > parse_at(evidence_time).timestamp()
@@ -182,7 +184,11 @@ def recover_legacy_status(root, role, row):
         except (OSError, ValueError, KeyError, TypeError) as exc:
             row['classification_reason'] = 'legacy_status_recovery_refused:' + str(exc)
             return
-    if raw_status in {'IDLE', 'OBSERVING', 'MONITORING'}:
+    if raw_status == 'ACKED_RUNNING':
+        row['category'] = 'working'
+        row['raw_status'] = raw_status
+        row['classification_reason'] = 'legacy_status_mapping_recovered:ACKED_RUNNING'
+    elif raw_status in {'IDLE', 'OBSERVING', 'MONITORING'}:
         row['category'] = 'waiting'
         row['raw_status'] = raw_status
         row['classification_reason'] = ('legacy_status_mapping_recovered:reported_idle_assignment_or_owner_not_verified'
@@ -405,25 +411,6 @@ def task_function(item, task, title=None):
             '叶任务':'具体功能跟进'}.get(label, label)
 
 
-def task_state_label(value):
-    from progress_projection import DELIVERED, PAUSED, TERMINAL, state_code
-    code = state_code(value)
-    if code in TERMINAL:
-        return '登记完成'
-    if code in DELIVERED:
-        return '角色已交付，待审核'
-    if code in PAUSED:
-        return '已暂停/撤销，接续待核'
-    return {'REOPENED':'已恢复，待继续', 'DISPATCHED':'已派发，领取待核',
-            'ACK':'已领取', 'ACKED':'已领取', 'RUNNING':'处理中', 'IN_PROGRESS':'处理中',
-            'DEVELOPING':'开发中', 'REWORK':'返修中', 'FIXING':'返修中',
-            'TESTING':'验证中', 'VERIFYING':'验证中', 'TEST_PENDING':'待验证',
-            'VERIFY_PENDING':'待验证', 'READY_FOR_TEST':'待验证',
-            'WAITING':'等待前置/外部处理', 'WAITING_AUTH':'等待授权', 'BLOCKED':'阻塞',
-            'PARTIAL':'部分完成，待继续', 'READY':'待领取/继续',
-            'CONFLICT':'结构状态冲突待核'}.get(code, '结构状态待核')
-
-
 def delivery_lines(item, limit=3):
     records = item.get('delivery_records', [])
     out = [f'- **本期角色交付/接受记录：** {len(records)}条；任务最终完成仍以验收裁决为准。']
@@ -442,129 +429,160 @@ def progress_value(fact, default=None):
     return fact.get('value', default) if isinstance(fact, dict) else default
 
 
-def progress_task_label(row):
-    from progress_display import BUSINESS_STATES
-    from progress_projection import DELIVERED, TERMINAL
-    state = progress_value(row.get('state'))
-    if state in TERMINAL:
-        return ('开发交付已接受，尚未合入主分支' if progress_value(row.get('merge')) == 'NOT_MERGED'
-                else '已接受并登记合入' if progress_value(row.get('merge')) == 'RECORDED_MERGED'
-                else 'TODO 已登记完成，合入状态待核')
-    if state in DELIVERED and progress_value(row.get('testing')) == 'RECORDED_PASSED':
-        return '已交付，独立验证已通过，等待审查接受'
-    return BUSINESS_STATES.get(state, '结构状态待核')
+def digest_report_packet(data):
+    """Adapt legacy saved snapshots only when the shared evidence is unavailable.
 
-
-def current_task_lines(item, snapshot, limit=3, *, progress_facts=None):
-    from progress_projection import TERMINAL, state_code
-    out = []
-    role_facts = (progress_facts or {}).get('roles', {}).get(item['role'])
-    shared = isinstance(role_facts, dict) and isinstance(progress_facts.get('tasks'), dict)
-    new_dispatch = False
-    if shared:
-        observed_at = progress_facts.get('observed_at')
-        assigned = progress_value(role_facts.get('tasks'), []) or []
-        completed = progress_value(role_facts.get('recent_completed'), []) or []
-        tasks = []
-        for task in dict.fromkeys(assigned + completed):
-            row = progress_facts['tasks'].get(task, {})
-            tasks.append({'task':task, 'title':progress_value(row.get('title')),
-                          'state':progress_value(row.get('state')), 'label':progress_task_label(row)})
-        new_dispatch = progress_value(role_facts.get('dispatch'), {}).get('newer_than_activity') is True
-    else:
-        out.append('- **当前工作来源：** 未取得共同进度事实，以下为保存快照回退。')
-        observed_at = snapshot.get('observed_at')
-        tasks = [task for task in snapshot.get('tasks', []) if isinstance(task, dict)]
+    This temporary view is never persisted or used for acceptance. The caller
+    explicitly labels its fallback source; raw snapshots remain in the artifact.
+    """
+    from progress_projection import state_code, TERMINAL
+    packet = deepcopy(data.get('progress_facts') or {})
+    shared = isinstance(data.get('progress_facts'), dict)
+    packet.setdefault('tasks', {})
+    packet.setdefault('roles', {})
+    observed = packet.get('observed_at') or data['current'].get(data['role'], {}).get('observed_at') or data['generated_at']
     try:
-        observed = f"{parse_at(observed_at):%Y-%m-%d %H:%M} +08:00"
-    except (ValueError, TypeError, KeyError):
-        observed = '采集时刻待核'
-    out.append(('- **当前工作来源：** 共同进度事实，采集' if shared else '- **所读快照采集：** ') + observed + '；与统计时段分列。')
-    if tasks:
-        # Keep every row in the artifact; favor open tasks in the short display.
-        selected = sorted(tasks, key=lambda task: state_code(task.get('state')) in TERMINAL)[:limit]
-        for task in selected:
-            out.append('- **当前任务：** ' + task_function(item, task.get('task'), task.get('title')) + ' · ' + (task['label'] if shared else task_state_label(task.get('state'))) + '。')
-        if len(tasks) > limit:
-            out.append(f'- **当前任务补充：** 当前记录共{len(tasks)}项，仅展示{limit}项；完整集合见证据。')
-    elif snapshot.get('confirmed_idle') is True and not snapshot.get('error') and not new_dispatch:
-        out.append('- **当前任务：** 已确认无派单。')
+        packet['observed_at'] = f'{parse_at(observed):%Y-%m-%d %H:%M} +08:00'
+    except (ValueError, TypeError):
+        packet['observed_at'] = '采集时间待核对'
+    packet.setdefault('goal', {'value': '当前整体目标未明确记录', 'source': data['artifact']})
+    packet.setdefault('overall', {'current_tasks': {'value': []}})
+    packet.setdefault('ocr', {'runs': [], 'declared': []})
+    packet.setdefault('strong_review', {})
+    def fact(value, role):
+        return {'value': value, 'source': data['artifact'], 'observed_at': data['current'].get(role, {}).get('observed_at')}
+    if not shared:
+        for item in data['roles']:
+            role, identities, completed = item['role'], [], []
+            snapshot = data['current'].get(role, {})
+            for raw in snapshot.get('tasks', []):
+                task = task_identity(raw.get('task'))
+                if not task:
+                    continue
+                state = state_code(raw.get('state'))
+                packet['tasks'][task] = {key: fact(value, role) for key, value in {
+                    'title': task_function(item, task, raw.get('title')), 'state': state,
+                    'testing': 'NOT_CONFIRMED', 'merge': 'NOT_CONFIRMED',
+                    'dependencies': raw.get('dependencies', '')}.items()}
+                (completed if state in TERMINAL else identities).append(task)
+            active = (snapshot.get('events', {}).get(role) or {}).get('task')
+            primary = active if active in identities else identities[0] if len(identities) == 1 else None
+            packet['roles'][role] = {key: fact(value, role) for key, value in {
+                'tasks': identities, 'primary_task': primary,
+                'related_tasks': [task for task in identities if task != primary], 'recent_completed': completed}.items()}
+        strong = data['current'].get('COORDINATOR', {}).get('strong_review') or {}
+        packet['strong_review'] = {key: fact(value, 'COORDINATOR') for key, value in strong.items()}
+    # Generic old task labels are not useful feature names, in either source.
+    for task, row in packet['tasks'].items():
+        title = progress_value(row.get('title'))
+        if title in {'聚合', '子聚合', '叶', '叶任务'}:
+            row['title'] = {**row['title'], 'value': task_function({}, task, title)}
+    return packet, shared
+
+
+def digest_timing_lines(item, snapshot):
+    """Keep the existing timing dimensions and exact gaps; no business inference."""
+    import role_observer as observer
+    lines = []
+    for key in CATEGORIES:
+        seconds = item['totals_seconds'].get(key, 0)
+        if seconds or key == 'idle':
+            lines.append(f'**{category_label(key, item["role"])}：** {duration(seconds)}。')
+    for segment in display_segments(item):
+        lines.append(f"**{interval_label(segment)}：** {category_label(segment['category'], item['role'])} · {task_function(item, segment['task'])}。")
+        if segment['category'] == 'unknown':
+            reasons = '；'.join(dict.fromkeys(reason_text(code) for code in segment['reasons']))
+            lines.append('**该段补证：** ' + observer.plain(reasons, 95) + '；核原始角色事件与派单，入口见证据。')
+    if any('reported_idle' in segment.get('reason', '') for segment in item['segments']):
+        lines.append('**空闲核对：** 角色曾报告空闲，但派单/占用未确认；上述等待不计确认空闲。')
+    accounting = item.get('time_accounting', {})
+    dimensions = accounting.get('dimensions', {})
+    api = dimensions.get('client_model_wait', {})
+    if api.get('observed_seconds') is not None:
+        approximate = any(r.get('timing_basis') == 'log_completion_backfill' for r in api.get('requests', []))
+        measured = ('约' if approximate else '') + duration(api['observed_seconds'])
+        lines.append(f"**模型响应：** {measured}，{len(api.get('requests', []))}条请求" + ('（由历史日志回建）。' if approximate else '（原生请求事件）。'))
+        lines.append(f"**未观测到 API 响应占用：** {duration(api.get('not_observed_api_occupancy_seconds', api.get('unobserved_seconds', 0)))}；可含工具执行或没有请求，不等于空闲。")
+        if api.get('open_requests'):
+            lines.append(f"**未结束请求：** {len(api['open_requests'])}条，未猜测结束时刻；起止补证见证据。")
     else:
-        out.append('- **当前任务：** 当前派单/状态待核；需核有效派单、角色检查点与占用。')
-    if new_dispatch:
-        out.append('- **派单核对：** 共同事实有新派单记录，领取情况待核。')
-    return out
+        lines.append('**模型响应：** 计时证据尚未取得；需核本地时间索引及 API 日志，不能据此认定空闲。')
+    dispatch = dimensions.get('role_task_dispatch', {})
+    if dispatch.get('records'):
+        lines.extend([f"**调度滞后：** {duration(dispatch['schedule_delay_seconds'])}。",
+                      f"**派发等待：** {duration(dispatch['dispatch_wait_seconds'])}。",
+                      f"**执行区间：** {duration(dispatch['execution_seconds'])}；含脚本/模型/工具，与阶段重叠。"])
+    if accounting.get('collection_errors'):
+        missing = '、'.join('角色绑定/cron执行记录' if e['dimension'] == 'role_task_dispatch' else '模型请求计时索引' for e in accounting['collection_errors'])
+        lines.append(f'**计时核对：** {missing}暂不可读；具体原因与恢复来源见证据。')
+    if item['unverified_sources'] or snapshot.get('error'):
+        lines.append('**历史时间待核：** ' + (observer.plain(summary_text(snapshot['error']), 65) if snapshot.get('error') else str(len(item['unverified_sources'])) + '份事件缺少可用时间，已排除时长计算') + '；来源见证据。')
+    return lines
 
 
 def render_digest(data):
-    import role_observer as observer
-    at = parse_at(data['generated_at'])
-    title = '夜间汇总' if data['kind'] == 'morning' else '时段总结'
-    out = [f"**{LABELS[data['role']]}：{title} {at:%Y-%m-%d %H:%M} +08:00**", '',
-           f"- **统计时段：** {parse_at(data['start']):%Y-%m-%d %H:%M}–{parse_at(data['end']):%Y-%m-%d %H:%M} +08:00。",
-           '- **计时口径：** 业务阶段仅按角色声明和观察估算。处理中可含巡检、工具和模型响应，不能当实际编码工时。',
-           '- **并行统计：** 模型响应含网络、重试、排队与推理，与业务阶段重叠，**不可相加**；客户端不能隔离纯服务器排队。']
-    for item in data['roles']:
-        snapshot = data['current'].get(item['role'], {})
-        label = LABELS[item['role']]
-        out.extend(['', f'**{label}**', ''])
-        for key in CATEGORIES:
-            seconds = item['totals_seconds'].get(key, 0)
-            if seconds or key == 'idle':
-                out.append(f'- **{category_label(key, item["role"])}：** {duration(seconds)}。')
-        for segment in display_segments(item):
-            out.append(f"- **{interval_label(segment)}：** {category_label(segment['category'], item['role'])} · {task_function(item, segment['task'])}。")
-            if segment['category'] == 'unknown':
-                reasons = '；'.join(dict.fromkeys(reason_text(code) for code in segment['reasons']))
-                out.append('- **该段补证：** ' + observer.plain(reasons, 95) + '；核原始角色事件与派单，入口见证据。')
-        if any('reported_idle' in reason for segment in item['segments'] for reason in [segment.get('reason', '')]):
-            out.append('- **空闲核对：** 角色曾报告空闲，但派单/占用未确认；上述等待不计确认空闲。')
-        accounting = item.get('time_accounting', {})
-        dimensions = accounting.get('dimensions', {})
-        api = dimensions.get('client_model_wait', {})
-        if api.get('observed_seconds') is not None:
-            approximate = any(r.get('timing_basis') == 'log_completion_backfill' for r in api.get('requests', []))
-            measured = ('约' if approximate else '') + duration(api['observed_seconds'])
-            out.append(f"- **模型响应：** {measured}，{len(api.get('requests', []))}条请求" + ('（由历史日志回建）。' if approximate else '（原生请求事件）。'))
-            out.append(f"- **未观测到 API 响应占用：** {duration(api.get('not_observed_api_occupancy_seconds', api.get('unobserved_seconds', 0)))}；可含工具执行或没有请求，不等于空闲。")
-            if api.get('open_requests'):
-                out.append(f"- **未结束请求：** {len(api['open_requests'])}条，未猜测结束时刻；起止补证见证据。")
+    """The common report contract owns every section and role boundary."""
+    from report_contract import build_report, render_report
+    packet, shared = digest_report_packet(data)
+    report = build_report(packet, data['role'])
+    sections = {section['key']: section for section in report['sections']}
+    coordinator = data['role'] == 'COORDINATOR'
+    main = sections['overall' if coordinator else 'own_progress']
+    def items(lines, pointer, group=None):
+        return [{'text': text, **({'group': group} if group else {}),
+                 'sources': [{'source': data['artifact'], 'observed_at': data['generated_at'],
+                              'evidence_reference': data['artifact'] + '#/' + pointer}]} for text in lines]
+    def insert(section, additions, group=None):
+        if group:
+            indices = [n for n, item in enumerate(section['items']) if item.get('group') == group]
+            end = indices[-1] + 1 if indices else len(section['items'])
+            section['items'][end:end] = additions
         else:
-            out.append('- **模型响应：** 计时证据尚未取得；需核本地时间索引及 API 日志，不能据此认定空闲。')
-        dispatch = dimensions.get('role_task_dispatch', {})
-        if dispatch.get('records'):
-            out.append(f"- **调度滞后：** {duration(dispatch['schedule_delay_seconds'])}。")
-            out.append(f"- **派发等待：** {duration(dispatch['dispatch_wait_seconds'])}。")
-            out.append(f"- **执行区间：** {duration(dispatch['execution_seconds'])}；含脚本/模型/工具，与阶段重叠。")
-        if accounting.get('collection_errors'):
-            missing = '、'.join('角色绑定/cron执行记录' if e['dimension'] == 'role_task_dispatch' else '模型请求计时索引' for e in accounting['collection_errors'])
-            out.append(f'- **计时核对：** {missing}暂不可读；具体原因与恢复来源见证据。')
-        out.extend(delivery_lines(item))
-        out.extend(current_task_lines(item, snapshot, progress_facts=data.get('progress_facts')))
-        if item['unverified_sources'] or snapshot.get('error'):
-            out.append('- **历史时间待核：** ' + (observer.plain(summary_text(snapshot['error']), 65) if snapshot.get('error') else str(len(item['unverified_sources']))+'份事件缺少可用时间，已排除时长计算') + '；来源见证据。')
-    if data['role'] == 'COORDINATOR':
-        snapshot = data['current'].get('COORDINATOR')
-        if snapshot:
-            strong = snapshot.get('strong_review') or {}
-            state = {'ACTIVE':'有效','REVOKED':'已撤销','EXPIRED':'已到期','NONE':'未授权'}.get(strong.get('authorization'), observer.plain(summary_text(strong.get('authorization') or '待核对'), 20))
-            out.extend(['', '**强审查**', '',
-                f"- **状态：** {state}；在途{len(strong.get('active_calls') or [])}次。",
-                f"- **次数：** 近60分钟 {strong.get('used_last_60_minutes', '未记录')}/5；本授权累计{strong.get('calls_under_authorization', '未记录')}次。",
-                '- **费用：** ' + observer.plain(summary_text(strong.get('cost') if strong.get('cost') is not None else '未记录'), 45) + '。'])
-        if data.get('evening_supplement'):
-            out.extend(['', '**晚间补充：前日18:00–21:00**', ''])
-            for item in data['evening_supplement']:
-                out.append(f"- **{LABELS[item['role']]}：** 交付/接受事件{len(item['delivery_records'])}条；确认空闲{duration(item['totals_seconds']['idle'])}。")
-    out.extend(['', '**证据与接续**', ''])
-    out.append('- **完整记录：** `' + data['artifact'] + '`。')
-    if (data.get('progress_facts') or {}).get('evidence_reference'):
-        out.append('- **当前工作证据：** `' + data['progress_facts']['evidence_reference'] + '`。')
+            section['items'].extend(additions)
+    intro = [f"**统计时段：** {parse_at(data['start']):%Y-%m-%d %H:%M}–{parse_at(data['end']):%Y-%m-%d %H:%M} +08:00。",
+             '**报告类型：** ' + ('夜间汇总。' if data['kind'] == 'morning' else '时段总结。'),
+             '**计时口径：** 业务阶段按声明和观察估算，含巡检、工具和模型响应，不能当实际编码工时。',
+             '**并行统计：** 模型响应含网络、重试、排队与推理，与业务阶段重叠，**不可相加**；不能隔离纯服务器排队。',
+             '**当前工作来源：** ' + ('共同进度事实，采集 ' + str(packet['observed_at']) + '；与统计时段分列。' if shared else '未取得共同进度事实，以下为保存快照回退。')]
+    main['items'][:0] = items(intro, 'progress_facts')
+    for index, item in enumerate(data['roles']):
+        who = item['role']
+        if not coordinator and who != data['role']:
+            continue
+        target = main if who == 'COORDINATOR' or not coordinator else sections['tester' if who == 'TESTER' else 'executors']
+        group = LABELS[who] if coordinator and who in {'A', 'B', 'C'} else '协调者时段统计' if coordinator and who == 'COORDINATOR' else None
+        snapshot = data['current'].get(who, {})
+        lines = digest_timing_lines(item, snapshot)
+        role_facts = packet['roles'].get(who, {})
+        dispatch = progress_value(role_facts.get('dispatch'), {})
+        assigned = progress_value(role_facts.get('tasks'), [])
+        completed = progress_value(role_facts.get('recent_completed'), [])
+        if not assigned and not completed:
+            confirmed = snapshot.get('confirmed_idle') is True and not snapshot.get('error') and not dispatch.get('newer_than_activity')
+            if confirmed:
+                for current_item in target['items']:
+                    if current_item['text'].startswith('**当前任务：**') and (not group or current_item.get('group') == group):
+                        current_item['text'] = '**当前任务：** 已确认无派单。'
+            else:
+                lines.append('**当前任务核对：** 当前派单/状态待核。')
+        insert(target, items(lines, f'roles/{index}', group), group)
+        delivery_target = target if coordinator else sections['own_results']
+        insert(delivery_target, items([line.removeprefix('- ') for line in delivery_lines(item)], f'roles/{index}/delivery_records', group), group)
+    for index, item in enumerate(data.get('evening_supplement', [])):
+        who = item['role']
+        if not coordinator and who != data['role']:
+            continue
+        target = main if who == 'COORDINATOR' or not coordinator else sections['tester' if who == 'TESTER' else 'executors']
+        group = LABELS[who] if coordinator and who in {'A', 'B', 'C'} else '协调者时段统计' if coordinator and who == 'COORDINATOR' else None
+        insert(target, items([f"**晚间补充（前日18:00–21:00）：** 交付/接受事件{len(item['delivery_records'])}条；确认空闲{duration(item['totals_seconds']['idle'])}。"],
+                             f'evening_supplement/{index}', group), group)
+    evidence = ['**完整记录：** `' + data['artifact'] + '`。', '**可核验内容：** 完整时间段、原始摘要、事件来源、逐段缺口原因及恢复入口。']
+    if packet.get('evidence_reference'):
+        evidence.append('**当前工作证据：** `' + packet['evidence_reference'] + '`。')
     if data.get('progress_facts_error'):
-        out.append('- **共同事实待核：** 本次读取失败，当前工作已明确按保存快照回退；原因见完整记录。')
-    out.append('- **可核验内容：** 完整时间段、原始摘要、事件来源、逐段缺口原因及恢复入口。')
-    out.append('- **下一步：** ' + ('继续派单、核对门禁与阻塞，按既定授权执行。' if data['role'] == 'COORDINATOR' else '按有效派单继续开发/验证，变更与阻塞及时落盘。'))
-    return '\n'.join(out)
+        evidence.append('**共同事实待核：** 本次读取失败，已明确按保存快照回退；原因见完整记录。')
+    sections['next']['items'].extend(items(evidence, ''))
+    return render_report(report)
 
 
 def build(root, role, kind, at=None, *, timing_index=None, executions_db=None):

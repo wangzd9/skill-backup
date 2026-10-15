@@ -8,7 +8,9 @@
 | `hermes/skills/` | Hermes 已安装技能，保留原分类目录 |
 | `codex/plugins/agent-skills/` | 当前安装的 agent-skills 0.6.12 技能、公共引用与许可证 |
 | `hermes-role-runtime/` | 角色运行插件、工具与原有测试 |
-| `docs/` | 统一开发流程指南及图示 |
+| `docs/` | 统一开发流程指南、图示及本次相关实施记录 |
+| `hermes-core/` | Hermes 核心累计补丁、基线身份及修改文件快照 |
+| `config-templates/` | 去除凭据和群绑定的路由／OCR配置模板 |
 
 重点入口：
 
@@ -32,3 +34,9 @@
 源文档中的绝对路径、服务地址及历史引用保持原值，跨机器使用时需调整。本仓库是静态快照，不会自动同步；不是包含凭据和机器配置的一键部署包。
 
 [BACKUP-MANIFEST.json](BACKUP-MANIFEST.json) 记录每个文件的来源、SHA-256、软链接处理及排除项。未备份 `.env`、认证配置、Hermes 会话数据库、技能索引缓存、使用统计、运行锁或 Python 缓存。第三方资源保留原有许可证与署名。
+
+## 2026-10-15 更新
+
+同步全部现有技能、角色运行插件与开发指南，包括飞书模型切换、流水线优先准入、OCR代码审查路由及角色进度机制。PRD另保存在 [sweep-zero-prd](https://github.com/wangzd9/sweep-zero-prd)；[模型路由实施记录](docs/analysis/hermes-model-routing-20261015/REPORT.md) 保留现场验证与已知边界。
+
+完整恢复次序见 [RESTORE.md](RESTORE.md)。配置模板反映本次采样时的实际配置，包含后续人工设定（如独立OCR供应商），不回写或改变运行机器。

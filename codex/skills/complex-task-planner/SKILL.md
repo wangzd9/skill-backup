@@ -2,7 +2,7 @@
 name: complex-task-planner
 description: 复杂需求规划与架构设计：当用户要求复杂任务开发设计、拆成三并发、设计最小链路和交接任务时使用。产出可供协调者、执行者与测试者接续的文档；不自动实施业务代码。
 metadata:
-  version: "1.6.1"
+  version: "1.7.0"
 ---
 
 # 复杂任务规划者
@@ -36,7 +36,7 @@ metadata:
 
 ## 运行成本控制
 
-规划交接采用 [脚本巡检与短快照](../complex-task-coordinator/references/script-observer.md)：5分钟实际检查不等于每轮调用模型，报告统一no_agent，模型与脚本共用当次`runtime_tools.py progress-facts --project ROOT --json`事实包；字段带来源和真实时间，冲突给具体来源差异。协调者整体进度按显示Skill保留七个加粗分区，时段总结分别呈现角色阶段、LLM客户端响应、任务排队与核实空闲；未知附原因及补采动作，不新增模型汇报定时请求。模板为新项目保留同一绑定方式，未绑定项目不自行开cron。
+规划交接采用[脚本巡检](../complex-task-coordinator/references/script-observer.md)与[角色报告协议](../complex-task-coordinator/references/reporting-policy.md)：五分钟脚本检查，角色忙时排队，无变化不唤醒模型；固定报告no_agent。模型以 `runtime_tools.py report-input --project ROOT --role ROLE` 的本角色材料作报告输入，完整事实和工程证据按需核对。结构统一由显示Skill维护，事实保留来源和真实时间，时段总结保留响应、排队、确认空闲及未知原因。未绑定项目不自行启动群、角色或cron。
 
 ## 协作流程文档维护（按需）
 

@@ -43,7 +43,7 @@ items=[{'item_id':f,'path':f,'fingerprint':'fixed-'+f} for f in chosen]
 failed=[] if mode=='complete' or (mode=='second-partial' and 'b.py' not in chosen) else [dict(i,reason='stopped because context compression exceeded its threshold') for i in items]
 manifest={'schema_version':'ocr.run-manifest/v1','terminal_state':'complete' if not failed else 'failed',
 'input':{'resolved_base':arg('--from'),'resolved_head':arg('--to')},
-'execution':{'provider':'vllm-local','model':'fixture-model','ocr_version':'v1.13.0'},
+'execution':{'provider':arg('--provider'),'model':arg('--model'),'ocr_version':'v1.13.0'},
 'coverage':{'selected':items,'completed':items if not failed else [],'reused':[],'failed':failed,'waived':[]}}
 event({'type':'session_end','run_manifest':manifest})
 print(json.dumps({'findings':[]}))
@@ -82,6 +82,20 @@ class RuntimeTests(unittest.TestCase):
         cls.fake = cls.root / 'fake-ocr'
         cls.fake.write_text(FAKE_OCR)
         cls.fake.chmod(0o755)
+        cls.selector = cls.root / 'selector.py'
+        cls.selector.write_text('''import json
+from pathlib import Path
+root=Path(__file__).parent
+if not (root/'routing-on').exists():
+ print('null')
+else:
+ count=(root/'calls').read_text().count('review') if (root/'calls').exists() else 0
+ count-=int((root/'routing-on').read_text() or '0')
+ routes=[{'provider':'fixture-cloud-a','model':'model-a','endpoint':'https://a.invalid/v1'},
+         {'provider':'fixture-cloud-b','model':'model-b','endpoint':'https://b.invalid/v1'}]
+ route=routes[min(count,1)]
+ print(json.dumps({**route,'allowed_routes':routes,'effort':'high'}))
+''')
         (cls.root / 'mode').write_text('complete')
         cls.code = cls.root / 'code'
         cls.code.mkdir()
@@ -90,11 +104,13 @@ class RuntimeTests(unittest.TestCase):
         source = source.replace("Path('/home/wang/.opencodereview/config.json')", repr(cls.config))
         source = source.replace("Path('/home/wang/.opencodereview/sessions')", repr(cls.root / 'sessions'))
         source = source.replace("Path('/home/wang/.local/state/ocr-runtime/ocr.lock')", repr(cls.root / 'global.lock'))
+        source = source.replace("Path('/home/wang/work/hermes-role-runtime/ocr_model_route.py')", repr(cls.selector))
         # 测试只调假OCR；不阻塞或接管生产已有OCR。另有实际进程识别检查。
         source = source.replace('def existing_ocr():\n', 'def existing_ocr():\n    return []\n')
         source = source.replace('PosixPath(', 'Path(')
         (cls.code / 'ocr_runtime.py').write_text(source)
         shutil.copy2(Path(runtime.__file__).with_name('ocr_session_status.py'), cls.code / 'ocr_session_status.py')
+        shutil.copy2(Path(runtime.__file__).with_name('ocr_results.py'), cls.code / 'ocr_results.py')
         spec = importlib.util.spec_from_file_location('isolated_runtime', cls.code / 'ocr_runtime.py')
         cls.module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.module)
@@ -144,6 +160,36 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual([b['files'] for b in spec['batches']], [['a.py'], ['b.py']])
         self.assertFalse((self.root / 'calls').exists())
         self.assertEqual(self.module.CONFIG.read_bytes(), self.original_config)
+
+    def test_legacy_15_frozen_run_remains_readable(self):
+        directory = self.make_run('legacy-readable')
+        path = directory / 'spec.json'
+        spec = json.loads(path.read_text())
+        spec['runtime_version'] = '1.5.0'
+        path.chmod(0o644)
+        path.write_text(json.dumps(spec))
+        hash_path = directory / 'spec.sha256'
+        hash_path.chmod(0o644)
+        hash_path.write_text(self.module.digest(path.read_bytes()))
+        self.assertEqual(self.module.load_spec(directory)['runtime_version'], '1.5.0')
+
+    def test_dynamic_cloud_switch_between_batches_preserves_coverage_identity(self):
+        marker = self.root / 'routing-on'
+        marker.write_text(str((self.root / 'calls').read_text().count('review')
+                              if (self.root / 'calls').exists() else 0))
+        try:
+            directory = self.make_run('dynamic-routing')
+            self.module.launch(directory)
+            result = self.wait_final(directory)
+            self.assertEqual(result['state'], 'AWAITING_DECISION')
+            entries = result['recorded_state']['batches']
+            self.assertEqual([e['execution_route']['model'] for e in entries], ['model-a', 'model-b'])
+            for entry in entries:
+                diagnosis = json.loads((directory / (entry['id'] + '-diagnosis.json')).read_text())
+                self.assertTrue(diagnosis['batch_identity_matches'])
+            self.assertEqual(self.module.CONFIG.read_bytes(), self.original_config)
+        finally:
+            marker.unlink(missing_ok=True)
 
     def test_02_missing_or_overlapping_batch_fails(self):
         for index, batches in enumerate(([['a.py']], [['a.py'], ['a.py', 'b.py']])):

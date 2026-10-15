@@ -53,11 +53,43 @@ def locked(path):
 
 def pid_identity(pid):
     try:
-        return Path(f'/proc/{int(pid)}/stat').read_text().rsplit(') ', 1)[1].split()[19]
+        fields = Path(f'/proc/{int(pid)}/stat').read_text().rsplit(') ', 1)[1].split()
+        # Exited but unreaped workers cannot execute writes either. Treating a
+        # zombie as alive would leave its role blocked until its parent reaps it.
+        return None if fields[0] in ('Z', 'X') else fields[19]
     except (FileNotFoundError, ProcessLookupError):
         return None
     except (OSError, ValueError, IndexError):
         return 'UNVERIFIABLE'
+
+
+def process_state(pid, start):
+    """A deadline is not liveness; only a bound process identity proves exit."""
+    if not pid or not start:
+        return 'unverified'
+    identity = pid_identity(pid)
+    if identity == 'UNVERIFIABLE':
+        return 'unverified'
+    return 'alive' if identity == start else 'exited_or_reused'
+
+
+def verified_pid_identity(pid):
+    identity = pid_identity(pid)
+    if not identity or identity == 'UNVERIFIABLE':
+        raise ValueError('Owner PID is not verifiably alive; use the long-lived worker PID, not a transient shell')
+    return identity
+
+
+def owner_state(lease):
+    return process_state(lease.get('pid'), lease.get('process_start'))
+
+
+def record_recovery(root, role, lease, **details):
+    record = {'recovered_at': now(), 'role': role,
+              'old_owner': lease.get('owner'),
+              'lease': {k: v for k, v in lease.items() if k != 'token'}, **details}
+    save(root / 'inbox/control/runtime/recoveries' / (uuid.uuid4().hex + '.json'), record)
+    return record
 
 
 def binding(project):
@@ -101,10 +133,14 @@ def lease_lock(root, role):
     return root / 'inbox' / ('coordinator.lock' if role == 'COORDINATOR' else f'{role}.lock')
 
 
-def valid_lease(root, role, token, allow_expired=False):
+def valid_lease(root, role, token, allow_expired=False, verify_owner=True):
     lease = load(lease_path(root, role), {})
     if not token or lease.get('token') != token or (not allow_expired and lease.get('expires_at', 0) <= dt.datetime.now().timestamp()):
         raise ValueError('Missing, stale or expired writer token; recheck owner before continuing')
+    # Preserve old unbound leases, but never let a dead/reused bound owner renew
+    # itself or authorize new writes merely because its token was left on disk.
+    if verify_owner and (lease.get('pid') or lease.get('process_start')) and owner_state(lease) != 'alive':
+        raise ValueError('Owner process is gone or unverifiable; do not inherit its token, recheck owner before recovery')
     return lease
 
 
@@ -133,8 +169,10 @@ def execute(args):
         stamp.update({'skill': data['roles'][role]['skill'], 'session_file': data['roles'][role]['session_file']})
         return stamp
     if args.action == 'status':
+        lease = load(lease_path(root, role), {})
         return {'role': role, 'legacy_busy': legacy_busy(data, role),
-                'lease': {k: v for k, v in load(lease_path(root, role), {}).items() if k != 'token'},
+                'lease': {k: v for k, v in lease.items() if k != 'token'},
+                'owner_process_state': owner_state(lease) if lease else 'none',
                 'last_tick': load(root / f'inbox/control/runtime/ticks/{role}.json', {})}
     if args.action == 'recover':
         guard(data, role)
@@ -142,35 +180,37 @@ def execute(args):
             old = load(lease_path(root, role), {})
             if not old or old.get('owner') != args.owner:
                 raise ValueError('Recovery owner does not match; recheck status')
-            if old.get('expires_at', 0) > dt.datetime.now().timestamp():
+            # A verified exit needs no TTL sleep. Unbound legacy leases retain
+            # their existing expiry + explicit verification recovery protocol.
+            state = owner_state(old)
+            if state != 'exited_or_reused' and old.get('expires_at', 0) > dt.datetime.now().timestamp():
                 raise ValueError('Lease not expired; no forced takeover')
             identity = pid_identity(old['pid']) if old.get('pid') else None
             if old.get('pid') and identity is not None and (identity == 'UNVERIFIABLE' or not old.get('process_start') or identity == old['process_start']):
                 raise ValueError('Owner process is still alive; no takeover')
             if not args.confirmed_stopped or not args.evidence or not Path(args.evidence).is_file():
                 raise ValueError('Recovery needs confirmed stopped owner and an existing verification evidence file')
-            record = {'recovered_at': now(), 'role': role, 'old_owner': args.owner,
-                      'verification_evidence': str(Path(args.evidence).resolve()),
-                      'lease': {k: v for k, v in old.items() if k != 'token'}}
-            save(root / 'inbox/control/runtime/recoveries' / (uuid.uuid4().hex + '.json'), record)
+            record = record_recovery(root, role, old, reason='EXPLICIT_STOP_VERIFICATION',
+                                     verification_evidence=str(Path(args.evidence).resolve()))
             lease_path(root, role).unlink()
             return {'recovered': True, 'evidence': record['verification_evidence']}
     if args.action == 'claim':
         guard(data, role)
         with locked(lease_lock(root, role)):
+            # Capture once; never persist UNVERIFIABLE as if it identified a worker.
+            process_start = verified_pid_identity(args.pid) if args.pid is not None else None
             old = load(lease_path(root, role), {})
             if old:
                 # Expiration alone never proves that an owner has stopped writing.
-                identity = pid_identity(old['pid']) if old.get('pid') else None
-                proven_dead = old.get('pid') and old.get('process_start') and identity != 'UNVERIFIABLE' and identity != old['process_start']
-                if old.get('expires_at', 0) > dt.datetime.now().timestamp() or not proven_dead:
+                proven_dead = owner_state(old) == 'exited_or_reused'
+                if not proven_dead:
                     return {'claimed': False, 'reason': 'OWNER_BUSY_OR_UNVERIFIED',
                             'owner': old.get('owner'), 'expires_at': old.get('expires_at')}
-            if args.pid and not pid_identity(args.pid):
-                raise ValueError('Owner PID is not alive')
+                record_recovery(root, role, old, reason='BOUND_OWNER_EXITED_OR_PID_REUSED',
+                                verification_source='/proc/PID/stat start-time identity')
             lease = {'owner': args.owner, 'token': uuid.uuid4().hex, 'claimed_at': now(),
                      'expires_at': dt.datetime.now().timestamp() + args.ttl,
-                     'pid': args.pid, 'process_start': pid_identity(args.pid) if args.pid else None}
+                     'pid': args.pid, 'process_start': process_start}
             save(lease_path(root, role), lease)
             return {'claimed': True, **lease}
     if args.action in ('renew', 'release', 'run', 'event', 'timeline'):
@@ -178,8 +218,14 @@ def execute(args):
             if args.action != 'release':
                 guard(data, role)
             # The same owner may release or renew an expired token if no takeover replaced it.
-            lease = valid_lease(root, role, args.token, allow_expired=args.action in ('release', 'renew'))
+            lease = valid_lease(root, role, args.token, allow_expired=args.action in ('release', 'renew'),
+                                verify_owner=args.action != 'release')
             if args.action == 'renew':
+                if args.pid is not None:
+                    process_start = verified_pid_identity(args.pid)
+                    if lease.get('pid') and (lease['pid'] != args.pid or lease.get('process_start') != process_start):
+                        raise ValueError('Cannot transfer lease to another worker; release and claim normally')
+                    lease.update(pid=args.pid, process_start=process_start)
                 lease['expires_at'] = dt.datetime.now().timestamp() + args.ttl
                 save(lease_path(root, role), lease)
                 return {'renewed': True, 'expires_at': lease['expires_at']}
