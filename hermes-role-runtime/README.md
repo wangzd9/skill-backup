@@ -1,5 +1,7 @@
 # Hermes 角色运行优化
 
+2026-10-30 **0.14.0**：ACTIVE工作输入保真去重，终态动作授权哈希归档，后台工具发现匹配角色能力，补充脱敏hook可见字节观测。保留模型、推理预算、全部验收/授权门禁和显式ACK；不依据字节降幅宣称Token或交付效率已达标。实施与安全重启采用见[本轮记录](/home/wang/work/doc/analysis/coordinator-health-audit-20261030/TOKEN-OPTIMIZATION-IMPLEMENTATION.md)。
+
 2026-10-20 缺陷修复、验证、安装和恢复边界见 [FIXES-20261020.md](FIXES-20261020.md)。源码交付与生产完整采用分别记录；隔离首次激活测试不替代真实 M 门。
 
 2026-10-20 增量已接入写权诊断、活动生命周期、共用时序回放、观察历史适配和有界事件派发，范围/回退/验证见 [Ruflo 增量实施记录](/home/wang/work/doc/analysis/role-workflow-flow-audit-20261019/RUFLO-IMPLEMENTATION.md)。本地检查工具为 `scripts/observation_tools.py`；生产迁移及存储切换未自动启用。

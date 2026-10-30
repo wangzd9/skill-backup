@@ -55,7 +55,8 @@ def work_packet(ledger, packet):
     business_rows(ledger,packet)
     if packet.get('work') and packet.get('checkpoint')==packet['work'].get('checkpoint'):
         packet['checkpoint']={'same_as':'/work/checkpoint'}
-    return packet
+    from workflow_model_input import project
+    return project(ledger,packet)
 
 
 def report_packet(ledger, facts):

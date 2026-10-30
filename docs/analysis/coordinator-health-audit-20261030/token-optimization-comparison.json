@@ -1,0 +1,87 @@
+[
+  {
+    "role": "COORDINATOR",
+    "before_bytes": 199464,
+    "after_bytes": 181313,
+    "byte_reduction_percent": 9.1,
+    "full_expansion_identical": true,
+    "expanded_sha256": "4374d95d7ab51b4da85b1605defe4027a819f0a4f8ca83931dc71f44d705999b",
+    "projection": {
+      "version": 1,
+      "before_bytes": 199464,
+      "after_bytes_without_metrics": 180851,
+      "same_packet_references": 25,
+      "terminal_authorizations_archived": 37,
+      "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+      "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。"
+    }
+  },
+  {
+    "role": "TESTER",
+    "before_bytes": 95404,
+    "after_bytes": 85649,
+    "byte_reduction_percent": 10.22,
+    "full_expansion_identical": true,
+    "expanded_sha256": "6f47ffeac4133473ea9bfe758f594b973ed63d974a2dbb59505af4d6563a42ba",
+    "projection": {
+      "version": 1,
+      "before_bytes": 95404,
+      "after_bytes_without_metrics": 85190,
+      "same_packet_references": 14,
+      "terminal_authorizations_archived": 7,
+      "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+      "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。"
+    }
+  },
+  {
+    "role": "A",
+    "before_bytes": 72682,
+    "after_bytes": 64945,
+    "byte_reduction_percent": 10.65,
+    "full_expansion_identical": true,
+    "expanded_sha256": "73053c3b73741de7d6981138b50190d1906d65085c656228a071ac25681544a5",
+    "projection": {
+      "version": 1,
+      "before_bytes": 72682,
+      "after_bytes_without_metrics": 64486,
+      "same_packet_references": 14,
+      "terminal_authorizations_archived": 0,
+      "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+      "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。"
+    }
+  },
+  {
+    "role": "B",
+    "before_bytes": 72682,
+    "after_bytes": 64945,
+    "byte_reduction_percent": 10.65,
+    "full_expansion_identical": true,
+    "expanded_sha256": "6ce78e44e327b6a7643fa76d3b88065d10a3f607832197ecf83bb8b84d7d2c8d",
+    "projection": {
+      "version": 1,
+      "before_bytes": 72682,
+      "after_bytes_without_metrics": 64486,
+      "same_packet_references": 14,
+      "terminal_authorizations_archived": 0,
+      "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+      "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。"
+    }
+  },
+  {
+    "role": "C",
+    "before_bytes": 72682,
+    "after_bytes": 64945,
+    "byte_reduction_percent": 10.65,
+    "full_expansion_identical": true,
+    "expanded_sha256": "4e5076914ec9706084a8b1b0964fdfb376c01425a1dd018a47cab36941a81855",
+    "projection": {
+      "version": 1,
+      "before_bytes": 72682,
+      "after_bytes_without_metrics": 64486,
+      "same_packet_references": 14,
+      "terminal_authorizations_archived": 0,
+      "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+      "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。"
+    }
+  }
+]

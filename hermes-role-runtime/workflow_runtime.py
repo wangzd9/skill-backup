@@ -160,7 +160,8 @@ def prepare(job, *, pool_path, execution, home, session_id):
     scope['session_policy']=limits
     issued = ledger.work_inputs(result['identity'], limit=100, command_id='native-input:' + identifier)
     packet = current_input(pool_path, role, scope=scope, event_page=issued)
-    toolset = {'COORDINATOR': 'role_coordination', 'TESTER': 'role_testing'}.get(role, 'role_development')
+    from workflow_toolsets import configure
+    toolsets = configure(role)
     # The supplied worktree is chosen by the accepted specification, never cwd history.
     task = packet.get('task') or {}
     workdir = task.get('contract', {}).get('worktree') or run['repo']
@@ -181,7 +182,7 @@ def prepare(job, *, pool_path, execution, home, session_id):
         raise ValueError('WORKTREE_UNAVAILABLE')
     scoped = dict(job, script=None, workdir=str(workdir), _role_pool_scope=scope,
                   _role_pool_session_id=session_id,
-                  enabled_toolsets=['terminal', 'file', 'skills', 'role_workflow', toolset])
+                  enabled_toolsets=toolsets)
     seal_input(packet)
     from workflow_tool_bridge import usage
     scoped['prompt'] = (
@@ -201,6 +202,8 @@ def prepare(job, *, pool_path, execution, home, session_id):
         '未确认时续读下一页用 paging.next_after；历史回读用 role_work_input history=true，不能用于 ACK。'
         'requires_paging 仅为体积提示；事件续读看 paging.events_may_have_more，反复翻旧页不能缩减非事件字段。'
         'detail_artifacts 为未展开的完整证据；waiting_external 只在仅余外部授权或结果时按建议保存。'
+        'same_as 是本包内相同原文的JSON Pointer，递归展开即可读取，不依赖上轮记忆；未展开归档不能声称已读。'
+        '独立材料查询尽量在同轮并行；按路径/范围/哈希复用本人已核实结论，版本或环境改变即重新读取。'
         + usage(role,include_background=role=='COORDINATOR')+'\n'
         + json.dumps(packet, ensure_ascii=False, sort_keys=True))
     return scoped
@@ -227,8 +230,9 @@ def prepare_report(job, *, pool_path, execution, home, session_id):
            'home':str(Path(home).resolve()),
            'runtime_version_digest':code_version()['digest'],
            'drain_only':False}
+    from workflow_toolsets import configure
     return dict(job,workdir=run['requirement_root'],_role_pool_scope=scope,
-                _role_pool_session_id=session_id,enabled_toolsets=['file','role_workflow'])
+                _role_pool_session_id=session_id,enabled_toolsets=configure(role,readonly=True))
 
 
 def recover_executions(pool_path):

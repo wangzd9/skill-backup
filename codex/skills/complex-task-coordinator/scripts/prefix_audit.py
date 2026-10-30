@@ -26,6 +26,10 @@ class PrefixAudit:
             tools_changed=bool(old.get('tools_hash') and tools_hash and old['tools_hash']!=tools_hash)
             row={'session_id':session_id,'observed_at':now(),'system_hash':system_hash,
                  'tools_hash':tools_hash,'system_chars':len(str(system_prompt)),
+                 'measurement_scope':'sanitized_hook_payload_only',
+                 'system_observed_bytes':len(str(system_prompt).encode()) if system_prompt is not None else None,
+                 'tools_observed_bytes':len(json.dumps(tools,ensure_ascii=False,separators=(',',':')).encode()) if available else None,
+                 'measured_section_tokens':None,
                  'tool_names':[(t.get('function') or t).get('name','') for t in (tools or [])],
                  'tools_evidence':'sanitized_hook_payload' if available else 'UNAVAILABLE',
                  'system_changed':system_changed,'tools_changed':tools_changed,

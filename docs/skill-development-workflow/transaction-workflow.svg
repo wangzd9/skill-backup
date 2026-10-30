@@ -17,8 +17,9 @@
 <rect x="440" y="260" width="725" height="145" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
 <text x="458" y="289" class="heading">唯一业务账本：任务 / attempt → work → execution</text>
 <text x="458" y="315" class="line">R2及周期恢复共用准入；checkpoint精确接续</text>
-<text x="458" y="338" class="line">短裁决先登记再关联处置；补验身份不可被checkpoint覆盖</text>
-<text x="458" y="361" class="line">阶段并行须匹配版本契约；集成与验收门禁保留</text>
+<text x="458" y="338" class="line">相同正文包内去重；门禁与原始证据保真</text>
+<text x="458" y="361" class="line">角色工具发现匹配能力；模型与推理预算不变</text>
+<text x="458" y="384" class="line">阶段并行须匹配版本契约；集成与验收门禁保留</text>
 <rect x="35" y="260" width="355" height="145" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
 <text x="53" y="289" class="heading">原生执行与独立服务</text>
 <text x="53" y="315" class="line">旧验证退休→原角色退出→核退自动收口</text>

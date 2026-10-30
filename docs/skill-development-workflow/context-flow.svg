@@ -5,10 +5,10 @@
 <rect width="1200" height="820" fill="#ffffff" rx="16"/>
 <text x="32" y="35" class="heading">上下文与归档：当前材料足够接续，原始证据完整保留</text>
 <rect x="35" y="75" width="530" height="135" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-<text x="53" y="104" class="heading">① 冻结需求 / generation → context-input</text>
-<text x="53" y="130" class="line">本角色实际根：checkpoint、未完成索引与pending</text>
-<text x="53" y="153" class="line">按需核有效派单 / ACK / decision / 原始证据</text>
-<text x="53" y="176" class="line">摘要和字节预算不减少必要核验</text>
+<text x="53" y="104" class="heading">① ACTIVE 工作单 → 当前输入快照</text>
+<text x="53" y="130" class="line">当前工作、全部阶段义务与 FAIL / UNKNOWN</text>
+<text x="53" y="153" class="line">相同长正文包内引用；终态授权保留哈希原件</text>
+<text x="53" y="176" class="line">未展开 ≠ 已读；事件仍须显式 ACK</text>
 <rect x="635" y="75" width="530" height="135" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
 <text x="653" y="104" class="heading">② 参考材料：canonical路径 + SHA</text>
 <text x="653" y="130" class="line">正文仍在上下文且hash未变 → 复用</text>
