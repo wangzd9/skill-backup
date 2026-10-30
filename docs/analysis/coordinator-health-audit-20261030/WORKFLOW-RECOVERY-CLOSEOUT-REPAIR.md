@@ -77,3 +77,11 @@
 21:47后的当次入口仍显示a8 REVIEW，但 independent_test/ocr均PASS且合入记录存在；下一合法动作是 **complete**，其准备材料FOUND，合同要求真实交付summary。该回执落账后才会将任务COMPLETED并触发原生MySQL补验和MN-07刷新。此时不能把本地合入冒充整个需求完成；e14173仍REPAIR_QUEUED，MN-07仍SNAPSHOT_STALE，新MySQL补验尚未排队。新协调执行 `cb0c82a4435348b8a533d1ff373e9fcb` / PID869700已自动绑定原work，模型请求在途，尚未取得complete回执。
 
 全部机制源码、指南和截至0.16.5的核验已推送 **wangzd9/skill-backup/main**，提交 `0573a1c90c3e04f9dfd7e6ae19e6678b44b156a0`，已核远端HEAD一致。后续业务状态另随证据更新同步。
+
+## 实际闭环接续：开发完成、补验派单和快照刷新
+
+**e14274**：原协调者通过complete提交真实交付收据，MN-04 a8变为COMPLETED，当前开发任务 **6/6完成**。随后原生巡检自动落账 **e14275 SUPPLEMENTAL_REVALIDATION_QUEUED**，明确关联异常 **14173**、原请求 **8937**、原work及原FAIL supersedes；新work `work-467824927822491bbf9094e4b24d1825`固定a8 head e82af002。**e14277**：原TESTER已领取该work，下一动作verify_supplemental，无需新授权。
+
+**e14276 INTEGRATION_VERIFICATION_QUEUED**：原生重新冻结当前集成版本并排MN-07 attempt 3，work `work-05b4512fec3d4ebfad4afbac89029232`。当次状态已从SNAPSHOT_STALE变为 **VERIFICATION_QUEUED**，没有手工改快照、复用旧PASS或伪造测试。具体目标、原生派单与查询时刻见发布记录refreshed_business_status。
+
+当前剩余的是实际独立验证门禁：TESTER先完成同源MySQL补验，再执行排队的MN-07；MySQL真实PASS后协调者显式close e14173，最终集成真实PASS并完成逐项证据审核后才complete_requirement。当前尚无这些PASS/异常关闭/需求完成回执，不能宣称需求已经验收。派单、快照刷新及原角色自动领取均已实际发生，原来的无人推进链路已解除。

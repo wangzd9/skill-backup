@@ -353,7 +353,7 @@
   },
   "business_actions_by_maintenance": false,
   "business_rows_directly_edited": false,
-  "business_status": "a8 OCR PASS e14259, APPROVE e14260 and actual local merge e14268 verified. complete is current FOUND executable action; task remains REVIEW pending real delivery receipt, so MySQL revalidation and MN-07 refresh have not yet started.",
+  "business_status": "a8 completed e14274, automatic same-source MySQL revalidation queued e14275 and claimed by TESTER e14277, MN-07 snapshot refreshed and verification queued e14276. Waiting for genuine independent verification; original exception remains open until matching PASS and explicit close.",
   "native_resumption": {
     "checked_at": "2026-10-30T20:49:14+08:00",
     "event_high_water": 14252,
@@ -1365,5 +1365,224 @@
     "github_mechanism_commit": "0573a1c90c3e04f9dfd7e6ae19e6678b44b156a0",
     "github_remote_head_verified": true,
     "next": "Native coordinator must complete real delivery receipt, enabling native MySQL revalidation and completion snapshot reconciliation; no need for new user authorization."
+  },
+  "refreshed_business_status": {
+    "checked_at": "2026-10-30T22:00:42.651959+08:00",
+    "event_high_water": 14277,
+    "authority": "fresh readonly live_progress/current_input/native ledger; checkpoint not used as current state",
+    "tasks": [
+      {
+        "task_id": "MN-01",
+        "role": "A",
+        "phase": "COMPLETED",
+        "attempt": 7,
+        "candidate_id": "candidate-c75efadfe17d406ea42062f2ad8732dc",
+        "head": "daf3f9b23b62c7c67b5b297dd57ff3e0277209d0"
+      },
+      {
+        "task_id": "MN-02",
+        "role": "B",
+        "phase": "COMPLETED",
+        "attempt": 3,
+        "candidate_id": "candidate-mn02-attempt3-b0",
+        "head": "5714b291443b6b812b9d0fc73d5154e767dcde15"
+      },
+      {
+        "task_id": "MN-03",
+        "role": "C",
+        "phase": "COMPLETED",
+        "attempt": 9,
+        "candidate_id": "candidate-1dcf5941311049e8bd281059e7d25863",
+        "head": "56778fad2750c3b13aad5c814219777e600624c0"
+      },
+      {
+        "task_id": "MN-04",
+        "role": "A",
+        "phase": "COMPLETED",
+        "attempt": 8,
+        "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+        "head": "e82af00254ddd4dc67a823b142f0f7c6c4d5d596"
+      },
+      {
+        "task_id": "MN-05",
+        "role": "B",
+        "phase": "COMPLETED",
+        "attempt": 3,
+        "candidate_id": "candidate-26cc19d187f691a2274c1b403923ea74",
+        "head": "26cc19d187f691a2274c1b403923ea7443536925"
+      },
+      {
+        "task_id": "MN-06",
+        "role": "C",
+        "phase": "COMPLETED",
+        "attempt": 2,
+        "candidate_id": "candidate-ec625d3c843c4c21b1d364a363745c9d",
+        "head": "0225b72274986eaee1305ecb57c8b67f8e34f7bc"
+      }
+    ],
+    "completion": {
+      "state": "VERIFICATION_QUEUED",
+      "work_id": "work-05b4512fec3d4ebfad4afbac89029232",
+      "completion_event_id": null,
+      "validation_task_id": "MN-07",
+      "closure_task_id": "MN-08",
+      "scope": "accepted_local_development"
+    },
+    "open_gates": [
+      {
+        "code": "VERIFICATION_EXCEPTION_REPAIR_PENDING",
+        "observation_event_id": 14173,
+        "owner": "COORDINATOR",
+        "state": "REPAIR_QUEUED",
+        "work_id": "work-2c31ed88a98f4a5d95400816e43769e2"
+      }
+    ],
+    "supplemental_verifications": [
+      {
+        "work_id": "work-4be742a473d54839974f078b3a73c46d",
+        "task_id": "MN-01",
+        "candidate_id": "candidate-c75efadfe17d406ea42062f2ad8732dc",
+        "state": "ENDED",
+        "owner": "TESTER",
+        "profile": "mysql_migration",
+        "supersedes": [],
+        "result": "FAIL"
+      },
+      {
+        "work_id": "work-224df6882b7f4bf0b4286eda8192e2ce",
+        "task_id": "MN-04",
+        "candidate_id": "candidate-cc1344cf8067403f84361e08c6871105",
+        "state": "ENDED",
+        "owner": "TESTER",
+        "profile": "mysql_migration",
+        "supersedes": [
+          "verification-289eeed67f1543609a9b8ad89c3cedfe"
+        ],
+        "result": "NOT_VERIFIED"
+      },
+      {
+        "work_id": "work-6583597486a14928bd287efd039b772e",
+        "task_id": "MN-04",
+        "candidate_id": "candidate-cc1344cf8067403f84361e08c6871105",
+        "state": "ENDED",
+        "owner": "TESTER",
+        "profile": "mysql_migration",
+        "supersedes": [
+          "verification-289eeed67f1543609a9b8ad89c3cedfe"
+        ],
+        "result": "NOT_VERIFIED"
+      },
+      {
+        "work_id": "work-2c31ed88a98f4a5d95400816e43769e2",
+        "task_id": "MN-04",
+        "candidate_id": "candidate-81b2729f35604ded872853d641f9048f",
+        "state": "ENDED",
+        "owner": "TESTER",
+        "profile": "mysql_migration",
+        "supersedes": [
+          "verification-289eeed67f1543609a9b8ad89c3cedfe"
+        ],
+        "result": "UNVERIFIED"
+      },
+      {
+        "work_id": "work-467824927822491bbf9094e4b24d1825",
+        "task_id": "MN-04",
+        "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+        "state": "RUNNING",
+        "owner": "TESTER",
+        "profile": "mysql_migration",
+        "supersedes": [
+          "verification-289eeed67f1543609a9b8ad89c3cedfe"
+        ],
+        "result": "NOT_VERIFIED"
+      }
+    ],
+    "milestones": [
+      {
+        "event_id": 14274,
+        "kind": "CANDIDATE_DECIDED",
+        "role": "COORDINATOR",
+        "created_at": 1793368638.5171704,
+        "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+        "payload": {
+          "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+          "decision": "COMPLETE"
+        }
+      },
+      {
+        "event_id": 14275,
+        "kind": "SUPPLEMENTAL_REVALIDATION_QUEUED",
+        "role": "TESTER",
+        "created_at": 1793368678.162365,
+        "work_id": "work-467824927822491bbf9094e4b24d1825",
+        "payload": {
+          "work_id": "work-467824927822491bbf9094e4b24d1825",
+          "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+          "head": "e82af00254ddd4dc67a823b142f0f7c6c4d5d596",
+          "exception_event_ids": [
+            14173
+          ],
+          "original_request_event_id": 8937,
+          "origin_work_id": "work-4be742a473d54839974f078b3a73c46d",
+          "supersedes": [
+            "verification-289eeed67f1543609a9b8ad89c3cedfe"
+          ]
+        }
+      },
+      {
+        "event_id": 14276,
+        "kind": "INTEGRATION_VERIFICATION_QUEUED",
+        "role": "TESTER",
+        "created_at": 1793368679.1528666,
+        "work_id": "work-05b4512fec3d4ebfad4afbac89029232",
+        "payload": {
+          "work_id": "work-05b4512fec3d4ebfad4afbac89029232",
+          "attempt": 3,
+          "automatic": true,
+          "requires_user_approval": false,
+          "target": {
+            "run_id": "prepared-rosbag-catalog-a100-multi-node",
+            "repo": "/home/wang/work/rosbag-catalog",
+            "branch": "feat/a100-multi-node",
+            "head": "e82af00254ddd4dc67a823b142f0f7c6c4d5d596",
+            "ac_version": "57e3d798bfdf6d18103b2cc11fb9797234e0e650dacb57a88f00613d1ff8c75a"
+          }
+        }
+      }
+    ],
+    "tester_work": {
+      "work_id": "work-467824927822491bbf9094e4b24d1825",
+      "kind": "supplemental_verification",
+      "role": "TESTER",
+      "state": "RUNNING",
+      "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+      "attempt": 8,
+      "active_execution_id": "a8e6f8afdf0a49a2bbca84f8e8e9b592"
+    },
+    "tester_next_actions": [
+      {
+        "action": "verify_supplemental",
+        "payload": {},
+        "reason": "已入账的固定候选MySQL补验，使用受控临时8.4实例与Unix socket；不需要shell、生产URL或再次授权；skip不能报MySQL通过。"
+      }
+    ],
+    "active_executions": [
+      {
+        "execution_id": "cb0c82a4435348b8a533d1ff373e9fcb",
+        "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+        "role": "COORDINATOR",
+        "pid": 869700,
+        "bound_at": 1793367960.5784962
+      },
+      {
+        "execution_id": "a8e6f8afdf0a49a2bbca84f8e8e9b592",
+        "work_id": "work-467824927822491bbf9094e4b24d1825",
+        "role": "TESTER",
+        "pid": 912312,
+        "bound_at": 1793368682.44005
+      }
+    ],
+    "maintenance_business_rows_directly_edited": false,
+    "user_reauthorization_required_for_queued_work": false
   }
 }
