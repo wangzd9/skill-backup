@@ -353,7 +353,7 @@
   },
   "business_actions_by_maintenance": false,
   "business_rows_directly_edited": false,
-  "business_status": "OCR completed and was natively collected: action mn04-a8-ocr-002 is RESULT_READY (e14254); full coverage, zero findings, explicit coordinator adjudication still required. e14173 stays open; MN-07 remains stale until provider gates complete.",
+  "business_status": "a8 OCR PASS e14259, APPROVE e14260 and actual local merge e14268 verified. complete is current FOUND executable action; task remains REVIEW pending real delivery receipt, so MySQL revalidation and MN-07 refresh have not yet started.",
   "native_resumption": {
     "checked_at": "2026-10-30T20:49:14+08:00",
     "event_high_water": 14252,
@@ -1245,5 +1245,125 @@
     "regression_log_sha256": "9802db7c5f66fcf63b9a15c07431fab5a6976741aa7b6f23f483e10bc8b77ddf",
     "original_refusal_receipts_modified": false,
     "evidence_hash_policy_weakened": false
+  },
+  "postmerge_business_status": {
+    "checked_at": "2026-10-30T21:52:45.106843+08:00",
+    "event_high_water": 14272,
+    "authority": "fresh readonly live_progress/current_input plus native ledger; no checkpoint projected as current",
+    "business_events": [
+      {
+        "event_id": 14259,
+        "kind": "SERVICE_ADJUDICATED",
+        "role": "COORDINATOR",
+        "created_at": 1793366464.263874,
+        "payload": {
+          "action_id": "mn04-a8-ocr-002",
+          "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+          "result": "PASS",
+          "verification_id": "verification-b7e8b4987be84d95a9fd92f1deed52f5"
+        }
+      },
+      {
+        "event_id": 14260,
+        "kind": "CANDIDATE_DECIDED",
+        "role": "COORDINATOR",
+        "created_at": 1793366513.7480984,
+        "payload": {
+          "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+          "decision": "APPROVE",
+          "decision_id": "decision-d4dfe074f7404a529d8a0586fb68f316"
+        }
+      },
+      {
+        "event_id": 14268,
+        "kind": "CANDIDATE_MERGED",
+        "role": "COORDINATOR",
+        "created_at": 1793367182.2307897,
+        "payload": {
+          "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+          "merge_id": "merge-a2549c1e6682479cb25cef08526e1a8e",
+          "head": "e82af00254ddd4dc67a823b142f0f7c6c4d5d596"
+        }
+      }
+    ],
+    "mn04": {
+      "task_id": "MN-04",
+      "role": "A",
+      "phase": "REVIEW",
+      "attempt": 8,
+      "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+      "head": "e82af00254ddd4dc67a823b142f0f7c6c4d5d596",
+      "recorded_checks": {
+        "independent_test": [
+          "PASS"
+        ],
+        "ocr": [
+          "PASS"
+        ]
+      },
+      "dependency_ready": true
+    },
+    "completion": {
+      "state": "SNAPSHOT_STALE",
+      "work_id": "work-0109bcdb04ed4f639e98b338118a88cb",
+      "completion_event_id": null,
+      "validation_task_id": "MN-07",
+      "closure_task_id": "MN-08",
+      "scope": "accepted_local_development"
+    },
+    "open_gates": [
+      {
+        "code": "VERIFICATION_EXCEPTION_REPAIR_PENDING",
+        "observation_event_id": 14173,
+        "owner": "COORDINATOR",
+        "state": "REPAIR_QUEUED",
+        "work_id": "work-2c31ed88a98f4a5d95400816e43769e2"
+      }
+    ],
+    "current_actions": [
+      {
+        "decision_id": "decision-f1e784b02c666b462e0f14fb",
+        "action": "follow_verification_repair",
+        "target": {
+          "candidate_id": "candidate-81b2729f35604ded872853d641f9048f",
+          "observation_event_id": 14173
+        },
+        "reason": "核UNVERIFIED原始证据后显式选择repair/investigate/close。repair仅原范围已完成任务，落实真实新attempt；已有处置则先核落账派单/安全核退/真实复验，不等待MN-07失败、不扩范围、不重复同因提交。",
+        "execution_kind": "guidance",
+        "material_fingerprint": "ef970e1b59aeeee272ab3121ed802b136cdb23f275b4e8b064fd463c5e22df60",
+        "related_decision_ids": [
+          "decision-101d16d8755e3bbdc6ad0590"
+        ]
+      },
+      {
+        "decision_id": "decision-101d16d8755e3bbdc6ad0590",
+        "action": "complete",
+        "target": {
+          "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa"
+        },
+        "reason": "提交真实交付摘要；服务落盘收据并复核合入、验证与批准，不需要 write_file",
+        "execution_kind": "command",
+        "material_fingerprint": "1186c2726e49ce1a8d8c288d27eadabbb22dead5637edbf0f99c8f9c3ecfd575"
+      }
+    ],
+    "complete_materials": [
+      {
+        "decision_id": "decision-101d16d8755e3bbdc6ad0590",
+        "source_status": "FOUND"
+      }
+    ],
+    "active_executions": [
+      {
+        "execution_id": "cb0c82a4435348b8a533d1ff373e9fcb",
+        "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+        "role": "COORDINATOR",
+        "pid": 869700,
+        "bound_at": 1793367960.5784962
+      }
+    ],
+    "new_supplemental_verification": false,
+    "github_mechanism_commit": "0573a1c90c3e04f9dfd7e6ae19e6678b44b156a0",
+    "github_remote_head_verified": true,
+    "next": "Native coordinator must complete real delivery receipt, enabling native MySQL revalidation and completion snapshot reconciliation; no need for new user authorization."
   }
 }

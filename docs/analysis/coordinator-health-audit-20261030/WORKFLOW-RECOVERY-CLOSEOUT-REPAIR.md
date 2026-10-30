@@ -69,3 +69,11 @@
 继续核代码发现新式 OCR_REVIEW_COVERAGE_UNAVAILABLE 的旧回执还包含 excluded_files[].path。为覆盖当前旧式拒绝之外的通用路径，0.16.5 将已知path/exclude_reason结构在恢复视图中同样表示为repository_path；原拒绝回执及哈希保留。回归夹具加入原生生成的excluded_files结构，并实际经过完整decision prepare：修复覆盖FOUND、真实缺哈希证据仍UNVERIFIED，10项通过。21:06:06网关热加载68项源码哈希一致，生产当前审查裁决材料仍FOUND。
 
 原协调者于e14256/e14257正常核退，21:05:01原生自动绑定下一执行 `afa9a10695b94912811dfdb87a9bbe31` / PID731080（e14258），仍是原work；没有新增接管owner，也没有重启或中断在途OCR。当前其职责是读取已完成审查的真实结果并裁决，不能以提交回合的历史checkpoint覆盖已经RESULT_READY的当前状态。
+
+## 实际推进：OCR裁决、批准和本地合入
+
+随后原协调者已实际完成三项业务转换：**e14259 SERVICE_ADJUDICATED / OCR PASS**、**e14260 CANDIDATE_DECIDED / APPROVE**、**e14268 CANDIDATE_MERGED / head e82af002**。这些来自当次账本，不是checkpoint叙述。修复后的路径已从拒绝恢复推进到真实合入，未跳过独立测试或审查。
+
+21:47后的当次入口仍显示a8 REVIEW，但 independent_test/ocr均PASS且合入记录存在；下一合法动作是 **complete**，其准备材料FOUND，合同要求真实交付summary。该回执落账后才会将任务COMPLETED并触发原生MySQL补验和MN-07刷新。此时不能把本地合入冒充整个需求完成；e14173仍REPAIR_QUEUED，MN-07仍SNAPSHOT_STALE，新MySQL补验尚未排队。新协调执行 `cb0c82a4435348b8a533d1ff373e9fcb` / PID869700已自动绑定原work，模型请求在途，尚未取得complete回执。
+
+全部机制源码、指南和截至0.16.5的核验已推送 **wangzd9/skill-backup/main**，提交 `0573a1c90c3e04f9dfd7e6ae19e6678b44b156a0`，已核远端HEAD一致。后续业务状态另随证据更新同步。
