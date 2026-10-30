@@ -69,3 +69,5 @@ INCOMPLETE 不自动推荐再次 resume。先 service_collect 核原生状态及
 ACK、checkpoint、worker退出分别不代表业务完成。核最近真实状态转换、首次有效动作、session_handoff及异常下一责任人；旧INCOMPLETE单列历史，旧/跨需求UNKNOWN写者继续围栏。零派发拒绝不是业务通过；UNKNOWN通知不盲重发，健康总量与有界样本分别说明。完整实施与采用限制见工作区效果停滞修复记录。
 
 2026-10-30 / 0.16.2：决策目录的execution_kind=guidance不是命令；follow_verification_repair材料指向当前返修候选及related_decision_ids，先处理真实OCR/裁决/合入，不重开旧处置。OCR已证明零派发的拒绝重新核当前零模型预览，READY才可按有效预算新action_id提交；BLOCKED/UNVERIFIED保持覆盖门禁。异常在后续attempt沿原生previous_candidate_id谱系接续，真实同源MySQL补验PASS后显式close。SNAPSHOT_STALE看refresh_readiness，提供方齐备及旧writer核退后原生刷新，不手工改快照。后台会话超过原交接阈值后，继续只读翻历史也被要求checkpoint(yield_execution=true)并结束；不ACK未读前缀，保留原work与全部门禁。
+
+0.16.3：预览中的repository_path是固定base/head的Git相对路径元数据；path/sha256才是不可变证据引用。准备材料不因前者缺文件哈希而误报UNVERIFIED，真实证据缺失、变化或缺哈希仍阻断；FOUND不表示模型已读或业务通过。

@@ -1,6 +1,6 @@
 {
-  "runtime_version": "0.16.2",
-  "runtime_commit": "ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa",
+  "runtime_version": "0.16.3",
+  "runtime_commit": "9ead79defc953f941606620d2c6dbf004e4fd973",
   "tests": {
     "distinct_cases_verified": 124,
     "failures_remaining": 0,
@@ -403,5 +403,227 @@
       }
     ],
     "business_transition_since_replacement": false
+  },
+  "preview_source_classification_repair": {
+    "reason": "Production decision prepare mistook Git-relative preview path for immutable evidence and incorrectly returned UNVERIFIED / IMMUTABLE_HASH_REQUIRED.",
+    "fix": "Use repository_path for Git selection metadata; retain strict path/sha256 validation for evidence.",
+    "publication": {
+      "runtime_commit": "9ead79defc953f941606620d2c6dbf004e4fd973",
+      "base_commit": "ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa",
+      "changed_files": [
+        "FIXES-20261030.md",
+        "plugin.yaml",
+        "tests/test_recovery_closeout.py",
+        "workflow_service_recovery.py"
+      ],
+      "source_hashes": {
+        "FIXES-20261030.md": "691158953502e113148ec00890e6763895391579f9ff4a9ef3a42c99321cb479",
+        "plugin.yaml": "2b2f3dbeca87aeb07ffb97edd3fb56e60f687acef5d338a47f89bf1a4cb6c3b4",
+        "tests/test_recovery_closeout.py": "a2e66dd24a01092192a4f86a72a10064c19699dd116cd08d0c60cf036b91bea1",
+        "workflow_service_recovery.py": "fe0f321c9a4dff3abb9d590547b1bf5939cbe7c73810f922a9fdf1b4d675c710"
+      },
+      "atomic_file_publish": true,
+      "business_rows_modified": false
+    },
+    "gateway_activation": {
+      "checked_at": "2026-10-30T20:52:50+08:00",
+      "gateway_pid": 3612975,
+      "gateway_state": "running",
+      "platforms": {
+        "feishu": "connected"
+      },
+      "activation_pid": 3612975,
+      "activation_state": "ACTIVATED",
+      "mode": "future_calls_only",
+      "verified_source_files": 68,
+      "source_mismatches": [],
+      "source_sha256": {
+        "__init__.py": "1f1942480597f4bf5fd9f915b048c5851a7cc09c53ddf657a7f177d1e6765ac9",
+        "workflow_sandbox.py": "1ffac3acb514182b13e37d74872f930ec2ad9c20aa519cbdeb5c7574d6e04d7b",
+        "requirement_runtime.py": "aaa31709e03de63b5d2889abb3245ec91647b9dfd62612858c250ee6f79e4ede",
+        "workflow_registration.py": "5ef0a59d579b616a88509e7972d894ed68fdcca2932b590383f574f2f269db85",
+        "business_ledger.py": "c0a471f9261d7fd721458d14ba2737e2a2363a44f9017c195bd90aff4511d3e2",
+        "workflow_runtime.py": "96e1cb473939253f41359f424cd6355f963bd5b56fc89d895309705e697245e7",
+        "workflow_reports.py": "eb78eb34259dfe562bf7a1bf06add398b54ed4f0a3d4a68504137d1e4eef176d",
+        "report_summary.py": "7a59aaeb98851bc7ab1e5d2bb2da8fd2a7b00ec835e157dc6df44bfdae4f0965",
+        "workflow_notifications.py": "c89681d7d30a62fe0ef3150076d415104250012b9e892cec9c3315c43022eb64",
+        "workflow_views.py": "faf90613de990f6d372f2538acc5875707726a8cdc2e0293fae7a45759377f66",
+        "workflow_model_input.py": "917685f333921a1b2f5e94877bdbd53b034af8c3b8f04bd225dd77effed75ce0",
+        "workflow_toolsets.py": "a1c3d34bb270d3efde0945d63a2a94c228fd35266ab2c68f04562eac6fa22d13",
+        "workflow_coordination_log.py": "ec2f26893b47c853464b3354b4c569d9d6dfca4547990fa51094dce0498b077c",
+        "workflow_decision_context.py": "5e11a434cfd9652f1523f4bf4697566242abf91ce66adc123999b0f39b08a743",
+        "workflow_decision_metrics.py": "c9f23adcd5b15b43f5bda618ea5acb33107fec09c90f6788918abe3c2b98b39e",
+        "workflow_delivery.py": "a2b21b5b4bda170b303b96dd545564466d19c4d97bc1c1b41c1154894d4a8205",
+        "workflow_business_progress.py": "67829d1624c1714cedb7ddb7b5959a8f4776e4f18ae5e1f35481d301449772f1",
+        "workflow_ocr_selection.py": "bebbb18c9bb1d366eb913626a92981a81182da307e15797348ca29bce011fc77",
+        "workflow_sessions.py": "65ffa1c44c93b9607fdb98caca6fd46819b6959baaa833d736675dfaf3ebbae5",
+        "workflow_capacity.py": "10ad751a2fa0d341496f0de9886c47d512e030d1de1183b8d2c85e5fbfc77474",
+        "workflow_verification_retry.py": "2714f6b40d8cd79ce9c9a37610a25204700b1987a918914b71a1f9c9b9640a89",
+        "workflow_work_memory.py": "dc45c7553a2963ee44ded2b264ca838d284cd1fb409447aab667bc620099f89a",
+        "workflow_recovery.py": "ea5c13e36ec8f7c54356c4a27a0c814fb17bf4b6cdc4f1a14d04ed3471dbc826",
+        "workflow_verification_exceptions.py": "cebc1fa967354b4cbc2b0420e51ca1c8ad22ce8aed4b56ed9e6a5734c4f2dfa7",
+        "prefix_audit.py": "0d5c575bae4ada1dd03707ab201db49a32c32f9faf5a97086f4a0c888795a087",
+        "workflow_service_recovery.py": "fe0f321c9a4dff3abb9d590547b1bf5939cbe7c73810f922a9fdf1b4d675c710",
+        "workflow_observation.py": "b10bbc0a849e25976fadd11ba315896be414b57d23010bee76c127f4aed78031",
+        "observation_view.py": "7dc5c3e9a41f7d7c5397495201e7fb7193827dbec198c4f69872be8018cff23d",
+        "activity_signals.py": "42a255bc5f9725675a015c3553afe2e1ab1097d52dec3e1a7ccf76cc445d7fef",
+        "workflow_activity.py": "b9f7883659aba8b5e687774b587b7a345358ca0fa236edebfd3b084ee560827f",
+        "workflow_diagnostics.py": "00d4eed40f274d571a1591755680dc5b87b08ff74718dd664c8058231f3ce133",
+        "report_contract.py": "2808bbb1c81008a6b6cb65dc2c024772df4bb527a50b53874bb4ea21c7fd3954",
+        "manual_access.py": "342ddf3da86a2776611d058670f3e69b08d29a21537054d967eba118efac791d",
+        "workflow_query.py": "1f659f5fdede0fc3a9caf2e8b8e5716759a7b96d435c695563359a3db295a2ed",
+        "delivery_evidence.py": "6b7780cabdde388b32b1313faefc42bad5c35453221673701e4e7033014a505c",
+        "workflow_dispatch.py": "a0ebe8b27517285424672fa0e9872d53e95fd23203ad7e160884b6198df71688",
+        "ocr_runtime.py": "7f2f77b17f446b978316dae3a9ca0232e4d8ecbf577a9c898704aad7d4376b7a",
+        "workflow_services.py": "6ae338ebb2926b0a1be8e0e453cbd1ca7026188092a0298a624fff04d1472d42",
+        "workflow_contracts.py": "d92ee14316a6819eb9f7a2f6c9c3fcfdf450c7892d0444af7c9e4b5c0f5c10b7",
+        "workflow_progression.py": "15776ef8edd98bd19a562a83a888665ef454ddc5cbefb35840a05b62321d30db",
+        "workflow_merge_policy.py": "2aeeb236790003543b48af20ad4ee14e1fd53728c9b991b07fe5badfbb6de01a",
+        "workflow_task_merge_policy.py": "40b09f2257266bdbd744accae02fadb42cbcf12b3074c60e0bf4f55c8e60147f",
+        "workflow_autonomy.py": "70773d4e842d4578b961d1a68b57a4ca5e553469f041083567b5f1db26d992a9",
+        "workflow_input_pages.py": "cf318bd201be5ac5b3b99db7f98d8d805b2a3ebbd73485723e1cf9dc070a15ca",
+        "workflow_resumption.py": "4c5f4d605cc26a93b35e7c3049ff2052046656b1d80b10e7b36959ad0e97c5e1",
+        "workflow_notification_registry.py": "a7a6f33b131024095211d92d7bee6593bf07210a61b1e19fd7f520fa6f3bfeec",
+        "workflow_terminal_observation.py": "cf8dfc53e210096974024a9c3aed5def5341ccf8a23bb266f12768f74796db45",
+        "workflow_acceptance_obligations.py": "378b0fcfbff5d6d623d72c7e04925fd290874802471fcbe969dd749d2c48a10e",
+        "workflow_issue_policy.py": "b83bd16b2687888ef3c40919445daf13cedecb45fc72e7b4092743e9c431d84b",
+        "workflow_completion.py": "323c9e302ccd675992315ed6117edc9c97752caee5a53153b93643ece16b33ea",
+        "workflow_completion_repair.py": "8eceb73b69d58dde0f3bde71c6e55e51fe073b200206e89e4b2766c76f4c2160",
+        "workflow_completion_contracts.py": "7e049c0e6dd0006980829c3497bdc5609bc72a5c7f669b3ddfe3f52d26082839",
+        "workflow_completion_reports.py": "db50de56256d303fde7ff51222a9cb259cd939e7c9fb6b882b42f47f38e390ac",
+        "workflow_verification_lifecycle.py": "54d162b7d123fbee52a94da92f595dcf513f6ecd44198fe2db69ba71669d8019",
+        "workflow_development_policy.py": "525085c6a6ff74330ff4f564a7fe396ef100e9af1c201346d182a45d40c463ef",
+        "workflow_integration_workspace.py": "8d06d8423e0eb3f362e3504211d0ce9c8b5980077db622e255bbb216545ce148",
+        "workflow_intake.py": "af49c2f33a35b4dba1943180d214248acb1a740bd8b3890c257236bfccd58f17",
+        "workflow_user_decisions.py": "41f94ecc6e84633158cc1e281ad6290f3dd33b4a901a408c6addb46507803d46",
+        "workflow_supplemental.py": "35813401584b4f2c4b4b2a9683e6139ae3400ce08f5db60e007d383686e78e1f",
+        "workflow_merge.py": "f3c207feac1c551c22913747d0b72c04d1ac5d2dddfc57cd213aa45f6793bdb8",
+        "workflow_integration_recovery.py": "e97c4b3a606d9c77984d619f0303acbee7dc1bc80a334fc3254a894884692384",
+        "workflow_tool_bridge.py": "8a5f656694a4666efc3e15f135b52b7e2f4378178b596b5a756f82d25a8c7662",
+        "workflow_wait.py": "53d26fd9cf94952db5dab96005f91b72aef53adc584f4a2685b2cc5ae5974fef",
+        "workflow_documentation.py": "a729cd3271170d9a61c119d6f51ed23f222912fd8ccd70d7557074cb8472adfd",
+        "monitor_queue.py": "ca22e6fd96b866a7f37fa9c18358c6421f51cc5d007f00b9454e6726669ffa47",
+        "monitor_notifications.py": "8432ce3acb1632fef1dd60c7829b218d75ef3074a4da085bae04c130625815cd",
+        "role_observer.py": "4d7ea035b5e5be7f5be457920d9b58e7742e2d728171eb4de1453321984ece2e",
+        "scheduler_observation.py": "e1bc0c1f07afc721bd44ae22eee264bb81892215f8053972597f1f30a2b3bde5"
+      },
+      "file_backend_pid": 3612975,
+      "file_backend_state": "ACTIVATED",
+      "scheduler_hook_pid": 3612975,
+      "scheduler_hook_state": "COLLECTED",
+      "restart_performed": false,
+      "business_verdicts_written_by_maintenance": false
+    },
+    "production_readonly_replay": {
+      "checked_at": "2026-10-30T20:53:00+08:00",
+      "event_high_water": 14252,
+      "invocation": "readonly current production inputs and real decision preparation; no business writes",
+      "materials": [
+        {
+          "decision_id": "decision-ef4fedb572f0ef11431cfc11",
+          "source_status": "FOUND",
+          "source_checks": [
+            {
+              "path": "/home/wang/.hermes/role-pool.runtime/workspaces/work-ba0cca903bd447c98062df4d31106af2/.pytest_cache/mn04_a8_selftest.xml",
+              "expected_sha256": "2f227540d714492fc10553b4194086886fbacb5dd8e1794794bc37bd56f0cd36",
+              "actual_sha256": "2f227540d714492fc10553b4194086886fbacb5dd8e1794794bc37bd56f0cd36",
+              "status": "FOUND",
+              "reason": null,
+              "content_read_by_model": false
+            },
+            {
+              "path": "/home/wang/.hermes/role-pool.runtime/workspaces/work-ba0cca903bd447c98062df4d31106af2/.pytest_cache/mn04_a8_repair.diff",
+              "expected_sha256": "a046a95ee0cceb8725857e2effb11f56bb50e57bb3bcbc16801482d5508856a8",
+              "actual_sha256": "a046a95ee0cceb8725857e2effb11f56bb50e57bb3bcbc16801482d5508856a8",
+              "status": "FOUND",
+              "reason": null,
+              "content_read_by_model": false
+            },
+            {
+              "path": "/home/wang/.hermes/role-pool.runtime/operations/7ef7d568e8d088a78bf31f1c5cf957f0/artifacts/junit.xml",
+              "expected_sha256": "ec19c185b35d9e634b13566730944513d6220d73f2360cb1c8d2ee9d52d580c3",
+              "actual_sha256": "ec19c185b35d9e634b13566730944513d6220d73f2360cb1c8d2ee9d52d580c3",
+              "status": "FOUND",
+              "reason": null,
+              "content_read_by_model": false
+            },
+            {
+              "path": "/home/wang/.hermes/role-pool.runtime/operations/7ef7d568e8d088a78bf31f1c5cf957f0/result.evidence.json",
+              "expected_sha256": "e067d41e40c15d654f8cca4cf8560b58c44d9dc0a918d37dd6592bbe9962a626",
+              "actual_sha256": "e067d41e40c15d654f8cca4cf8560b58c44d9dc0a918d37dd6592bbe9962a626",
+              "status": "FOUND",
+              "reason": null,
+              "content_read_by_model": false
+            },
+            {
+              "path": "/home/wang/.hermes/role-pool.runtime/operations/7ef7d568e8d088a78bf31f1c5cf957f0/artifacts/junit-repeat.xml",
+              "expected_sha256": "435c3325b22416ba2d28c70f09e3f8226060ce0be0757b158cb7e3b8df000cfc",
+              "actual_sha256": "435c3325b22416ba2d28c70f09e3f8226060ce0be0757b158cb7e3b8df000cfc",
+              "status": "FOUND",
+              "reason": null,
+              "content_read_by_model": false
+            },
+            {
+              "path": "/home/wang/.hermes/role-pool.runtime/services/e978272436a7cffe35dcf4d062865e415ca85853541258a6497c004232f159c4/invocation.json",
+              "expected_sha256": "e7699ab5d8bb8820a14901bd4d05ca6bc71278721722d7d99c8caa8228170d3b",
+              "actual_sha256": "e7699ab5d8bb8820a14901bd4d05ca6bc71278721722d7d99c8caa8228170d3b",
+              "status": "FOUND",
+              "reason": null,
+              "content_read_by_model": false
+            },
+            {
+              "path": "/home/wang/.hermes/role-pool.runtime/operations/850ec7e7e72cfe2b8c430be17149581d/artifacts/junit.xml",
+              "expected_sha256": "80c14d3b29dcefd584ab9ecc85b1f85cbce3f475b9546735b72b56b6b491fcbe",
+              "actual_sha256": "80c14d3b29dcefd584ab9ecc85b1f85cbce3f475b9546735b72b56b6b491fcbe",
+              "status": "FOUND",
+              "reason": null,
+              "content_read_by_model": false
+            },
+            {
+              "path": "/home/wang/.hermes/role-pool.runtime/operations/850ec7e7e72cfe2b8c430be17149581d/result.evidence.json",
+              "expected_sha256": "0eaa9fe224291a410aee89c3be7ab3b544b5a158d79c3f4c9771f96c99ca8c39",
+              "actual_sha256": "0eaa9fe224291a410aee89c3be7ab3b544b5a158d79c3f4c9771f96c99ca8c39",
+              "status": "FOUND",
+              "reason": null,
+              "content_read_by_model": false
+            },
+            {
+              "path": "/home/wang/.hermes/role-pool.runtime/operations/850ec7e7e72cfe2b8c430be17149581d/artifacts/junit-repeat.xml",
+              "expected_sha256": "8136c277d0b9af6b853af66e3ca2449a636c0d37f11d48277cd91f1c4f02f2fd",
+              "actual_sha256": "8136c277d0b9af6b853af66e3ca2449a636c0d37f11d48277cd91f1c4f02f2fd",
+              "status": "FOUND",
+              "reason": null,
+              "content_read_by_model": false
+            }
+          ],
+          "selection": [
+            {
+              "repository_path": "tests/test_mn01_migration.py",
+              "status": "modified",
+              "insertions": 37,
+              "deletions": 0,
+              "will_review": true
+            }
+          ]
+        }
+      ]
+    },
+    "tests": {
+      "recovery_closeout": 9,
+      "semantic_decision": 28,
+      "remaining_failures": 0,
+      "initial_harness_error": "semantic tool-discovery test needed the installed Hermes core on PYTHONPATH; rerun with the production core import path passed all 28 cases.",
+      "logs": {
+        "preview-source-regression.log": "5e9f9a849b37cff66c89c4a19fe8746585dbbf59ce2a1f09b249cb01bc29780f",
+        "preview-decision-regression.log": "8ec4fb7e01ca84e4d22af875044730cb3851b4b7291010e28dc0510c3fb99db9"
+      }
+    }
+  },
+  "github_initial_release": {
+    "commit": "700edafb443230c99d19ba7c062b02d2c4793358",
+    "remote": "wangzd9/skill-backup",
+    "branch": "main",
+    "pushed": true,
+    "runtime_commit": "ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa"
   }
 }

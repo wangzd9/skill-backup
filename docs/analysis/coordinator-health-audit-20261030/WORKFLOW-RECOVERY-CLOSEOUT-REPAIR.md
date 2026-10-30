@@ -1,6 +1,6 @@
 # OCR 拒绝与异常返修接续修复
 
-日期：2026-10-30，Asia/Shanghai（+08:00）。运行时 **0.16.2**，提交 `ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa`。
+日期：2026-10-30，Asia/Shanghai（+08:00）。当前运行时 **0.16.3**，提交 `9ead79defc953f941606620d2c6dbf004e4fd973`；主要接续修复为0.16.2 / `ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa`。
 
 **机制有缺陷，但不是“REJECTED 永久锁住 REVIEW”或“根本没有快照刷新”。** 本次先修复通用接续缺口，再由原生角色执行实际业务动作；不修改业务数据库状态来制造完成。
 
@@ -39,3 +39,11 @@
 旧执行已由原生观察器核为 ENDED，writer_cleared=true；native_outcome=UNKNOWN，没有冒充业务成功。原生300秒 fire-claim 保护自然到期后，20:43:54 新执行 `97a455b39f3f4e3db7cd9726b1fc9786` / PID 648166 重新领取同一原 work。新进程文件后端 ACTIVATED，全部记录的源码哈希与0.16.2一致，没有另建业务owner或清除原生保护。
 
 截至20:47的当次只读查询，账本水位14252，唯一新增事件是 EXECUTION_BOUND；模型观察器 VERIFIED/complete=true，首个 main_request 仍未结束，没有工具调用。此时尚未核到新 OCR 或业务状态转换，不能把“领取成功、PID存活”报告为需求推进。后续实际业务结果继续增补于本节。
+
+## 生产回放追加修复：预览路径与证据引用
+
+20:48:18 新协调会话的实际 prepare 回执暴露了额外缺陷：递归证据校验把 `current_preview.files[].path`（Git 相对路径）当作缺哈希的文件证据，错误返回 UNVERIFIED / IMMUTABLE_HASH_REQUIRED。其余10项真实证据哈希全部 FOUND。0.16.3 将该元数据字段改为 repository_path；没有忽略或放宽真实证据引用。新增回归直接把 recovery 输出送入真实 decision prepare，校验合法引用 FOUND、另加缺哈希证据仍为 UNVERIFIED。
+
+追加验证：接续9项、决策28项共37项通过。决策工具发现测试首次未带已安装 Hermes core 的 PYTHONPATH，修正测试环境后28项全过。20:52:50 网关热加载成功，PID3612975、68项源码哈希全部匹配；20:53:00 生产只读材料重放 source_status=FOUND、10项真实证据均匹配，唯一选择元数据为 tests/test_mn01_migration.py。正在运行的协调worker不被旁路替换，已有请求按原门禁继续；新安全会话采用0.16.3。
+
+0.16.2 机制快照已提交 `700edaf` 并推送既有 GitHub 仓库 wangzd9/skill-backup 的 main；0.16.3 与最终接续证据随后同步。

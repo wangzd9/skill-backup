@@ -1,33 +1,33 @@
 {
-  "snapshot_at": "2026-10-30T20:49:25+08:00",
+  "snapshot_at": "2026-10-30T20:54:27+08:00",
   "timezone": "Asia/Shanghai",
   "files": [
     {
       "path": "MECHANISM-SNAPSHOT.json",
       "source": "/home/wang/work/skill-backup/MECHANISM-SNAPSHOT.json",
-      "bytes": 174795,
-      "sha256": "4a5e1dc5b60f6e574290585fcc7eebb0940cfb4e65df6214b161b30479b69105",
+      "bytes": 174796,
+      "sha256": "f76a382535a698d5058f0ac62b43de4b027221dbf25e252e55f5583e376fd3e3",
       "static_backup_metadata": true
     },
     {
       "path": "README.md",
       "source": "/home/wang/work/skill-backup/README.md",
-      "bytes": 5585,
-      "sha256": "8bd62fd4ed8b119246fd858b59ed754bb673377c0cf3a26af7efaa48146696a5",
+      "bytes": 5727,
+      "sha256": "550146fbac7cb4bcba11eba11abbfba0408b354abecdba8de2fb01a4526448e7",
       "static_backup_metadata": true
     },
     {
       "path": "RESTORE.md",
       "source": "/home/wang/work/skill-backup/RESTORE.md",
       "bytes": 4268,
-      "sha256": "4205bdb050a433f41678b61f9506395795a6b6c9ed862925ff890d0ab0e07da2",
+      "sha256": "d12876446115b59d251c51d90ca31a39681a8d3dbe6ae3ce5c971f9c068e4689",
       "static_backup_metadata": true
     },
     {
       "path": "SOURCE-REVISIONS.json",
       "source": "/home/wang/work/hermes-role-runtime",
       "bytes": 496,
-      "sha256": "b82a164f74189fa5e5077c092c19a2b8f41b95e3b8bfa3dfa33d372aa48dfff1"
+      "sha256": "42ba2504aebc82f7ddcb7b70b1c3937307df35defe42fcd983d56e2ab7c8ce97"
     },
     {
       "path": "codex/plugins/agent-skills/LICENSE",
@@ -680,8 +680,8 @@
     {
       "path": "codex/skills/complex-task-coordinator/references/transaction-workflow.md",
       "source": "/home/wang/.codex/skills/complex-task-coordinator/references/transaction-workflow.md",
-      "bytes": 14783,
-      "sha256": "b286ff348c4f7e896918400676349df745485f9139acd8651bc509a783072a7a"
+      "bytes": 15066,
+      "sha256": "36757558eec201dcae2520f3144311d16fed4e44f7a60e5025a5c98694e3f44d"
     },
     {
       "path": "codex/skills/complex-task-coordinator/references/workflow-guide-maintenance.md",
@@ -1476,8 +1476,8 @@
     {
       "path": "codex/skills/complex-task-coordinator/scripts/workflow_service_recovery.py",
       "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/workflow_service_recovery.py",
-      "bytes": 12255,
-      "sha256": "d532600584a7f426b337c3e7e45744e3e75856cf85fb6b1ce456dc26ebf6c76c",
+      "bytes": 12692,
+      "sha256": "fe0f321c9a4dff3abb9d590547b1bf5939cbe7c73810f922a9fdf1b4d675c710",
       "materialized_symlink": "/home/wang/work/hermes-role-runtime/workflow_service_recovery.py"
     },
     {
@@ -1743,14 +1743,14 @@
     {
       "path": "docs/ROLE-WORKFLOW-USER-GUIDE.md",
       "source": "/home/wang/work/doc/ROLE-WORKFLOW-USER-GUIDE.md",
-      "bytes": 60304,
-      "sha256": "f9abd27d4266f256e1df4b64e36e2103ac175e3d510141339fe77b6658d24263"
+      "bytes": 60604,
+      "sha256": "3f4460ca6944fa75d77676337161ff3d6e08b38e323f9fdb5b534e4ef4fa1623"
     },
     {
       "path": "docs/SKILL-DEVELOPMENT-WORKFLOW.md",
       "source": "/home/wang/work/doc/SKILL-DEVELOPMENT-WORKFLOW.md",
-      "bytes": 136972,
-      "sha256": "ddee94f15fd8fc0ad838c5b510620b3c8cd259665be456c57a5a232911ebee62"
+      "bytes": 137456,
+      "sha256": "ee6dfca6aefdfdf52a416fcd24982c718fe285b9505112f4757169076a8a3ccf"
     },
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/COORDINATOR-SEMANTIC-DECISION-PLAN.md",
@@ -1821,8 +1821,8 @@
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md",
       "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md",
-      "bytes": 6965,
-      "sha256": "3d244395b78ee61c96fb3491b9241c095d5ef21664cac3e3f58f8d111fd94eea"
+      "bytes": 8258,
+      "sha256": "df6ce8a7b48f5a8323235234bca0263cfcdc3c15bc028863d9095f1678abc218"
     },
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/effectiveness-stall-rollout.json",
@@ -1941,8 +1941,8 @@
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/workflow-recovery-closeout-rollout.json",
       "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/workflow-recovery-closeout-rollout.json",
-      "bytes": 19626,
-      "sha256": "866448ce4d47f6105cae43bd5e8c4b712ff1b2ee4290b6d4fbbad72be7c9b208"
+      "bytes": 34163,
+      "sha256": "a4f711e1f4b278befcfddd0f8c769bd0af198adfcc07954f8c1286f117632be7"
     },
     {
       "path": "docs/analysis/hermes-model-routing-20261015/REPORT.md",
@@ -2038,7 +2038,7 @@
       "path": "hermes-core/SNAPSHOT.json",
       "source": "/home/wang/.hermes/hermes-agent",
       "bytes": 2885,
-      "sha256": "58dca2514bc3045b58583656bfcb784778fe4e8253168c2b534fe142da6e6a4e"
+      "sha256": "c7f0f96daf146ba25dacb1879c96da5f72e365eeef94deb5c50c6795e33aed1f"
     },
     {
       "path": "hermes-core/files/agent/agent_runtime_helpers.py",
@@ -2446,8 +2446,8 @@
     {
       "path": "hermes-role-runtime/FIXES-20261030.md",
       "source": "/home/wang/work/hermes-role-runtime/FIXES-20261030.md",
-      "bytes": 11463,
-      "sha256": "2a81d9a1b46fc9a43fb5840e47207834237d9a739e30c42947deabe9ca2ad2b1"
+      "bytes": 12003,
+      "sha256": "691158953502e113148ec00890e6763895391579f9ff4a9ef3a42c99321cb479"
     },
     {
       "path": "hermes-role-runtime/MIGRATION.md",
@@ -2807,7 +2807,7 @@
       "path": "hermes-role-runtime/plugin.yaml",
       "source": "/home/wang/work/hermes-role-runtime/plugin.yaml",
       "bytes": 548,
-      "sha256": "4fe2fe14a74833451b1efeecffb086221cdab72723ef4edf928981f091475905"
+      "sha256": "2b2f3dbeca87aeb07ffb97edd3fb56e60f687acef5d338a47f89bf1a4cb6c3b4"
     },
     {
       "path": "hermes-role-runtime/pool_entry.py",
@@ -3490,8 +3490,8 @@
     {
       "path": "hermes-role-runtime/tests/test_recovery_closeout.py",
       "source": "/home/wang/work/hermes-role-runtime/tests/test_recovery_closeout.py",
-      "bytes": 9852,
-      "sha256": "77ed4150bf30841a3be807466ca28f27c7090b3deaf17afacaccfa310a62a93f"
+      "bytes": 11032,
+      "sha256": "a2e66dd24a01092192a4f86a72a10064c19699dd116cd08d0c60cf036b91bea1"
     },
     {
       "path": "hermes-role-runtime/tests/test_report_contract.py",
@@ -4054,8 +4054,8 @@
     {
       "path": "hermes-role-runtime/workflow_service_recovery.py",
       "source": "/home/wang/work/hermes-role-runtime/workflow_service_recovery.py",
-      "bytes": 12255,
-      "sha256": "d532600584a7f426b337c3e7e45744e3e75856cf85fb6b1ce456dc26ebf6c76c"
+      "bytes": 12692,
+      "sha256": "fe0f321c9a4dff3abb9d590547b1bf5939cbe7c73810f922a9fdf1b4d675c710"
     },
     {
       "path": "hermes-role-runtime/workflow_services.py",
@@ -7356,7 +7356,7 @@
       "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
     }
   ],
-  "note": "Snapshot only; no credentials, machine config, sessions database or cron bindings exported. Absolute local paths in source documents are retained. Static file snapshot: source bytes were checked during copying. Later concurrent edits are outside this snapshot. Includes core cumulative patch, credential-free configuration templates and SOURCE-REVISIONS.json. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling.",
+  "note": "Snapshot only; no credentials, machine config, sessions database or cron bindings exported. Absolute local paths in source documents are retained. Static file snapshot: source bytes were checked during copying. Later concurrent edits are outside this snapshot. Includes core cumulative patch, credential-free configuration templates and SOURCE-REVISIONS.json. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling.",
   "original_snapshot_at": "2026-10-15T17:59:43+08:00",
   "current_mechanism_snapshot": "MECHANISM-SNAPSHOT.json"
 }

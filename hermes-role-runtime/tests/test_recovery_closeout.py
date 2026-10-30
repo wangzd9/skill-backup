@@ -70,6 +70,21 @@ class RecoveryTests(unittest.TestCase):
                 self.assertEqual('READY',result['status']);self.assertEqual(2,preview.call_count)
                 self.assertFalse(result['gate_satisfied']);self.assertFalse(result['dispatch_performed'])
                 self.assertNotIn('path',result['current_preview']['selection'])
+                self.assertEqual('tests/test_fixture.py',result['current_preview']['files'][0]['repository_path'])
+                self.assertNotIn('path',result['current_preview']['files'][0])
+                # Exercise the real decision material walk: metadata must not
+                # become a false unhashed evidence source; bad evidence must
+                # still fail closed.
+                p,s=synthetic()
+                p['next_actions']=[{'action':'service_submit','candidate_id':'c','kind':'ocr',
+                    'rejection_recovery':result}]
+                material=context.prepare(p,s,context.directory(p,s)['items'][0])
+                self.assertEqual('FOUND',material['source_status'])
+                self.assertEqual([str(folder/'invocation.json')],[row['path'] for row in material['source_checks']])
+                p['candidates'][0]['evidence']=[{'path':str(folder/'unhashed-proof')}]
+                material=context.prepare(p,s,context.directory(p,s)['items'][0])
+                self.assertEqual('UNVERIFIED',material['source_status'])
+                self.assertIn('IMMUTABLE_HASH_REQUIRED',[row['reason'] for row in material['source_checks']])
                 self.assertEqual(value,json.loads((folder/'invocation.json').read_text()))
 
     def test_empty_preview_still_blocks_and_dispatch_proof_never_allows_retry(self):

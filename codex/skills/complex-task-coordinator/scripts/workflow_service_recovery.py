@@ -131,7 +131,13 @@ def coverage_recovery(ledger, candidate, actions):
                     raise ValueError('OCR_RECOVERY_SOURCE_CHANGED')
                 recovery.update(status='READY' if selected and len(selected)==len(set(selected)) and covered else 'BLOCKED',
                     current_preview={'base':candidate['base'],'head':candidate['head'],
-                        'files':current['files'],'selected_files':selected,
+                        # These are Git-relative selection metadata, not
+                        # immutable evidence references for _source_checks.
+                        # Preserve that distinction rather than weakening
+                        # hash validation for actual {path, sha256} sources.
+                        'files':[{'repository_path':f['path'],
+                            **{k:v for k,v in f.items() if k!='path'}} for f in current['files']],
+                        'selected_files':selected,
                         'selection':{k:v for k,v in selection.items() if k!='path'} if selection else None,
                         'background_sha256':hashlib.sha256(before).hexdigest(),
                         'adapter_sha256':hashlib.sha256(Path(workflow_ocr_selection.__file__).read_bytes()).hexdigest(),

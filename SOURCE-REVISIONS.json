@@ -1,8 +1,8 @@
 {
-  "snapshot_at": "2026-10-30T20:49:25+08:00",
+  "snapshot_at": "2026-10-30T20:54:27+08:00",
   "plugin": {
     "source": "/home/wang/work/hermes-role-runtime",
-    "commit": "ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa",
+    "commit": "9ead79defc953f941606620d2c6dbf004e4fd973",
     "branch": "feature/role-workflow-v3",
     "tracked_working_tree_clean": true,
     "excluded_untracked": [
