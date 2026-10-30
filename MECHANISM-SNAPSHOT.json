@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "snapshot_at": "2026-10-30T17:34:37+08:00",
+  "snapshot_at": "2026-10-30T17:40:20+08:00",
   "plugin_commit": "e9cff36492437f1ae50a3189d21a448ad31e286c",
   "core_commit": "c3901f5f8606b6449abd5442d866e28c5015f295",
   "core_base_commit": "5f47c35d37a40fb651e4a00571d03e12b23d11f9",
@@ -27,7 +27,7 @@
       "path": "SOURCE-REVISIONS.json",
       "source": "/home/wang/work/hermes-role-runtime",
       "bytes": 496,
-      "sha256": "358edc99e9009edc4b31d2be9c6112b7fdb2606c03c3c0fd8eea1319ed8663d5"
+      "sha256": "0e8ee9104c43774a3b308acc3fdf3a42616a8ac277d85e4ab4d3ed723b750088"
     },
     {
       "path": "codex/skills/complex-task-coordinator/SKILL.md",
@@ -1152,8 +1152,8 @@
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/SEMANTIC-DECISION-IMPLEMENTATION.md",
       "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/SEMANTIC-DECISION-IMPLEMENTATION.md",
-      "bytes": 8292,
-      "sha256": "eac7523b87a0b02ad4f81dd2e612d0464438a16c22eb209cbf28a3452f292671"
+      "bytes": 9337,
+      "sha256": "aca5cf342f4adcd749e93c4969bfa1b666ea7488ca97d3a8b453c5cb004aef99"
     },
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/TOKEN-CONSUMPTION-REVIEW.md",
@@ -1172,6 +1172,12 @@
       "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/semantic-decision-code-evidence.json",
       "bytes": 18724,
       "sha256": "ee111364fe1cea6a2eb41d04ab1129803c13295b3fc10c2f39815fc41af461af"
+    },
+    {
+      "path": "docs/analysis/coordinator-health-audit-20261030/semantic-decision-rollout.json",
+      "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/semantic-decision-rollout.json",
+      "bytes": 9812,
+      "sha256": "93059c76aa300e735b01f0405505c0247127ff0ca492a08cf1e2e8356e230e58"
     },
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/token-optimization-comparison.json",
@@ -1243,7 +1249,7 @@
       "path": "hermes-core/SNAPSHOT.json",
       "source": "/home/wang/.hermes/hermes-agent",
       "bytes": 2885,
-      "sha256": "e2705c2760dfb5440751dd32d024b5e3f0d352ddd95c42f28e9a07cea5dfe2f1"
+      "sha256": "bca9ee8bd2b9a7fefabed79585b1f5046935b3bf947d50bfe71b1ef67f4b648d"
     },
     {
       "path": "hermes-core/files/agent/agent_runtime_helpers.py",

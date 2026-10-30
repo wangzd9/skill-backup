@@ -52,7 +52,11 @@
 
 2026-10-30 17:29:59 +08:00 完成原生插件重载：Gateway PID `3612975`，状态 running，飞书 connected；Gateway 自身的激活回执为 ACTIVATED/future_calls_only，61 个源文件 SHA 全部吻合，受限文件后端 ACTIVATED、scheduler hook 同 PID。无需重启，未中断在途 writer。
 
-17:30:02 原生 sweep 已自动从旧原生补验结果恢复异常 event `14173` 并请求安全退休；结果仍为 UNVERIFIED，责任为 COORDINATOR。当时原 TESTER 仍 RUNNING，MN-04 仍 a7/COMPLETED，不能把这次恢复登记说成返修已派出。后续采用继续核验。
+17:30:02 原生 sweep 已自动从旧原生补验结果恢复异常 event `14173` 并请求安全退休；结果仍为 UNVERIFIED，责任为 COORDINATOR。当时原 TESTER 仍 RUNNING，MN-04 仍 a7/COMPLETED，不能把这次恢复登记说成返修已派出。其后 17:38:13 原 TESTER 自行提交 safe_release，事件 `14175`；17:39:38 核查到原生退休事件 `14177`，旧 work ENDED 且 active_execution_id 已清空。TESTER 已自然领取原 MN-07 集成验证，新的 execution `7bedf4d4198b46ac8f08b940b7c3c9c7` 使用新 runtime digest，原生工具目录包含 `role_decision_context`。这证明旧槽已释放、新入口已实际采用；不是业务验收通过。
+
+同次核查，COORDINATOR 仍在发布前启动的 execution，未看到新异常处置落账；MN-04 仍 a7/COMPLETED，尚未创建新返修 attempt。当前异常继续明确列为 AWAITING_COORDINATOR_DISPOSITION，不把等待中的业务判断冒充已完成修复。维护者没有代写裁决或重授权限。完整脱敏版本、哈希和采用回执见[上线证据](semantic-decision-rollout.json)。
+
+源码、兼容入口、指南和流程图已同步既有 GitHub 仓库 `wangzd9/skill-backup` 的远端 main；首轮源码快照提交 `81168080476156d4e1655c48e19b8af5db32d26f`，随后补充本轮自然核退采用回执。
 
 原始生产快照、checkpoint、数据库和凭据不导出到 GitHub。
 

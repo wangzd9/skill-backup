@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "runtime_version": "0.15.0",
+  "runtime_commit": "e9cff36492437f1ae50a3189d21a448ad31e286c",
+  "gateway_activation": {
+    "checked_at": "2026-10-30T17:29:59+08:00",
+    "gateway_pid": 3612975,
+    "gateway_state": "running",
+    "platforms": {
+      "feishu": "connected"
+    },
+    "activation_pid": 3612975,
+    "activation_state": "ACTIVATED",
+    "mode": "future_calls_only",
+    "verified_source_files": 61,
+    "source_mismatches": [],
+    "source_sha256": {
+      "__init__.py": "08bdfe7739e02c5bfeda1d85936292d387a84a16c15b32cbd2588c07982e2f3d",
+      "workflow_sandbox.py": "98c3a08466a8fc57f2d578932fc7ced0a350148e2549a83e94dab9ebb20fd4ef",
+      "requirement_runtime.py": "aaa31709e03de63b5d2889abb3245ec91647b9dfd62612858c250ee6f79e4ede",
+      "workflow_registration.py": "5ef0a59d579b616a88509e7972d894ed68fdcca2932b590383f574f2f269db85",
+      "business_ledger.py": "c9a5899a909b2d31d807a95a3eb0ea5f3a8893c246f6cec13572719f642e74ef",
+      "workflow_runtime.py": "64fbf5a9c95440ad94ec72d493ea7b2383c34b05fab0230fba73c3df4abc066e",
+      "workflow_reports.py": "7e4730d1120f5085d668ccb9823ff1507406eefd36e52e6e0127ca43295f74d8",
+      "report_summary.py": "7a59aaeb98851bc7ab1e5d2bb2da8fd2a7b00ec835e157dc6df44bfdae4f0965",
+      "workflow_notifications.py": "c89681d7d30a62fe0ef3150076d415104250012b9e892cec9c3315c43022eb64",
+      "workflow_views.py": "faf90613de990f6d372f2538acc5875707726a8cdc2e0293fae7a45759377f66",
+      "workflow_model_input.py": "917685f333921a1b2f5e94877bdbd53b034af8c3b8f04bd225dd77effed75ce0",
+      "workflow_toolsets.py": "a1c3d34bb270d3efde0945d63a2a94c228fd35266ab2c68f04562eac6fa22d13",
+      "workflow_coordination_log.py": "ec2f26893b47c853464b3354b4c569d9d6dfca4547990fa51094dce0498b077c",
+      "workflow_decision_context.py": "000f28e70db4988dfd8365a5e337a91fb3ad7e6db1325cea349a9ff680b2c13b",
+      "workflow_decision_metrics.py": "df551f36289655af468df3355921c5c07721ab8d2dd9fc48d273a257f69ee0bf",
+      "workflow_work_memory.py": "dc45c7553a2963ee44ded2b264ca838d284cd1fb409447aab667bc620099f89a",
+      "workflow_recovery.py": "ea5c13e36ec8f7c54356c4a27a0c814fb17bf4b6cdc4f1a14d04ed3471dbc826",
+      "workflow_verification_exceptions.py": "8777e23e31606f47c94da5a3d059992d3cae598d722601cafb8a0246b7900947",
+      "prefix_audit.py": "0d5c575bae4ada1dd03707ab201db49a32c32f9faf5a97086f4a0c888795a087",
+      "workflow_service_recovery.py": "01abb62b4bd9bf6e018bf3528d4f06326641b440b24827dc0f06d30480741192",
+      "workflow_observation.py": "05f9ac7594bf39e6758d51d7ed163268fe062905538c5d3733b2de29c6618b2d",
+      "observation_view.py": "33e02c4b418133c1ff2607824af2b3846c4aacb2be553f3c106e2e3d39fde685",
+      "activity_signals.py": "42a255bc5f9725675a015c3553afe2e1ab1097d52dec3e1a7ccf76cc445d7fef",
+      "workflow_activity.py": "b9f7883659aba8b5e687774b587b7a345358ca0fa236edebfd3b084ee560827f",
+      "workflow_diagnostics.py": "00d4eed40f274d571a1591755680dc5b87b08ff74718dd664c8058231f3ce133",
+      "report_contract.py": "2808bbb1c81008a6b6cb65dc2c024772df4bb527a50b53874bb4ea21c7fd3954",
+      "manual_access.py": "342ddf3da86a2776611d058670f3e69b08d29a21537054d967eba118efac791d",
+      "workflow_query.py": "d476dafbd1d5ddf7edf7450b470e0e1e46268f8114d1c52aa79878d7f92f84ba",
+      "delivery_evidence.py": "73e970a894b5274fa06c776db6ad9159f4623847b4568230a5f043376b2a437f",
+      "workflow_dispatch.py": "a0ebe8b27517285424672fa0e9872d53e95fd23203ad7e160884b6198df71688",
+      "workflow_services.py": "6ae338ebb2926b0a1be8e0e453cbd1ca7026188092a0298a624fff04d1472d42",
+      "workflow_contracts.py": "ae519d7e8daec58bc04660eb336fa383f5a832a6a266b758523d71b1523fef27",
+      "workflow_progression.py": "b03496dcfbb1eda7eedd2132aeb7c6611ba685ca3cbcd73bb781c7358135fbad",
+      "workflow_merge_policy.py": "2aeeb236790003543b48af20ad4ee14e1fd53728c9b991b07fe5badfbb6de01a",
+      "workflow_task_merge_policy.py": "40b09f2257266bdbd744accae02fadb42cbcf12b3074c60e0bf4f55c8e60147f",
+      "workflow_autonomy.py": "70773d4e842d4578b961d1a68b57a4ca5e553469f041083567b5f1db26d992a9",
+      "workflow_input_pages.py": "ae409f989089e14cbb167d626a34fee5c6dd3786465eec9096b6e853ac947390",
+      "workflow_resumption.py": "4c5f4d605cc26a93b35e7c3049ff2052046656b1d80b10e7b36959ad0e97c5e1",
+      "workflow_notification_registry.py": "133437a5ab5715a04ad0512bcf1ad34d49729d95c148957035cc6ca05839e918",
+      "workflow_terminal_observation.py": "f92cbb5bf73759393a4bb7100293e4483362a961ff122dc3ff166bb59ae4608c",
+      "workflow_acceptance_obligations.py": "378b0fcfbff5d6d623d72c7e04925fd290874802471fcbe969dd749d2c48a10e",
+      "workflow_issue_policy.py": "b83bd16b2687888ef3c40919445daf13cedecb45fc72e7b4092743e9c431d84b",
+      "workflow_completion.py": "d9be4e8faff6fe03b4135ba5270cc2a22fff62dcb92b9ed93426ba7aa0215985",
+      "workflow_completion_repair.py": "8eceb73b69d58dde0f3bde71c6e55e51fe073b200206e89e4b2766c76f4c2160",
+      "workflow_completion_contracts.py": "135ebbfe8aadcf32ecc34fb3cb64cf02defb93243ae6b697455fdf665c573f2b",
+      "workflow_completion_reports.py": "db50de56256d303fde7ff51222a9cb259cd939e7c9fb6b882b42f47f38e390ac",
+      "workflow_verification_lifecycle.py": "54d162b7d123fbee52a94da92f595dcf513f6ecd44198fe2db69ba71669d8019",
+      "workflow_development_policy.py": "525085c6a6ff74330ff4f564a7fe396ef100e9af1c201346d182a45d40c463ef",
+      "workflow_integration_workspace.py": "8d06d8423e0eb3f362e3504211d0ce9c8b5980077db622e255bbb216545ce148",
+      "workflow_intake.py": "af49c2f33a35b4dba1943180d214248acb1a740bd8b3890c257236bfccd58f17",
+      "workflow_user_decisions.py": "41f94ecc6e84633158cc1e281ad6290f3dd33b4a901a408c6addb46507803d46",
+      "workflow_supplemental.py": "75343fe1f0b7800435365fc5bf831fb9a8503ccf5e29bbaedf436698de072b6f",
+      "workflow_merge.py": "f3c207feac1c551c22913747d0b72c04d1ac5d2dddfc57cd213aa45f6793bdb8",
+      "workflow_integration_recovery.py": "e97c4b3a606d9c77984d619f0303acbee7dc1bc80a334fc3254a894884692384",
+      "workflow_tool_bridge.py": "8a5f656694a4666efc3e15f135b52b7e2f4378178b596b5a756f82d25a8c7662",
+      "workflow_wait.py": "53d26fd9cf94952db5dab96005f91b72aef53adc584f4a2685b2cc5ae5974fef",
+      "workflow_documentation.py": "a729cd3271170d9a61c119d6f51ed23f222912fd8ccd70d7557074cb8472adfd",
+      "monitor_queue.py": "ca22e6fd96b866a7f37fa9c18358c6421f51cc5d007f00b9454e6726669ffa47",
+      "monitor_notifications.py": "8432ce3acb1632fef1dd60c7829b218d75ef3074a4da085bae04c130625815cd",
+      "role_observer.py": "67af66c89d0e33873fec35bfcd9c7e6b55e7946c7dfaee0b99556c32d1c813fd",
+      "scheduler_observation.py": "e1bc0c1f07afc721bd44ae22eee264bb81892215f8053972597f1f30a2b3bde5"
+    },
+    "file_backend_pid": 3612975,
+    "file_backend_state": "ACTIVATED",
+    "scheduler_hook_pid": 3612975,
+    "scheduler_hook_state": "COLLECTED",
+    "restart_performed": false,
+    "business_verdicts_written_by_maintenance": false
+  },
+  "regression": {
+    "passed": 212,
+    "failed": 0,
+    "elapsed_seconds": 192.626,
+    "environment": "isolated test venv; production dependencies unchanged"
+  },
+  "compatibility": {
+    "valid": true,
+    "python_entries": 123,
+    "wrappers_valid": true
+  },
+  "adoption_checked_at": "2026-10-30T17:39:38+08:00",
+  "observed_exception_events": [
+    {
+      "event_id": 14173,
+      "kind": "VERIFICATION_EXCEPTION_RECORDED",
+      "role": "COORDINATOR",
+      "work_id": "work-2c31ed88a98f4a5d95400816e43769e2",
+      "facts": {
+        "task_id": "MN-04",
+        "attempt": 7,
+        "disposition": null,
+        "owner": null,
+        "observation_event_id": null,
+        "source_work_id": null,
+        "code": null
+      }
+    },
+    {
+      "event_id": 14177,
+      "kind": "VERIFICATION_RETIRED",
+      "role": "TESTER",
+      "work_id": "work-2c31ed88a98f4a5d95400816e43769e2",
+      "facts": {
+        "task_id": null,
+        "attempt": null,
+        "disposition": null,
+        "owner": null,
+        "observation_event_id": null,
+        "source_work_id": null,
+        "code": null
+      }
+    }
+  ],
+  "original_works": [
+    {
+      "work_id": "work-2c31ed88a98f4a5d95400816e43769e2",
+      "state": "ENDED",
+      "kind": "supplemental_verification",
+      "active_execution_id": null
+    },
+    {
+      "work_id": "work-0109bcdb04ed4f639e98b338118a88cb",
+      "state": "RUNNING",
+      "kind": "integration_verification",
+      "active_execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7"
+    }
+  ],
+  "active_roles": [
+    {
+      "role": "COORDINATOR",
+      "runtime_version_digest": "b1a3be329a3e15496a4ddc5093e8220bf86b341d306d443ce5f7684e6e3e7354",
+      "tool_names": [
+        "read_file",
+        "role_coordination_command",
+        "role_work_input",
+        "search_files",
+        "skill_view",
+        "skills_list",
+        "tool_search",
+        "tool_describe",
+        "tool_call"
+      ],
+      "tool_evidence": "sanitized_hook_payload"
+    },
+    {
+      "role": "TESTER",
+      "runtime_version_digest": "0b6d088583f6e7332596463e7cb2233dbbfba8d47281e8fc6384d5d18baae148",
+      "tool_names": [
+        "read_file",
+        "role_decision_context",
+        "role_test_command",
+        "role_work_input",
+        "search_files",
+        "skill_view",
+        "skills_list",
+        "tool_search",
+        "tool_describe",
+        "tool_call"
+      ],
+      "tool_evidence": "sanitized_hook_payload"
+    }
+  ],
+  "remaining_business_state": {
+    "exception_result": "UNVERIFIED",
+    "coordinator_disposition_recorded": false,
+    "MN04_attempt": 7,
+    "repair_attempt_created": false,
+    "integration_work": "RUNNING",
+    "notice": "Observed native retirement and new TESTER adoption; coordinator still in pre-release execution. No business verdict or ruling was written by maintenance."
+  },
+  "credentials_live_databases_and_prompt_text_excluded": true
+}
