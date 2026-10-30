@@ -792,7 +792,7 @@ class GatewayBusySessionMixin:
         event._bot_loop_admitted = True
 
         from gateway.plugin_busy_control import handle_plugin_busy_control
-        if await handle_plugin_busy_control(self, event):
+        if await handle_plugin_busy_control(self, event, session_key=session_key):
             return True
 
         effective_mode = self._effective_busy_input_mode(event.source)

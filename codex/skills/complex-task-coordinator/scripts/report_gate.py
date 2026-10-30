@@ -47,6 +47,14 @@ def accepted_dispatch(root, dispatch):
 
 
 def routing(root, role):
+    # New availability uses small current checkpoints and the scanner's dispatch
+    # index. Keep the legacy path only for projects not migrated to either source.
+    checkpoint = root/f'inbox/control/runtime/checkpoints/{role}.json'
+    dispatch_index = root/f'inbox/control/runtime/dispatch-index/{role}.json'
+    if checkpoint.exists() or dispatch_index.exists():
+        from role_status import role_status
+        status = role_status(root, role)
+        return status['available'], status['reasons']
     bindings = json.loads((root / 'ROLE-BINDINGS.json').read_text())
     if Path(bindings['project_root']).resolve() != root.resolve():
         return False, ['binding root mismatch']

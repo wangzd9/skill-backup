@@ -25,6 +25,14 @@ class Adapter:
 
 
 class PluginTests(unittest.IsolatedAsyncioTestCase):
+    def test_native_manual_receipts_are_bounded_metadata_and_do_not_grant_authority(self):
+        for n in range(150):
+            self.plugin.observe_manual_access({'kind':'test','sequence':n})
+        value=json.loads((self.root/'runtime/role-observation/native-manual-access.json').read_text())
+        self.assertEqual(128,len(value['events']))
+        self.assertEqual(22,value['events'][0]['sequence'])
+        self.assertFalse(value['authority'])
+
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
         self.root=Path(self.tmp.name); self.project=self.root/'project'; self.project.mkdir()
@@ -70,14 +78,13 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(event.message_id,'message')
         self.assertFalse(self.adapter.messages)
 
-    async def test_manual_turn_is_not_made_readonly_or_a_second_unlocked_business_writer(self):
+    async def test_manual_turn_defaults_readonly_despite_old_authorization(self):
         result=await self.plugin.on_message(self.event('按已有授权继续'),gateway=self.gateway)
-        self.assertIn('共用COORDINATOR租约',result['text'])
-        self.assertIn('取得租约后重读',result['text'])
-        self.assertIn('owner忙则只保存待办',result['text'])
-        self.assertIn('群会话取得租约可直接接续',result['text'])
+        self.assertIn('本回合默认只读',result['text'])
+        self.assertIn('下一普通回合恢复只读',result['text'])
+        self.assertIn('不写业务inbox',result['text'])
+        self.assertIn('role_live_progress',result['text'])
         self.assertIn('夜间用户主动问话正常答复',result['text'])
-        self.assertNotIn('本轮只读业务文档',result['text'])
 
     async def test_unauthorized_message_cannot_read_metrics_or_add_role_context(self):
         self.gateway._is_user_authorized=lambda source:False
@@ -92,7 +99,9 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
             result=await self.plugin.on_message(self.event('当前大模型负载情况','a'),gateway=self.gateway)
         self.assertEqual(result['action'],'skip')
         self.assertIn('4 / 3',self.adapter.messages[-1][1])
-        self.assertIsNone(await self.plugin.on_message(self.event('分析当前大模型负载','a'),gateway=self.gateway))
+        executor=await self.plugin.on_message(self.event('分析当前大模型负载','a'),gateway=self.gateway)
+        self.assertEqual(executor['action'],'rewrite')
+        self.assertIn('complex-task-executor',executor['text'])
         result=await self.plugin.on_message(self.event('分析当前大模型负载'),gateway=self.gateway)
         self.assertEqual(result['action'],'rewrite')
 
@@ -105,15 +114,17 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.adapter.messages)
         self.assertFalse(pending_requests(self.project))
 
-    async def test_native_approval_passes_through(self):
-        self.assertIsNone(await self.plugin.on_message(self.event('/approve x'),gateway=self.gateway))
+    async def test_native_stop_allowed_but_approval_does_not_bypass_readonly(self):
+        self.assertIsNone(await self.plugin.on_message(self.event('/stop'),gateway=self.gateway))
+        answer=await self.plugin.on_message(self.event('/approve x'),gateway=self.gateway)
+        self.assertEqual(answer['action'],'skip')
 
-    async def test_model_control_is_immediate_and_never_calls_model_or_queue(self):
+    async def test_model_change_without_full_request_is_blocked_without_model_or_queue(self):
         with patch.object(self.plugin.router,'command',return_value='已切换云端') as command:
             result=await self.plugin.on_message(self.event('切换到云端模型','a'),gateway=self.gateway)
         self.assertEqual(result['action'],'skip')
-        command.assert_called_once_with('cloud')
-        self.assertIn('已切换云端',self.adapter.messages[-1][1])
+        command.assert_not_called()
+        self.assertIn('本次未修改',self.adapter.messages[-1][1])
         self.assertFalse(pending_requests(self.project))
 
     async def test_model_control_cannot_cross_authorization_or_group_boundary(self):
@@ -122,7 +133,7 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
             self.gateway._is_user_authorized=lambda source:False
             self.assertIsNone(await self.plugin.on_message(self.event('/llm cloud'),gateway=self.gateway))
 
-    async def test_native_busy_path_applies_control_without_waiting_or_interrupting(self):
+    async def test_native_busy_path_rejects_ungranted_control_without_interrupting(self):
         from gateway.run_busy import GatewayBusySessionMixin
         self.gateway._is_user_authorized_for_source=lambda source:True
         self.gateway._admit_bot_message_for_source=lambda source:True
@@ -135,11 +146,15 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
              patch.object(self.plugin.router,'command',return_value='已切换云端') as command:
             handled=await GatewayBusySessionMixin._handle_active_session_busy_message(self.gateway,event,'busy')
         self.assertTrue(handled)
-        command.assert_called_once_with('cloud')
+        command.assert_not_called()
         self.assertFalse(pending_requests(self.project))
 
-    async def test_busy_noncontrol_stays_on_native_queue_path(self):
-        self.assertIsNone(await self.plugin.on_busy_message(self.event('继续开发'),gateway=self.gateway))
+    async def test_busy_noncontrol_requests_native_fifo_without_ingress_or_business_writes(self):
+        result=await self.plugin.on_busy_message(self.event('继续开发'),gateway=self.gateway)
+        self.assertEqual(result['action'],'queue')
+        self.assertIn('新回合',result['message'])
+        self.assertFalse(pending_requests(self.project))
+        self.assertFalse(self.adapter.messages)
 
     def test_routing_error_blocks_bound_role_and_leaves_other_sessions_alone(self):
         with patch.object(self.plugin,'api_identity',side_effect=lambda sid: {'role':'A'} if sid=='role' else None), \
@@ -175,10 +190,64 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
             home=Path(tmp);(home/'plugins').mkdir()
             (home/'plugins/role-workflow-runtime').symlink_to(ROOT,target_is_directory=True)
             (home/'config.yaml').write_text('plugins:\n  enabled: [role-workflow-runtime]\n')
-            code='from hermes_cli.plugins import discover_plugins,get_plugin_manager; discover_plugins(force=True); m=get_plugin_manager(); assert any(p.manifest.name=="role-workflow-runtime" for p in m._plugins.values()); assert m.has_hook("pre_gateway_dispatch"); assert m.has_hook("pre_api_request"); print("discovery pass")'
+            code='from hermes_cli.plugins import discover_plugins,get_plugin_manager; discover_plugins(force=True); m=get_plugin_manager(); assert any(p.manifest.name=="role-workflow-runtime" for p in m._plugins.values()); assert m.has_hook("pre_gateway_dispatch"); assert m.has_hook("pre_api_request"); assert m.has_hook("on_scheduler_tick"); print("discovery pass")'
             env={**os.environ,'HERMES_HOME':str(home),'PYTHONPATH':str(HERMES)}
             r=subprocess.run([str(HERMES/'venv/bin/python'),'-c',code],cwd=home,env=env,capture_output=True,text=True,timeout=30)
             self.assertEqual(r.returncode,0,r.stdout+r.stderr)
+
+    def test_scheduler_contract_is_checked_and_receipt_does_not_claim_collection(self):
+        self.assertEqual(self.plugin.scheduler_observation_tick(home=self.root,hook_contract_version=99)['state'],'REJECTED')
+        receipt=self.root/'runtime/role-observation/hook-receipt.json'
+        self.assertEqual(json.loads(receipt.read_text())['reason'],'OBSERVER_HOST_CONTRACT_MISMATCH')
+        self.assertIsNone(self.plugin.scheduler_observation_tick(home=self.root/'other',hook_contract_version=1))
+        self.plugin.scheduler_observation_tick(home=self.root,hook_contract_version=1)
+        self.assertEqual(json.loads(receipt.read_text())['state'],'TRIGGERED')
+
+    def test_scheduler_observation_hook_is_nonblocking_coalesced_and_profile_scoped(self):
+        import threading
+        from agent.memory_provider import spawn_context_thread
+        threads=[]
+        def tracked_thread(*args,**kwargs):
+            thread=spawn_context_thread(*args,**kwargs)
+            threads.append(thread)
+            return thread
+        self.plugin.pool_path.write_text('{}')
+        from role_status import runtime_module
+        runtime_module()
+        import role_observer
+        entered=threading.Event(); release=threading.Event()
+        def blocked(*args,**kwargs):
+            entered.set()
+            if not release.wait(3): raise AssertionError('test monitor was not released')
+            return {'sampled':True}
+        with patch.object(role_observer,'observation_tick',side_effect=blocked) as observe, \
+             patch('agent.memory_provider.spawn_context_thread',side_effect=tracked_thread):
+            self.assertIsNone(self.plugin.observation_tick(home=self.root/'other'))
+            try:
+                result=self.plugin.observation_tick(home=self.root)
+                self.assertTrue(result['scheduled'])
+                self.assertTrue(entered.wait(2))
+                self.assertFalse(self.plugin.observation_tick(home=self.root)['scheduled'])
+            finally:
+                release.set()
+                self.assertTrue(self.plugin._workflow_tick_lock.acquire(timeout=3))
+                self.plugin._workflow_tick_lock.release()
+                # Collection releases its lock before receipts/notification drain.
+                # Keep the isolated home alive until the whole thread exits.
+                for thread in threads:
+                    thread.join(timeout=5)
+                    self.assertFalse(thread.is_alive())
+        observe.assert_called_once()
+        self.assertEqual(observe.call_args.args,(self.root,self.plugin.pool_path))
+        self.assertIsNone(observe.call_args.kwargs['sender'])
+
+    def test_native_frozen_identity_survives_unrelated_legacy_registry_failure(self):
+        frozen={'role':'A','project_root':str(self.project),'kind':'business','workflow_version':1}
+        with patch.object(self.plugin,'_frozen_scope',return_value=frozen), patch.object(
+                self.plugin,'bindings',side_effect=ValueError('legacy registry unreadable')):
+            identity=self.plugin.api_attribution_details('native-bound-session')
+        self.assertEqual(identity,{'role':'A','project':str(self.project),
+                                  'parent_session_id':'','session_kind':'business_cron'})
 
     def test_native_timing_is_role_scoped_metadata_only_and_retry_safe(self):
         import time_accounting

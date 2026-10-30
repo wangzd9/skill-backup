@@ -1,0 +1,8 @@
+[Unit]
+Description=Five-role ledger observation without model calls
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /home/wang/work/hermes-role-runtime/role_observer.py scan --pool-state /home/wang/.hermes/role-pool.json
+TimeoutStartSec=60
+UMask=0077

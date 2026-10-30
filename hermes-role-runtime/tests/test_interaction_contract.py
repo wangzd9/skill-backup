@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import selectors
 import subprocess
 import sys
 import tempfile
@@ -9,9 +10,10 @@ import unittest
 from unittest.mock import patch
 
 from progress_display import enrich_records, token_label
+import manual_business
 
 ROOT=Path(__file__).resolve().parents[1]
-RUNTIME=Path.home()/'.codex/skills/complex-task-coordinator/scripts/role_runtime.py'
+RUNTIME=Path(__file__).resolve().parents[1]/'role_runtime.py'
 
 class InteractionContractTests(unittest.TestCase):
     def setUp(self):
@@ -42,13 +44,35 @@ class InteractionContractTests(unittest.TestCase):
         self.assertFalse((self.project/'inbox/coordinator/requests').exists())
 
     def test_manual_and_cron_owner_compete_for_same_lease(self):
-        common=[sys.executable,str(RUNTIME),'claim','--project',str(self.project),'--role','COORDINATOR','--pid',str(os.getpid())]
-        jobs=[subprocess.Popen([*common,'--owner',owner],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True) for owner in ('group','cron')]
-        rows=[]
-        for job in jobs:
-            out,err=job.communicate(timeout=15)
-            self.assertEqual(job.returncode,0,err)
-            rows.append(json.loads(out))
+        # An isolated scheduler-shaped parent starts the actual lease CLI and
+        # stays alive until both competitors finish. The CLI verifies /proc
+        # ancestry and PID/start identity; a unittest PID is not a cron worker.
+        worker_script=self.project/'lease_worker.py'
+        worker_script.write_text('''import json, os, subprocess, sys
+sys.stdin.readline()
+result = subprocess.run([sys.executable, sys.argv[2], 'claim', '--project', sys.argv[3],
+    '--role', 'COORDINATOR', '--pid', str(os.getpid()), '--owner', 'cron'],
+    capture_output=True, text=True, timeout=10)
+print(json.dumps({'code': result.returncode, 'out': result.stdout, 'err': result.stderr}), flush=True)
+sys.stdin.readline()
+''')
+        worker=subprocess.Popen([sys.executable,str(worker_script),'cron.scheduler',str(RUNTIME),str(self.project)],
+            stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+        try:
+            worker.stdin.write('claim\n'); worker.stdin.flush()
+            manual=manual_business.control(self.project,'COORDINATOR','manual-session','native-turn','claim')
+            with selectors.DefaultSelector() as selector:
+                selector.register(worker.stdout,selectors.EVENT_READ)
+                self.assertTrue(selector.select(timeout=15),'isolated worker did not return a lease receipt')
+                result=json.loads(worker.stdout.readline())
+            self.assertEqual(result['code'],0,result['err'])
+            rows=[manual,json.loads(result['out'])]
+        finally:
+            if worker.poll() is None:
+                worker.stdin.write('done\n'); worker.stdin.flush()
+            try: worker.communicate(timeout=15)
+            except subprocess.TimeoutExpired:
+                worker.kill(); worker.communicate(timeout=5)
         self.assertEqual(sum(r['claimed'] is True for r in rows),1)
         self.assertEqual(sum(r.get('reason')=='OWNER_BUSY_OR_UNVERIFIED' for r in rows),1)
 

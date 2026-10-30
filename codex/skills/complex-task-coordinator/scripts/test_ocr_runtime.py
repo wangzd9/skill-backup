@@ -38,7 +38,7 @@ def event(e):
  with path.open('a') as f:f.write(json.dumps(e)+'\n')
 event({'type':'session_start','cwd':str(repo),'diffFrom':arg('--from'),'diffTo':arg('--to')})
 if mode=='stall':time.sleep(120)
-else:time.sleep(0.2)
+else:time.sleep(float((root/'delay').read_text()) if (root/'delay').exists() else 0.2)
 items=[{'item_id':f,'path':f,'fingerprint':'fixed-'+f} for f in chosen]
 failed=[] if mode=='complete' or (mode=='second-partial' and 'b.py' not in chosen) else [dict(i,reason='stopped because context compression exceeded its threshold') for i in items]
 manifest={'schema_version':'ocr.run-manifest/v1','terminal_state':'complete' if not failed else 'failed',
@@ -104,13 +104,23 @@ else:
         source = source.replace("Path('/home/wang/.opencodereview/config.json')", repr(cls.config))
         source = source.replace("Path('/home/wang/.opencodereview/sessions')", repr(cls.root / 'sessions'))
         source = source.replace("Path('/home/wang/.local/state/ocr-runtime/ocr.lock')", repr(cls.root / 'global.lock'))
-        source = source.replace("Path('/home/wang/work/hermes-role-runtime/ocr_model_route.py')", repr(cls.selector))
+        source = source.replace("Path(__file__).resolve().parent/'ocr_model_route.py'", repr(cls.selector))
+        source = source.replace('def concurrency_snapshot(url=METRICS_URL):\n',
+            'def concurrency_snapshot(url=METRICS_URL):\n'
+            + f"    waiting = float((Path({str(cls.root)!r})/'waiting').read_text())\n"
+            + "    return {'waiting': waiting, 'limit': 2 if waiting <= 1 else 1, 'reason': 'ISOLATED_METRICS'}\n")
+        (cls.root/'waiting').write_text('2')
         # 测试只调假OCR；不阻塞或接管生产已有OCR。另有实际进程识别检查。
         source = source.replace('def existing_ocr():\n', 'def existing_ocr():\n    return []\n')
+        # This fixture's executable is intentionally not the installed npm CLI.
+        source=source.replace('def admit_ocr(state_dir=None):\n',
+            "def admit_ocr(state_dir=None):\n    return {'record': {'identity': execution_identity(), 'fixture_only': True}, 'cache_hit': True}\n")
         source = source.replace('PosixPath(', 'Path(')
         (cls.code / 'ocr_runtime.py').write_text(source)
         shutil.copy2(Path(runtime.__file__).with_name('ocr_session_status.py'), cls.code / 'ocr_session_status.py')
         shutil.copy2(Path(runtime.__file__).with_name('ocr_results.py'), cls.code / 'ocr_results.py')
+        for name in ('ocr_compat.py', 'ocr_compat_baseline.json'):
+            shutil.copy2(Path(runtime.__file__).with_name(name), cls.code/name)
         spec = importlib.util.spec_from_file_location('isolated_runtime', cls.code / 'ocr_runtime.py')
         cls.module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.module)
@@ -131,6 +141,8 @@ else:
         self.module.CONFIG.write_bytes(self.original_config)
         (self.root / 'mode').write_text('complete')
         (self.project / 'ROLE-BINDINGS.json').write_text('{"control":"ACTIVE"}')
+        (self.root/'waiting').write_text('2')
+        (self.root/'delay').unlink(missing_ok=True)
 
     def make_run(self, name, batches=None, identity_name=None, reuse_run=None):
         background = self.root / ((identity_name or name) + '-background.md')
@@ -143,6 +155,19 @@ else:
         result = self.module.prepare(args)
         self.units.append(result['unit'])
         return args.output
+
+    def test_native_hash_change_creates_new_review_identity_and_blocks_reuse(self):
+        old = self.make_run('identity-old', identity_name='same-background')
+        original = self.fake.read_bytes()
+        try:
+            self.fake.write_bytes(original + b'\n# native image changed without version rename\n')
+            new = self.make_run('identity-new', identity_name='same-background')
+            self.assertNotEqual(self.module.load_spec(old)['review_identity'],
+                                self.module.load_spec(new)['review_identity'])
+            with self.assertRaisesRegex(RuntimeError, 'REUSE_IDENTITY_MISMATCH'):
+                self.make_run('identity-reuse', identity_name='same-background', reuse_run=old)
+        finally:
+            self.fake.write_bytes(original)
 
     def wait_final(self, directory):
         end = time.monotonic() + 25
@@ -333,6 +358,29 @@ else:
         for key in ('base', 'head', 'model'):
             bad = dict(spec, **{key: 'wrong'})
             self.assertFalse(self.module.assess_session(Path(prior), bad, batch)['coverage_complete'])
+
+    def test_16_waiting_one_runs_two_real_children_with_separate_sessions(self):
+        (self.root/'waiting').write_text('1')
+        (self.root/'delay').write_text('1.2')
+        directory=self.make_run('parallel-two')
+        self.module.launch(directory)
+        result=self.wait_final(directory)
+        self.assertEqual('AWAITING_DECISION',result['state'])
+        a,b=result['recorded_state']['batches']
+        self.assertLess(b['started_at'],a['ended_at'])
+        self.assertNotEqual(a['pid'],b['pid'])
+        self.assertNotEqual(a['session_file'],b['session_file'])
+        for entry in (a,b):
+            self.assertTrue(json.loads((directory/(entry['id']+'-diagnosis.json')).read_text())['coverage_complete'])
+        self.assertEqual(self.original_config,self.config.read_bytes())
+
+    def test_17_busy_waiting_keeps_batches_serial(self):
+        directory=self.make_run('serial-busy')
+        self.module.launch(directory)
+        result=self.wait_final(directory)
+        self.assertEqual('AWAITING_DECISION',result['state'])
+        a,b=result['recorded_state']['batches']
+        self.assertGreaterEqual(b['started_at'],a['ended_at'])
 
 
 if __name__ == '__main__':

@@ -119,7 +119,7 @@ class ProjectionTests(unittest.TestCase):
         for label in ('整体目标与进度', '执行者进度', '测试者进度', 'OCR情况和后续计划', '强审查情况', '风险', '下一步计划'):
             self.assertIn('**'+label+'**', answer)
         for role in ('A','B','C'):
-            self.assertIn('**执行者 '+role+'**',answer)
+            self.assertIn('**执行者 '+role+'（待核实）**',answer)
         self.assertNotIn('<details>',answer)
         self.assertIn('**费用：** 未知',answer)
         body = answer.split('<details>')[0]
@@ -149,7 +149,7 @@ class ProjectionTests(unittest.TestCase):
         self.assertEqual(packet['roles']['A']['last_action']['value'],'进展'*10000)
         self.assertIn('未记录明确的当前派单',answer)
         self.assertIn('2020-01-01 00:00 +08:00',answer)
-        self.assertIn('非生产实时探测',answer)
+        self.assertIn('未执行当次运行核验',answer)
         self.assertLess(len(answer),3000)
         tester=render_progress({'role':'TESTER','projection':packet},at=AT)
         self.assertEqual(packet['roles']['TESTER']['dispatch']['value']['notification_kind'],'UNIDENTIFIED_PENDING')
@@ -245,7 +245,7 @@ class ProjectionTests(unittest.TestCase):
         self.assertEqual(compact['roles']['C']['activity']['value'],'DELIVERED_REVIEW_PENDING')
         answer=render_progress({'role':'COORDINATOR','projection':compact},at=AT)
         self.assertIn('流水线详情，**开发交付已接受，尚未合入主分支**',answer)
-        c_section = answer.split('**执行者 C**',1)[1].split('**测试者进度**',1)[0]
+        c_section = answer.split('**执行者 C（待核实）**',1)[1].split('**测试者进度**',1)[0]
         self.assertIn('**下一步：** 未记录新派单，等待协调者接续安排',c_section)
         self.assertNotIn('流水线详情，**返修已交付',answer)
 
@@ -257,7 +257,7 @@ class ProjectionTests(unittest.TestCase):
         self.assertEqual(packet['tasks']['TASK-16C-A']['testing']['value'],'RECORDED_PASSED')
         answer=render_progress({'role':'COORDINATOR','projection':packet},at=AT)
         self.assertIn('查询/API，**已交付，独立验证有通过记录，等待核对并接受**',answer)
-        a_section = answer.split('**执行者 A**',1)[1].split('**执行者 B**',1)[0]
+        a_section = answer.split('**执行者 A（待核实）**',1)[1].split('**执行者 B（待核实）**',1)[0]
         self.assertIn('核对独立验证适用版本',a_section)
         self.assertIn('完成审查与接受',a_section)
         self.assertNotIn('等待协调者审查和测试者独立验证',a_section)
@@ -412,7 +412,7 @@ class ProjectionTests(unittest.TestCase):
         self.assertEqual(compact['tasks']['TASK-16C-C']['state']['value'],'DONE')
         self.assertEqual(compact['tasks']['TASK-16C-C']['merge']['value'],'NOT_MERGED')
         answer = render_progress({'role':'COORDINATOR','projection':compact},at=AT)
-        c_section = answer.split('**执行者 C**',1)[1].split('**测试者进度**',1)[0]
+        c_section = answer.split('**执行者 C（待核实）**',1)[1].split('**测试者进度**',1)[0]
         self.assertIn('流水线详情',c_section)
         self.assertIn('开发交付已接受，尚未合入主分支',c_section)
 

@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "window_seconds": 3600,
+  "pool_limit": 12,
+  "group_limit": 3,
+  "group_gap_seconds": 300,
+  "history_age_seconds": 21600,
+  "backlog_threshold": 50
+}

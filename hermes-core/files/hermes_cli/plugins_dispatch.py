@@ -11,6 +11,7 @@ import contextvars
 import copy
 import inspect
 import logging
+from pathlib import Path
 import queue
 import re
 import threading
@@ -40,9 +41,10 @@ logger = logging.getLogger("hermes_cli.plugins")
 # a daemon thread that may still mutate shared state — safer for value-returning observers than for
 # gates/flushes.
 _HOOK_TIMEOUT_BOUNDED_HOOKS: Set[str] = {
+    "on_scheduler_tick",
     "post_tool_call", "transform_terminal_output", "transform_tool_result", "transform_llm_output",
     "pre_llm_call", "post_llm_call", "pre_api_request", "post_api_request", "api_request_error",
-    "pre_auxiliary_call", "post_auxiliary_call", "pre_verify", "on_session_start", "on_session_end",
+    "pre_auxiliary_call", "post_auxiliary_call", "pre_verify", "on_session_start", "on_session_end", "on_turn_end",
 }
 
 # Policy hooks: timeout / still-running must fail closed (block the tool).
@@ -168,11 +170,16 @@ def _hook_call_identity(kwargs: Dict[str, Any]) -> Optional[str]:
         value = kwargs.get(field)
         if isinstance(value, str) and value:
             return value
+    home = kwargs.get("home")
+    if home is not None:
+        return str(Path(home).resolve())
     return None
 
 
 def _hook_uses_callback_timeout(hook_name: str, timeout: float) -> bool:
     """Whether *hook_name* should run under the non-blocking timeout path."""
+    if hook_name == "on_scheduler_tick":
+        return True
     if timeout <= 0 or hook_name in _HOOK_CALLER_THREAD_HOOKS:
         return False
     return hook_name in _HOOK_TIMEOUT_BOUNDED_HOOKS or hook_name in _HOOK_TIMEOUT_FAIL_CLOSED_HOOKS
@@ -222,6 +229,8 @@ class PluginDispatchMixin:
             kwargs.setdefault("telemetry_schema_version", OBSERVER_SCHEMA_VERSION)
         results: List[Any] = []
         timeout = _resolve_hook_callback_timeout()
+        if hook_name == "on_scheduler_tick":
+            timeout = min(timeout, 1.0) if timeout > 0 else 1.0
         use_timeout = _hook_uses_callback_timeout(hook_name, timeout)
         fail_closed = hook_name in _HOOK_TIMEOUT_FAIL_CLOSED_HOOKS
         for cb in self._hooks.get(hook_name, []):
@@ -279,6 +288,8 @@ class PluginDispatchMixin:
         # Suppression is a fact about the CALLBACK — a hung one must keep its back-off —
         # so that key stays coarse. The gate must instead tell CONCURRENT CALLS apart.
         suppression_key = (hook_name, id(cb))
+        if hook_name == "on_scheduler_tick":
+            suppression_key += (_hook_call_identity(kwargs),)
         gate_key = (*suppression_key, _hook_call_identity(kwargs))
         token = object()
         with self._hook_timeout_lock:
@@ -498,6 +509,8 @@ class PluginDispatchMixin:
             kwargs.setdefault("telemetry_schema_version", OBSERVER_SCHEMA_VERSION)
         results: List[Any] = []
         timeout = _resolve_hook_callback_timeout()
+        if hook_name == "on_scheduler_tick":
+            timeout = min(timeout, 1.0) if timeout > 0 else 1.0
         use_timeout = _hook_uses_callback_timeout(hook_name, timeout)
         fail_closed = hook_name in _HOOK_TIMEOUT_FAIL_CLOSED_HOOKS
         for cb in self._hooks.get(hook_name, []):

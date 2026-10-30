@@ -28,6 +28,45 @@ class RoutingTests(unittest.TestCase):
         for mode in ('cloud', 'broken'):
             self.assertEqual(choose_route(mode, {'running': 0, 'waiting': 0})[0], 'cloud')
 
+    def test_ocr_profile_pins_local_and_bypasses_queue(self):
+        # OCR 固定本地：OCR 选路只看 ocr_profile，且不因队列忙/探测失败改判云端。
+        from hermes_cli.config import atomic_config_write
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            atomic_config_write(home / 'config.yaml', {'plugins': {'entries': {
+                'role-workflow-runtime': {'settings': {'model_routing': {
+                    'ocr_enabled': True, 'ocr_profile': 'xcoding',
+                    'cloud_profiles': {'xcoding': {'cloud_model': 'gpt-6.1-sol'}}}}}}}})
+            router = ModelRouter(home, 'http://unused/metrics')
+            # 群会话配置不带 OCR 标记；OCR 选择器显式传 ocr_profile 才带。
+            self.assertNotIn('_ocr_route', router.config())
+            self.assertTrue(router.config('xcoding').get('_ocr_route'))
+            ocr = router.config('xcoding')
+            for mode in ('auto', 'local', 'cloud'):
+                router.state.parent.mkdir(parents=True, exist_ok=True)
+                router.state.write_text(json.dumps({'mode': mode}))
+                decision = router.decision(ocr)
+                self.assertEqual(decision['route'], 'local', (mode, decision))
+                self.assertEqual(decision['reason'], 'OCR 固定本地')
+            with patch('model_routing.get_text', side_effect=TimeoutError('endpoint down')):
+                self.assertEqual(ModelRouter(home, 'http://unused/metrics').decision(ocr)['route'], 'local')
+            # 显式关闭时才允许回云端。
+            self.assertEqual(router.decision({**ocr, 'ocr_local_only': False})['route'], 'cloud')
+
+    def test_group_sessions_ignore_ocr_pin(self):
+        # OCR 固定本地不得泄漏到群会话选路：无 profile 的 config 仍按队列判定。
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            router = ModelRouter(home, 'http://unused/metrics')
+            router.state.parent.mkdir(parents=True, exist_ok=True)
+            router.state.write_text(json.dumps({'mode': 'auto'}))
+            with patch('model_routing.get_text', return_value='vllm:num_requests_running{engine="0"} 2\n'
+                                                             'vllm:num_requests_waiting{engine="0"} 0\n'):
+                self.assertEqual(router.decision({'enabled': True})['route'], 'local')
+            with patch('model_routing.get_text', return_value='vllm:num_requests_running{engine="0"} 2\n'
+                                                             'vllm:num_requests_waiting{engine="0"} 3\n'):
+                self.assertEqual(router.decision({'enabled': True})['route'], 'cloud')
+
     def test_commands_are_exact_not_prompt_fragments(self):
         for text, action in (('切换到云端模型', 'cloud'), ('/模型 自动', 'auto'),
                              ('/llm local', 'local'), ('查看模型状态', 'status'),
@@ -74,24 +113,28 @@ class RoutingTests(unittest.TestCase):
             router.state.write_text('{broken')
             self.assertEqual(router.mode(), 'cloud')
 
-    def test_named_cloud_selection_persists_when_returning_to_auto(self):
+    def test_auto_cloud_policy_ignores_manual_memory_and_cloud_keeps_manual_choice(self):
         from hermes_cli.config import atomic_config_write
         with tempfile.TemporaryDirectory() as tmp:
             home = Path(tmp)
             atomic_config_write(home / 'config.yaml', {'plugins': {'entries': {
                 'role-workflow-runtime': {'settings': {'model_routing': {
-                    'default_cloud_profile': 'sub2api',
+                    'default_cloud_profile': 'xcoding', 'auto_cloud_profile': 'sub2api',
                     'cloud_profiles': {
-                        'sub2api': {'cloud_model': 'deepseek-v4-pro'},
+                        'sub2api': {'cloud_model': 'deepseek-v4.1-flash'},
                         'xcoding': {'cloud_model': 'gpt-5.5'}}}}}}}})
             router = ModelRouter(home, 'http://unused/metrics')
-            self.assertEqual(router.config()['cloud_model'], 'deepseek-v4-pro')
+            self.assertEqual(router.config()['cloud_model'], 'deepseek-v4.1-flash')
             with patch.object(router, 'cloud_ready', return_value=True):
                 router.set_mode('cloud:xcoding')
                 router.set_mode('auto')
             other = ModelRouter(home, 'http://unused/metrics')
             self.assertEqual(other.mode(), 'auto')
+            self.assertEqual(other.config()['cloud_model'], 'deepseek-v4.1-flash')
+            with patch.object(other, 'cloud_ready', return_value=True):
+                other.set_mode('cloud')
             self.assertEqual(other.config()['cloud_model'], 'gpt-5.5')
+            self.assertEqual(other.config('sub2api')['cloud_model'], 'deepseek-v4.1-flash')
             before = other.state.read_text()
             with self.assertRaises(ValueError):
                 other.set_mode('cloud:unknown')

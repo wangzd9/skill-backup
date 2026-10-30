@@ -1912,8 +1912,9 @@ def _deliver_result(
     ``failure_deliver`` override when present (NS-788). Returns None on success, else an error."""
     job.pop("_bot_chat_delivery_receipts", None)
     job.pop("_notification_all_targets_suppressed", None)
+    job.pop("_cron_delivery_content_sha256", None)
     # User-requested role quiet hours apply at delivery time, including delayed results.
-    from cron.role_reporting_policy import suppress_role_delivery
+    from cron.role_reporting_policy import is_role_job, suppress_role_delivery
     if suppress_role_delivery(job):
         job["_notification_all_targets_suppressed"] = True
         _record_delivery_verification(job, [])
@@ -1948,12 +1949,15 @@ def _deliver_result(
 
     from gateway.config import load_gateway_config
 
-    # Wrap with header/footer unless cron.wrap_response: false.
+    # Role reports already have their own presentation and management contract.
+    # Ordinary cron keeps its configured header/footer.
     wrap_response = True
     user_cfg = None
     with contextlib.suppress(Exception):
         user_cfg = _sched.load_config()
         wrap_response = user_cfg.get("cron", {}).get("wrap_response", True)
+    if is_role_job(job):
+        wrap_response = False
     # Mark live sends FINAL so the platform pushes them (Telegram "important" mode mutes otherwise).
     notify_delivery = _cron_delivery_notify_enabled(user_cfg)
     # Targets acked with NO evidence (bare SendResult(success=True) — Slack/Matrix/Mattermost);
@@ -1983,6 +1987,11 @@ def _deliver_result(
     # response text reaches delivery unscanned — so a job that surfaced a credential (echoed a
     # failing curl with an API key, summarised a config file) sent it verbatim to the chat.
     cleaned_delivery_content = _redact_cron_payload(cleaned_delivery_content, "delivery content")
+    # This is the actual text handed to the existing send lanes, after native
+    # wrapping, media extraction and redaction. Retain only its digest in the
+    # result hook receipt; queued terminal payloads are still privacy-pruned.
+    import hashlib
+    job["_cron_delivery_content_sha256"] = hashlib.sha256(cleaned_delivery_content.encode()).hexdigest()
     requested_media = len(media_files)
     media_files = BasePlatformAdapter.filter_media_delivery_paths(media_files)
     # Policy-dropped attachments will never be sent on ANY lane — record them in run status.

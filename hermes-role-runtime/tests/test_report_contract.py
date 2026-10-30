@@ -48,12 +48,95 @@ class ReportContractTests(unittest.TestCase):
         self.assertEqual([(s['key'], s['title']) for s in report['sections']], list(COORDINATOR_SECTIONS))
         groups = [i.get('group') for i in report['sections'][1]['items']]
         compressed = [g for n, g in enumerate(groups) if n == 0 or groups[n - 1] != g]
-        self.assertEqual(compressed, ['执行者 A', '执行者 B', '执行者 C'])
+        self.assertEqual(compressed, ['执行者 A（待核实）', '执行者 B（待核实）', '执行者 C（待核实）'])
         text = render_report(report)
-        self.assertEqual(text.count('**执行者 A**'), 1)
+        self.assertEqual(text.count('**执行者 A（待核实）**'), 1)
         self.assertEqual(text.count('**当前任务：** 查询/API'), 1)
         self.assertIn('**关联事项：** 整批水雾处理', text)
         self.assertNotIn('**当前任务：** 整批水雾处理', text)
+
+    def test_coordinator_names_include_verified_slot_status(self):
+        self.packet['role_statuses'] = {'A': {'status': 'IDLE', 'label': '空闲'},
+            'B': {'status': 'WORKING', 'label': '工作中'}, 'C': {'status': 'BLOCKED', 'label': '阻塞'},
+            'TESTER': {'status': 'WAITING', 'label': '等待'}}
+        text = render_report(build_report(self.packet))
+        for name in ('执行者 A（空闲）', '执行者 B（工作中）', '执行者 C（阻塞）', '测试者（等待）'):
+            self.assertIn(name, text)
+
+    def test_live_query_keeps_observation_separate_from_recorded_progress(self):
+        self.packet['runtime_observation'] = {'kind': 'live-runtime-observation',
+            'checked_at': '2026-10-16T17:55:00+08:00', 'roles': {
+                'A': {'state': 'UNKNOWN', 'checked_at': '2026-10-16T17:55:00+08:00',
+                    'checkpoint': {'task': 'TASK-16C-A', 'attempt': 'attempt-2',
+                        'recorded_at': '2026-10-16T17:20:00+08:00'},
+                    'owner': {'state': 'exited_or_reused'},
+                    'errors': ['原 owner 已退出，最新回执尚未确认'], 'operations': []}},
+            'ocr': [], 'strong_review': {}, 'errors': []}
+        report = build_report(self.packet)
+        text = render_report(report)
+        self.assertEqual(report['report_basis'], 'live_runtime_with_latest_records')
+        self.assertEqual(report['runtime_observation']['roles']['A']['owner']['state'], 'exited_or_reused')
+        self.assertIn('本次核验', text)
+        self.assertIn('原 owner 已退出', text)
+        self.assertIn('17:20', text)
+        self.assertNotIn('**17:** 20', text)
+        self.assertIn('**【历史叙述', text)
+        self.assertNotIn('非生产实时探测', text)
+        self.assertNotIn('执行者 A（工作中）', text)
+
+    def test_render_report_bolds_plain_fact_labels(self):
+        report = build_report(self.packet)
+        report['sections'][0]['items'][0]['text'] = '状态：等待独立验证'
+        text = render_report(report)
+        self.assertIn('- **状态：** 等待独立验证', text)
+
+    def test_personal_live_report_does_not_expose_other_role_runtime(self):
+        self.packet['runtime_observation'] = {'kind': 'live-runtime-observation',
+            'checked_at': '2026-10-16T17:55:00+08:00', 'roles': {
+                'A': {'state': 'VERIFIED', 'owner': {'state': 'alive'}, 'checkpoint': {}, 'errors': []},
+                'B': {'state': 'UNKNOWN', 'owner': {}, 'checkpoint': {}, 'errors': ['B_PRIVATE_RUNTIME']}},
+            'ocr': [{'state': 'B_PRIVATE_OCR'}], 'strong_review': {'private': 'B_PRIVATE_REVIEW'}, 'errors': []}
+        report = build_report(self.packet, 'A')
+        self.assertEqual(set(report['runtime_observation']['roles']), {'A'})
+        self.assertNotIn('B_PRIVATE', json.dumps(report, ensure_ascii=False))
+
+    def test_current_checkpoint_action_is_not_replaced_by_old_delivered_task(self):
+        self.packet['runtime_observation'] = {'checked_at': '2026-10-16T18:00:00+08:00', 'roles': {
+            'A': {'state': 'VERIFIED', 'owner': {'state': 'alive'}, 'checkpoint': {'value': {
+                'task': 'TASK-NEW', 'attempt': 'attempt-3', 'status': 'RUNNING',
+                'recorded_at': '2026-10-16T17:58:00+08:00', 'next': '完成本轮新回归'}}, 'errors': []}},
+            'errors': [], 'ocr': [], 'strong_review': {}}
+        for role in ('A', 'COORDINATOR'):
+            text = render_report(build_report(self.packet, role))
+            self.assertIn('完成本轮新回归', text)
+            self.assertIn('TASK-NEW', text)
+            self.assertNotIn('未记录新派单，等待协调者接续安排', text)
+
+    def test_live_revocation_overrides_previous_authorized_projection(self):
+        self.packet['strong_review']['authorization'] = fact('AUTHORIZED')
+        self.packet['runtime_observation'] = {'checked_at': '2026-10-16T18:00:00+08:00',
+            'roles': {}, 'errors': [], 'ocr': [], 'strong_review': {'state': 'VERIFIED',
+                'value': {'authorization': 'REVOKED', 'active_calls': [], 'used_last_60_minutes': 2, 'limit': 5},
+                'errors': []}}
+        text = render_report(build_report(self.packet))
+        self.assertIn('**授权：** 已撤销', text)
+        self.assertNotIn('**授权：** 有效', text)
+        self.packet['runtime_observation']['strong_review']['state'] = 'UNVERIFIED'
+        self.assertNotIn('**授权：** 有效', render_report(build_report(self.packet)))
+
+    def test_unstarted_ocr_preparation_is_not_presented_as_inflight(self):
+        self.packet['runtime_observation'] = {'checked_at': '2026-10-16T18:00:00+08:00',
+            'roles': {}, 'errors': [], 'strong_review': {}, 'ocr': [{'state': 'VERIFIED',
+                'recorded_state': 'PREPARED', 'observed_state': 'PREPARED', 'in_flight': False,
+                'task': 'TASK-16C-A', 'service': {'ActiveState': 'inactive'}, 'errors': []}]}
+        text = render_report(build_report(self.packet))
+        self.assertIn('最近准备记录（未启动）', text)
+        self.assertIn('不计为在途审查', text)
+        self.packet['runtime_observation']['ocr'][0]['errors'] = ['OCR_prepared_record_service_active_conflict']
+        self.packet['runtime_observation']['ocr'][0]['in_flight'] = None
+        text = render_report(build_report(self.packet))
+        self.assertIn('启动身份与阶段待核实', text)
+        self.assertNotIn('最近准备记录（未启动）', text)
 
     def test_subroles_include_only_their_own_work_and_necessary_dependencies(self):
         text = render_report(build_report(self.packet, 'A'))
@@ -80,7 +163,9 @@ class ReportContractTests(unittest.TestCase):
         for section in report['sections']:
             for item in section['items']:
                 for source in item['sources']:
-                    self.assertTrue(source['evidence_reference'].startswith('/evidence/snapshot123.json#/'))
+                    filename, pointer = source['evidence_reference'].split('#', 1)
+                    self.assertEqual(filename, '/evidence/snapshot123.json')
+                    self.assertTrue(pointer == '' or pointer.startswith('/'))
                     self.assertIn('source', source)
 
     def test_delivery_testing_acceptance_and_merge_never_collapse(self):

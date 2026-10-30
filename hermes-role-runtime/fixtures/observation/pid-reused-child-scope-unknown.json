@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "rule_version": "ruflo-observation/2",
+  "config_version": "fixture-policy/1",
+  "fixture_id": "pid-reused-child-scope-unknown",
+  "label": "FAULT",
+  "identity": {
+    "pool": "/fixture/pool.json",
+    "generation": 1,
+    "run_id": "run-one",
+    "role": "A",
+    "work_id": "work-one",
+    "task_id": "T1",
+    "attempt": 1,
+    "execution_id": "exec-one",
+    "execution_generation": 1
+  },
+  "basis_refs": [
+    "RUFLO-BORROWINGS.md#B3",
+    "RUFLO-BORROWINGS.md#B8"
+  ],
+  "judgment": {
+    "reviewer": "implementation-spec-review",
+    "basis": "Specification-derived synthetic trajectory; no claim of user reviewed or production history"
+  },
+  "coverage_gaps": [
+    "Authority remains fenced by real execution/sandbox integration tests; PID reuse alone does not certify child scopes."
+  ],
+  "frames": [
+    {
+      "now": 100,
+      "observation": {
+        "processes": [
+          {
+            "identity": "old-owner",
+            "actual": "101",
+            "lease": {
+              "owner": "worker",
+              "pid": 123,
+              "process_start": "100",
+              "expires_at": 1000,
+              "last_seen": 0
+            }
+          }
+        ],
+        "faults": [
+          {
+            "type": "observer_process_scopes_unverified",
+            "source": "/proc"
+          }
+        ],
+        "source_states": {
+          "/proc": {
+            "state": "UNVERIFIED",
+            "checked_at": 100
+          }
+        }
+      },
+      "expected_events": [
+        {
+          "type": "observer_process_scopes_unverified",
+          "transition": "first",
+          "notification_state": "PENDING"
+        }
+      ]
+    }
+  ],
+  "rule_migration": {
+    "from": "ruflo-observation/1",
+    "source_sha256": "4ed3594471b25b070f09a121bad6e04cdf130d85d69e23d2de4bfe3c22b616d0",
+    "basis": "Existing specification judgments retained; added timestamps and legacy three-state reclassification do not change these expected transitions."
+  }
+}

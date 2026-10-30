@@ -43,7 +43,9 @@ def choose_route(mode, metrics):
 
 def get_text(url):
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-    with opener.open(url, timeout=2) as response:
+    # 2 秒对 192.168.2.45 的 metrics 偶发偏紧，一次超时就整轮判云端；5 秒仍远低于
+    # resolve_model_route 的 30 秒 hook 上限，放宽仅为压掉抖动，不放宽"未知即云端"。
+    with opener.open(url, timeout=5) as response:
         body = response.read(2_097_153)
     if len(body) > 2_097_152: raise ValueError('response too large')
     return body.decode('utf-8')
@@ -58,11 +60,15 @@ class ModelRouter:
         self.metrics_url = metrics_url
         self.state = self.home / 'runtime/model-routing-state.json'
 
-    def config(self, profile=None):
+    def config(self, profile=None, *, mode=None):
         from hermes_cli.config_effective import load_user_config_effective
         config = load_user_config_effective(self.home / 'config.yaml')
         settings = dict(config.get('plugins', {}).get('entries', {}).get('role-workflow-runtime', {}).get('settings', {}).get('model_routing', {}))
-        selected = profile or self._state().get('cloud_profile') or settings.get('default_cloud_profile')
+        # Automatic fallback has its own policy. A previous manual cloud choice
+        # is retained for /llm cloud, but cannot silently override auto's policy.
+        effective_mode = mode or self.mode()
+        selected = profile or (settings.get('auto_cloud_profile') if effective_mode == 'auto' else
+                               self._state().get('cloud_profile')) or settings.get('default_cloud_profile')
         if selected:
             profiles = settings.get('cloud_profiles', {})
             if selected not in profiles:
@@ -70,6 +76,9 @@ class ModelRouter:
             settings.update({k: v for k, v in profiles[selected].items()
                              if k in ('cloud_provider', 'cloud_model', 'cloud_key_env')})
             settings['selected_cloud_profile'] = selected
+        # OCR 选择器是唯一显式传 ocr_profile 的调用方；据此区分 OCR 与群会话，群会话自然不受影响。
+        if profile and profile == settings.get('ocr_profile'):
+            settings['_ocr_route'] = True
         return settings
 
     def _state(self):
@@ -100,7 +109,7 @@ class ModelRouter:
             mode, profile = mode.split(':', 1)
             if not profile: raise ValueError('请指定云端供应商名称。')
         if mode not in MODES: raise ValueError('模式无效')
-        config = self.config(profile) if profile else self.config()
+        config = self.config(profile, mode=mode)
         if not self.cloud_ready(config):
             name = config.get('cloud_key_env', 'NUMENUME_API_KEY')
             raise ValueError(f'云端密钥尚未配置；请在本机 ~/.hermes/.env 配置 {name}，勿发送到群里。模式未改变。')
@@ -120,6 +129,11 @@ class ModelRouter:
 
     def decision(self, config):
         mode = self.mode()
+        # OCR 固定本地：独立于群会话模式，且不探测队列（探测结果不改变去向），不回退云端。
+        if config.get('_ocr_route'):
+            if not config.get('ocr_local_only', True):
+                return {'mode': mode, 'route': 'cloud', 'reason': 'OCR 本地固定已关闭'}
+            return {'mode': mode, 'route': 'local', 'reason': 'OCR 固定本地'}
         if mode == 'cloud':
             return {'mode': mode, 'route': 'cloud', 'reason': '人工指定云端'}
         metrics = {}

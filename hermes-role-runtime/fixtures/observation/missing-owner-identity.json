@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "rule_version": "ruflo-observation/2",
+  "config_version": "fixture-policy/1",
+  "fixture_id": "missing-owner-identity",
+  "label": "FAULT",
+  "identity": {
+    "pool": "/fixture/pool.json",
+    "generation": 1,
+    "run_id": "run-one",
+    "role": "A",
+    "work_id": "work-one",
+    "task_id": "T1",
+    "attempt": 1,
+    "execution_id": "exec-one",
+    "execution_generation": 1
+  },
+  "basis_refs": [
+    "RUFLO-BORROWINGS.md#B3",
+    "RUFLO-BORROWINGS.md#B8"
+  ],
+  "judgment": {
+    "reviewer": "implementation-spec-review",
+    "basis": "Specification-derived synthetic trajectory; no claim of user reviewed or production history"
+  },
+  "coverage_gaps": [],
+  "frames": [
+    {
+      "now": 100,
+      "observation": {
+        "processes": [
+          {
+            "identity": "owner-one",
+            "source": "pid-source",
+            "lease": {
+              "owner": "worker"
+            },
+            "actual": "100",
+            "severity": 1
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "process_identity_fields_missing",
+          "transition": "first",
+          "notification_state": "PENDING"
+        }
+      ],
+      "expected_gate_blocks": {
+        "owner-one": true
+      }
+    },
+    {
+      "now": 200,
+      "observation": {
+        "processes": [
+          {
+            "identity": "owner-one",
+            "source": "pid-source",
+            "lease": {
+              "pid": 123,
+              "process_start": "100",
+              "expires_at": 1000
+            },
+            "actual": "100",
+            "severity": 1
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "lease_owner_missing",
+          "transition": "first",
+          "notification_state": "PENDING"
+        },
+        {
+          "type": "process_identity_fields_missing",
+          "transition": "recovered",
+          "notification_state": "PENDING"
+        }
+      ],
+      "expected_gate_blocks": {
+        "owner-one": true
+      }
+    }
+  ],
+  "rule_migration": {
+    "from": "ruflo-observation/1",
+    "source_sha256": "c5a52a4a5dc3f785792b1c6ef55e779d08ad13c6e7f21c1fe4ee406fa0c81381",
+    "basis": "Existing specification judgments retained; added timestamps and legacy three-state reclassification do not change these expected transitions."
+  }
+}

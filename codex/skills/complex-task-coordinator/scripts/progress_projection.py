@@ -15,7 +15,7 @@ import re
 from zoneinfo import ZoneInfo
 
 TZ = ZoneInfo('Asia/Shanghai')
-TASK_PATTERN = r'(?:TASK|NC|MN)-\d+[A-Z]?(?:-[A-Z0-9]+)*'
+TASK_PATTERN = r'(?:TASK|NC|MN)-[A-Z]{0,4}\d+[A-Z]?(?:-[A-Z0-9]+)*'
 TASK_RE = re.compile(r'^(' + TASK_PATTERN + r')(?:\s|$)')
 ROLES = {'A':'1号', 'B':'2号', 'C':'3号', 'TESTER':'TESTER'}
 TERMINAL = {'DONE', 'ACCEPTED', 'ACCEPT_MERGED', 'ACCEPTED_MERGED', 'CLOSED'}
@@ -526,7 +526,7 @@ def _strong_review(sources, snapshot, at):
         if snapshot is not None and isinstance(snapshot.get('strong_review'),dict):
             result = snapshot['strong_review']
         else:
-            script = Path.home()/'.codex/skills/complex-task-coordinator/scripts/strong_review.py'
+            script = Path(__file__).resolve().parent/'strong_review.py'
             spec = importlib.util.spec_from_file_location('_progress_strong_review',script)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)

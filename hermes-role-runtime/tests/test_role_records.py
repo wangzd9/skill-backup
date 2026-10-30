@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import importlib
 import json
 from pathlib import Path
@@ -9,7 +10,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(Path.home()/'.codex/skills/complex-task-coordinator/scripts'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import role_runtime
 from role_records import record_role
 
@@ -56,6 +57,64 @@ class RecordTests(unittest.TestCase):
         self.assertFalse(result['business_event'])
         self.assertEqual(result['occurred_at'], result['recorded_at'])
         self.assertIn('/runtime/observations/A/', result['path'])
+
+    def _tester_verification(self):
+        self.binding['roles']['TESTER'] = {'session_file': 'sessions/TESTER.md', 'skill': 'tester'}
+        (self.root/'ROLE-BINDINGS.json').write_text(json.dumps(self.binding))
+        claim = role_runtime.execute(argparse.Namespace(action='claim', project=str(self.root), role='TESTER',
+                                                       owner='isolated-tester', pid=None, ttl=300))
+        token = self.root/'tester-token.json'
+        token.write_text(json.dumps({'token': claim['token']}))
+        receipt = self.root/'test-receipts/TASK-1/result.md'
+        receipt.parent.mkdir(parents=True)
+        receipt.write_text('Independent test PASS at frozen candidate')
+        payload = {**self.payload, 'event_id': 'TESTER:TASK-1:attempt-1:pass',
+                   'verification': {'head': 'a'*40, 'result': 'PASS',
+                                    'receipt': str(receipt.relative_to(self.root)), 'supersedes': []}}
+        return token, receipt, payload
+
+    def test_tester_verification_is_frozen_in_lease_guarded_business_event(self):
+        token, receipt, payload = self._tester_verification()
+        result = record_role(self.root, 'TESTER', payload, token)
+        event = json.loads(Path(result['event']).read_text())
+        verification = event['verification']
+        digest = hashlib.sha256(receipt.read_bytes()).hexdigest()
+        self.assertEqual(digest, verification['receipt_sha256'])
+        self.assertEqual({str(receipt.relative_to(self.root)): digest}, verification['receipt_inventory'])
+        self.assertEqual({}, verification['supersedes_event_sha256'])
+        self.assertFalse(record_role(self.root, 'TESTER', payload, token)['created'])
+        receipt.write_text('Actual test receipt changed after delivery')
+        with self.assertRaisesRegex(ValueError, 'EVENT_ID_CONFLICT'):
+            record_role(self.root, 'TESTER', payload, token)
+
+    def test_non_tester_or_observation_cannot_publish_verification(self):
+        token, _, payload = self._tester_verification()
+        with self.assertRaisesRegex(ValueError, '独立测试者'):
+            self.write({**payload, 'event_id': self.payload['event_id']})
+        with self.assertRaisesRegex(ValueError, '观察记录'):
+            record_role(self.root, 'TESTER', {**payload, 'kind': 'observation'}, token)
+        self.assertFalse((self.root/'events').exists())
+
+    def test_stale_tester_lease_cannot_publish_verification(self):
+        token, _, payload = self._tester_verification()
+        token.write_text(json.dumps({'token': 'stale'}))
+        with self.assertRaisesRegex(ValueError, 'token'):
+            record_role(self.root, 'TESTER', payload, token)
+        self.assertFalse((self.root/'events').exists())
+
+    def test_current_recovery_obligations_survive_updates_until_explicitly_cleared(self):
+        self.write({**self.payload, 'open_gates': ['独立测试待完成'],
+                    'pending_actions': ['核对回执后通知协调者'], 'references': ['receipts/test.md']})
+        path = self.root/'inbox/control/runtime/checkpoints/A.json'
+        self.write({**self.payload, 'event_id': 'A:TASK-1:followup'})
+        checkpoint = json.loads(path.read_text())
+        self.assertEqual(checkpoint['open_gates'], ['独立测试待完成'])
+        self.assertEqual(checkpoint['process_identity']['owner'], 'isolated-test')
+        self.assertNotIn('token', checkpoint['process_identity'])
+        self.write({**self.payload, 'event_id': 'A:TASK-1:cleared', 'open_gates': [], 'pending_actions': []})
+        self.assertEqual(json.loads(path.read_text())['open_gates'], [])
+        self.write({**self.payload, 'event_id': 'A:TASK-2:next', 'task': 'TASK-2'})
+        self.assertNotIn('references', json.loads(path.read_text()))
 
     def test_crash_between_event_and_session_recovers_once(self):
         original = role_runtime.atomic
@@ -127,7 +186,7 @@ class RecordTests(unittest.TestCase):
     def test_staged_timeline_handles_unknown_occurrence_without_backdating(self):
         staged = ROOT.parent/'skills/complex-task-coordinator/scripts/role_runtime.py'
         if not staged.is_file():
-            staged = Path.home()/'.codex/skills/complex-task-coordinator/scripts/role_runtime.py'
+            staged = Path(__file__).resolve().parents[1]/'role_runtime.py'
         spec = importlib.util.spec_from_file_location('staged_role_runtime', staged)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -147,7 +206,7 @@ class RecordTests(unittest.TestCase):
     def test_staged_legacy_event_preserves_minute_precision_and_rejects_ambiguous_input(self):
         staged = ROOT.parent/'skills/complex-task-coordinator/scripts/role_runtime.py'
         if not staged.is_file():
-            staged = Path.home()/'.codex/skills/complex-task-coordinator/scripts/role_runtime.py'
+            staged = Path(__file__).resolve().parents[1]/'role_runtime.py'
         spec = importlib.util.spec_from_file_location('staged_role_runtime_minutes', staged)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)

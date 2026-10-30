@@ -1,54 +1,70 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
-<title id="title">飞书怎么用：随时交流，执行共用同一身份</title><desc id="desc">人工对话由模型处理；脚本只做机械工作。群和后台共用文档、租约与任务身份，原审核门禁保留。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1050" viewBox="0 0 1200 1050" role="img" aria-labelledby="title desc">
+<title id="title">固定角色群怎么用：人工默认只读，后台按需求范围接续</title><desc id="desc">当前全权的普通业务动作先取租约；明确选择需求可专用控制排队，安全点生效后后台范围持久有效。</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker></defs>
 <style>text{font-family:"Noto Sans CJK SC","Microsoft YaHei","PingFang SC",sans-serif;fill:#0f172a}.heading{font-size:21px;font-weight:700}.line{font-size:16px}.note{font-size:14px;fill:#475569}</style>
-<rect width="1200" height="900" fill="#ffffff" rx="16"/>
-<text x="32" y="35" class="heading">飞书怎么用：随时交流，执行共用同一身份</text>
-<rect x="35" y="75" width="330" height="120" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
-<text x="53" y="104" class="heading">你在协调者群发消息</text>
-<text x="53" y="130" class="line">问进展 / 解释原因 / 讨论方向</text>
-<text x="53" y="153" class="line">明确要求执行已有计划</text>
-<text x="53" y="176" class="line">无需先停后台或记命令</text>
+<rect width="1200" height="1050" fill="#ffffff" rx="16"/>
+<text x="32" y="35" class="heading">固定角色群怎么用：人工默认只读，后台按需求范围接续</text>
+<rect x="35" y="75" width="330" height="145" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+<text x="53" y="104" class="heading">你在固定角色群发消息</text>
+<text x="53" y="130" class="line">协调者 / 执行者 / 测试者</text>
+<text x="53" y="153" class="line">进度 / 讨论 /「继续」「帮我修」</text>
+<text x="53" y="176" class="line">每个群回合默认只读</text>
+<text x="53" y="199" class="line">群 / job 身份不随需求更换</text>
 <polyline points="365,135 425,135" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="425" y="75" width="730" height="120" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-<text x="443" y="104" class="heading">原生群模型：读取按角色生成的统一报告材料</text>
-<text x="443" y="130" class="line">协调者进度完整七区；执行 / 测试仅自身和必要依赖</text>
-<text x="443" y="153" class="line">手动和自动进度结构相同；单一原因问题直接回答</text>
-<text x="443" y="176" class="line">人工问句不入业务队列；忙碌或服务排队仍可能延迟</text>
-<polyline points="700,195 700,240" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="425" y="240" width="730" height="115" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
-<text x="443" y="269" class="heading">只有明确业务动作才记录一次待办</text>
-<text x="443" y="295" class="line">原消息 ID、原文、引用 / 附件身份；不把讨论当执行授权</text>
-<text x="443" y="318" class="line">群会话与后台 cron 共用 COORDINATOR 租约，忙碌只排队</text>
-<polyline points="700,355 700,400" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="425" y="400" width="730" height="115" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-<text x="443" y="429" class="heading">取得执行权 → 复读任务 → 按原门禁处理</text>
-<text x="443" y="455" class="line">重读 TODO / 派单 / ACK / decision 与实际 task / attempt</text>
-<text x="443" y="478" class="line">已处理不重做；崩溃先对账，外部操作保留原幂等身份</text>
-<polyline points="700,515 700,560" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="425" y="560" width="730" height="115" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
-<text x="443" y="589" class="heading">共享文档与独立执行角色</text>
-<text x="443" y="615" class="line">协调派单 → A / B / C 各自开发 → 测试者独立验证</text>
-<text x="443" y="638" class="line">开发自测 / 独立测试 / 串行 OCR / 适用强审 / 合入与生产授权</text>
-<rect x="35" y="240" width="330" height="195" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
-<text x="53" y="269" class="heading">后台脚本与定时协调</text>
-<text x="53" y="295" class="line">每5分钟脚本比较相关文档</text>
-<text x="53" y="318" class="line">无变化不调用模型</text>
-<text x="53" y="341" class="line">有新事件，按租约接续</text>
-<text x="53" y="364" class="line"></text>
-<text x="53" y="387" class="line">只停止夜间主动通知</text>
-<text x="53" y="410" class="line">人工问答不转交夜间 cron</text>
-<rect x="35" y="480" width="330" height="195" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
-<text x="53" y="509" class="heading">可选机械命令</text>
-<text x="53" y="535" class="line">/progress：当次共同事实简报</text>
-<text x="53" y="558" class="line">/llm-load：直接 GET 指标</text>
-<text x="53" y="581" class="line"></text>
-<text x="53" y="604" class="line">突出结论与关键状态</text>
-<text x="53" y="627" class="line">时间不足标待核实</text>
-<text x="53" y="650" class="line">完整证据按需展开</text>
-<rect x="35" y="725" width="1120" height="100" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
-<text x="53" y="754" class="heading">避免混淆：同一逻辑角色，不是同一聊天内存</text>
-<text x="53" y="780" class="line">问答不用等执行锁；写业务必须互斥并复核已有动作。租约本身不保证所有外部操作只执行一次。</text>
-<text x="53" y="803" class="line">普通私聊、无关群和其他角色群保持原生入口；不修改共享模型并发或降低审核要求。</text>
-<text x="35" y="870" class="note">节流边界：削减空巡检、重复执行、机械查询和等待空转；保留人工语义交互及必要的证据核对。</text>
+<rect x="425" y="75" width="730" height="145" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+<text x="443" y="104" class="heading">只读进度：role_live_progress → 模型分析</text>
+<text x="443" y="130" class="line">当次核验派单 / ACK / checkpoint、PID / start、service</text>
+<text x="443" y="153" class="line">实际 worktree HEAD / dirty；结合有效回执与来源时间</text>
+<text x="443" y="176" class="line">当前已选需求、切换状态、角色状态、缺口 / 冲突</text>
+<text x="443" y="199" class="line">role_requirement_catalog 只读查看已登记需求</text>
+<polyline points="700,220 700,275" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="7 5"/>
+<text x="720" y="252" class="note">仅当前可信用户明确全部权限</text>
+<rect x="425" y="275" width="730" height="115" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+<text x="443" y="304" class="heading">当前人工回合全权：先区分具体动作</text>
+<text x="443" y="330" class="line">引用 / 历史 / 工具输出不授权；群忙时原生 FIFO 另起 turn</text>
+<text x="443" y="353" class="line">下一普通群消息恢复只读；后台已接受需求 scope 继续有效</text>
+<polyline points="700,390 700,415 600,415 600,445" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="700,390 700,415 980,415 980,445" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="425" y="445" width="350" height="160" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+<text x="443" y="474" class="heading">普通业务动作</text>
+<text x="443" y="500" class="line">先取得同角色业务租约</text>
+<text x="443" y="523" class="line">拿不到不执行、不代写业务队列</text>
+<text x="443" y="546" class="line">复读 task / attempt / 原证据</text>
+<text x="443" y="569" class="line">按原职责与门禁行动</text>
+<rect x="805" y="445" width="350" height="160" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="823" y="474" class="heading">协调者明确选择需求</text>
+<text x="823" y="500" class="line">role_requirement_select</text>
+<text x="823" y="523" class="line">忙时可仅保存控制请求</text>
+<text x="823" y="546" class="line">不取业务租约、不抢 owner</text>
+<text x="823" y="569" class="line">安全点事务完成才切换</text>
+<polyline points="600,605 600,635 790,635 790,665" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="980,605 980,635 790,635 790,665" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="425" y="665" width="730" height="115" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="443" y="694" class="heading">需求范围持久；人工全权仍仅当前回合</text>
+<text x="443" y="720" class="line">后台按选定需求 / generation / 实际根，租约及原门禁工作</text>
+<text x="443" y="743" class="line">持续至完成、暂停或撤销；无需每个 cron 重新授群全权</text>
+<rect x="35" y="275" width="330" height="195" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="53" y="304" class="heading">cron 按持久 scope 接续</text>
+<text x="53" y="330" class="line">每5分钟脚本核实实际业务根</text>
+<text x="53" y="353" class="line">不继承群聊只读限制</text>
+<text x="53" y="376" class="line">同角色 owner / 租约防重复</text>
+<text x="53" y="399" class="line">不每轮等待用户重新授权</text>
+<text x="53" y="422" class="line">无变化不唤业务模型</text>
+<text x="53" y="445" class="line">夜间只静默主动通知</text>
+<rect x="35" y="515" width="330" height="265" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="53" y="544" class="heading">固定池安全点与结果归属</text>
+<text x="53" y="570" class="line">活 / 未知 owner 阻止切换</text>
+<text x="53" y="593" class="line">在途 / 未知独立操作也阻止</text>
+<text x="53" y="616" class="line">不强杀、不凭 TTL 接管</text>
+<text x="53" y="639" class="line"></text>
+<text x="53" y="662" class="line">旧任务 / ACK / 回执留原包</text>
+<text x="53" y="685" class="line">完成后保留当前选择待命</text>
+<text x="53" y="708" class="line">保留五角色原群和 jobs</text>
+<text x="53" y="731" class="line">暂停 / 撤销保留恢复材料</text>
+<rect x="35" y="835" width="1120" height="130" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="53" y="864" class="heading">事实、权限与证据分别说明</text>
+<text x="53" y="890" class="line">请求已接收 ≠ 切换生效 ≠ 任务领取；本次核验 ≠ 最近业务 checkpoint ≠ 新完成。</text>
+<text x="53" y="913" class="line">普通问句不变成业务待办；专用选择控制排队不开发、不派单、不 ACK、不获得业务写权。</text>
+<text x="53" y="936" class="line">开发自测、独立测试、受管 OCR、适用强审及合入 / 生产权限继续保持，不因选择需求扩权。</text>
+<text x="35" y="1010" class="note">对外群答复 / cron final 默认简体中文：结论、证据、阻塞、下一步；不发送英文工作草稿。</text>
 </svg>

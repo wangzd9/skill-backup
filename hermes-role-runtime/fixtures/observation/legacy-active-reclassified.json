@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "rule_version": "ruflo-observation/2",
+  "config_version": "fixture-policy/2",
+  "fixture_id": "legacy-active-reclassified",
+  "label": "MIXED",
+  "identity": {
+    "pool": "/fixture/pool.json",
+    "role": "A",
+    "generation": 1
+  },
+  "basis_refs": [
+    "REPAIR-BACKLOG-20261021.md#FIX-01"
+  ],
+  "judgment": {
+    "reviewer": "implementation-spec-review",
+    "basis": "Synthetic legacy cursor upgrade; not production acceptance"
+  },
+  "coverage_gaps": [],
+  "frames": [
+    {
+      "now": 100,
+      "observation": {
+        "anomalies": [
+          {
+            "identity": "old-active",
+            "type": "observer_active_execution_without_lease",
+            "source": "/fixture/lease.json",
+            "role": "A",
+            "severity": 1,
+            "executions": [
+              "missing-native"
+            ]
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "observer_active_execution_without_lease",
+          "transition": "first",
+          "notification_state": "PENDING"
+        }
+      ]
+    },
+    {
+      "now": 101,
+      "observation": {
+        "anomalies": [
+          {
+            "identity": "unknown",
+            "type": "observer_frozen_execution_unverified",
+            "source": "/fixture/scope.json",
+            "role": "A",
+            "severity": 1
+          }
+        ],
+        "observation_reclassifications": [
+          "old-active"
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "observer_frozen_execution_unverified",
+          "transition": "first",
+          "notification_state": "PENDING"
+        },
+        {
+          "type": "observer_active_execution_without_lease",
+          "transition": "reclassified_unverified",
+          "notification_state": "PENDING"
+        }
+      ]
+    },
+    {
+      "now": 102,
+      "observation": {
+        "anomalies": [
+          {
+            "identity": "unknown",
+            "type": "observer_frozen_execution_unverified",
+            "source": "/fixture/scope.json",
+            "role": "A",
+            "severity": 1
+          }
+        ]
+      },
+      "expected_events": []
+    }
+  ]
+}

@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "rule_version": "ruflo-observation/2",
+  "config_version": "fixture-policy/1",
+  "fixture_id": "wait-expiration",
+  "label": "FAULT",
+  "identity": {
+    "pool": "/fixture/pool.json",
+    "generation": 1,
+    "run_id": "run-one",
+    "role": "A",
+    "work_id": "work-one",
+    "task_id": "T1",
+    "attempt": 1,
+    "execution_id": "exec-one",
+    "execution_generation": 1
+  },
+  "basis_refs": [
+    "RUFLO-BORROWINGS.md#B3",
+    "RUFLO-BORROWINGS.md#B8"
+  ],
+  "judgment": {
+    "reviewer": "implementation-spec-review",
+    "basis": "Specification-derived synthetic trajectory; no claim of user reviewed or production history"
+  },
+  "coverage_gaps": [],
+  "frames": [
+    {
+      "now": 100,
+      "observation": {
+        "no_activity_seconds": 600,
+        "activities": [
+          {
+            "identity": {
+              "pool": "/fixture/pool.json",
+              "generation": 1,
+              "run_id": "run-one",
+              "role": "A",
+              "work_id": "work-one",
+              "task_id": "T1",
+              "attempt": 1,
+              "execution_id": "exec-one",
+              "execution_generation": 1
+            },
+            "current_work_valid": true,
+            "required_sources": [
+              "tools",
+              "model_requests"
+            ],
+            "sources": [
+              {
+                "source_id": "tools",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 100,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:tools"
+              },
+              {
+                "source_id": "model_requests",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 100,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:model_requests"
+              }
+            ],
+            "checkpoint_at": 0,
+            "checkpoint_evidence_ref": "fixture:checkpoint",
+            "lifecycles": [
+              {
+                "operation_id": "op-tool",
+                "kind": "tool",
+                "source_id": "tools",
+                "verified": true,
+                "started_at": 0,
+                "wait_until": 5000,
+                "evidence_ref": "fixture:wait-tool"
+              }
+            ],
+            "heartbeat_at": 100
+          }
+        ]
+      },
+      "expected_events": []
+    },
+    {
+      "now": 5001,
+      "observation": {
+        "no_activity_seconds": 600,
+        "activities": [
+          {
+            "identity": {
+              "pool": "/fixture/pool.json",
+              "generation": 1,
+              "run_id": "run-one",
+              "role": "A",
+              "work_id": "work-one",
+              "task_id": "T1",
+              "attempt": 1,
+              "execution_id": "exec-one",
+              "execution_generation": 1
+            },
+            "current_work_valid": true,
+            "required_sources": [
+              "tools",
+              "model_requests"
+            ],
+            "sources": [
+              {
+                "source_id": "tools",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 5001,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:tools"
+              },
+              {
+                "source_id": "model_requests",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 5001,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:model_requests"
+              }
+            ],
+            "checkpoint_at": 0,
+            "checkpoint_evidence_ref": "fixture:checkpoint",
+            "lifecycles": [
+              {
+                "operation_id": "op-tool",
+                "kind": "tool",
+                "source_id": "tools",
+                "verified": true,
+                "started_at": 0,
+                "wait_until": 5000,
+                "evidence_ref": "fixture:wait-tool"
+              }
+            ],
+            "heartbeat_at": 5001
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "OPERATION_WAIT_EXPIRED",
+          "transition": "first",
+          "notification_state": "PENDING"
+        }
+      ]
+    },
+    {
+      "now": 5002,
+      "observation": {
+        "no_activity_seconds": 600,
+        "activities": [
+          {
+            "identity": {
+              "pool": "/fixture/pool.json",
+              "generation": 1,
+              "run_id": "run-one",
+              "role": "A",
+              "work_id": "work-one",
+              "task_id": "T1",
+              "attempt": 1,
+              "execution_id": "exec-one",
+              "execution_generation": 1
+            },
+            "current_work_valid": true,
+            "required_sources": [
+              "tools",
+              "model_requests"
+            ],
+            "sources": [
+              {
+                "source_id": "tools",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 5002,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:tools"
+              },
+              {
+                "source_id": "model_requests",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 5002,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:model_requests"
+              }
+            ],
+            "checkpoint_at": 5002,
+            "checkpoint_evidence_ref": "fixture:checkpoint",
+            "lifecycles": [
+              {
+                "operation_id": "read-5002",
+                "kind": "tool",
+                "source_id": "tools",
+                "verified": true,
+                "started_at": 5001,
+                "ended_at": 5002,
+                "evidence_ref": "fixture:read"
+              },
+              {
+                "operation_id": "op-tool",
+                "kind": "tool",
+                "source_id": "tools",
+                "verified": true,
+                "started_at": 0,
+                "ended_at": 5002,
+                "wait_until": 5000,
+                "evidence_ref": "fixture:wait-tool-end"
+              }
+            ],
+            "heartbeat_at": 5002
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "OPERATION_WAIT_EXPIRED",
+          "transition": "recovered",
+          "notification_state": "PENDING"
+        }
+      ]
+    }
+  ],
+  "rule_migration": {
+    "from": "ruflo-observation/1",
+    "source_sha256": "cdcafaebbd259bff50579e73598eb30e63b670e447bb6002256f10884857364d",
+    "basis": "Existing specification judgments retained; added timestamps and legacy three-state reclassification do not change these expected transitions."
+  }
+}

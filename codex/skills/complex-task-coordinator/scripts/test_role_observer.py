@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import role_observer as observer
 
 
@@ -35,6 +35,170 @@ class ObserverTests(unittest.TestCase):
         tick=json.loads((self.root/'inbox/control/runtime/ticks/A.json').read_text())
         self.assertEqual(tick['mode'],'script_poll')
         self.assertEqual(tick['fingerprint'],first['fingerprint'])
+    def test_normal_owner_release_without_business_change_does_not_echo(self):
+        self.ack('A')
+        lease=self.write('inbox/control/runtime/leases/A.json',json.dumps({
+            'owner':'current-worker','pid':os.getpid(),'process_start':observer.runtime.pid_identity(os.getpid())}))
+        current=observer.observe(self.root,'A')
+        observer.acknowledge(self.root,'A',current['fingerprint'])
+        lease.unlink()
+        self.assertFalse(observer.observe(self.root,'A')['wakeAgent'])
+    def test_pure_session_rotation_preserves_observed_identity_without_ack_mutation(self):
+        from document_store import rotate_document
+        source=self.write('sessions/A.md','# 旧活动记录\n'+('已记录业务历史\n'*600))
+        old=self.ack('A')
+        cursor=self.root/'inbox/control/runtime/observer/A.json'
+        before=cursor.read_bytes()
+        checkpoint={'schema_version':1,'role':'A','task':'TASK-01','attempt':'attempt-1','status':'REVIEW_PENDING'}
+        rotate_document(self.root,source,checkpoint,force=True)
+        self.assertEqual(cursor.read_bytes(),before)
+        current=observer.observe(self.root,'A')
+        self.assertFalse(current['wakeAgent'])
+        self.assertEqual(current['fingerprint'],old['fingerprint'])
+        rotate_document(self.root,source,checkpoint,force=True)
+        self.assertFalse(observer.observe(self.root,'A')['wakeAgent'])
+    def test_session_rotation_never_hides_new_dispatch_or_raw_session_bytes(self):
+        from document_store import rotate_document
+        source=self.write('sessions/A.md','# 旧活动记录\n'+('业务历史\n'*600))
+        old=self.ack('A')
+        checkpoint={'schema_version':1,'role':'A','task':'TASK-01','attempt':'attempt-1','status':'REVIEW_PENDING'}
+        rotate_document(self.root,source,checkpoint,force=True)
+        self.write('inbox/1号/TASK-02/attempt-1-dispatch.md','# 派单 TASK-02\n- status: PENDING\n')
+        with self.assertRaisesRegex(ValueError,'STALE_OBSERVATION'):
+            observer.acknowledge(self.root,'A',old['fingerprint'])
+        self.assertTrue(observer.observe(self.root,'A')['wakeAgent'])
+        acknowledged=self.ack('A')
+        source.write_text(source.read_text()+'\n新业务检查点：发现未解除门禁。\n')
+        with self.assertRaisesRegex(ValueError,'STALE_OBSERVATION'):
+            observer.acknowledge(self.root,'A',acknowledged['fingerprint'])
+        self.assertTrue(observer.observe(self.root,'A')['wakeAgent'])
+    def test_rotation_restores_exact_legacy_observation_spans_and_keeps_provenance(self):
+        from document_store import rotate_document
+        source=self.write('sessions/A.md','# 活动记录\n尚需验证\n')
+        before=source.read_bytes();block='- 只读巡检，无业务变化\n'.encode()
+        source.write_bytes(before+block)
+        self.register([{'kind':'session_block','source':'sessions/A.md','offset':len(before),'length':len(block),
+                        'sha256':hashlib.sha256(block).hexdigest()}])
+        self.ack('A')
+        checkpoint={'schema_version':1,'role':'A','task':'TASK-01','attempt':'attempt-1','status':'REVIEW_PENDING'}
+        rotate_document(self.root,source,checkpoint,force=True)
+        self.assertFalse(observer.observe(self.root,'A')['wakeAgent'])
+        # A later exact observation registration must retain the old archive
+        # offsets; otherwise a subsequent rotation loses its provenance.
+        raw=source.read_bytes();start=raw.index(b'- ');length=raw.index(b'\n',start)+1-start
+        self.register([{'kind':'session_block','source':'sessions/A.md','offset':start,'length':length,
+                        'sha256':hashlib.sha256(raw[start:start+length]).hexdigest()}])
+        index=json.loads((self.root/'inbox/control/runtime/observation-index/A.json').read_text())
+        self.assertTrue(index.get('archived_entries'))
+        self.ack('A')
+        rotate_document(self.root,source,checkpoint,force=True)
+        self.assertFalse(observer.observe(self.root,'A')['wakeAgent'])
+    def test_tampered_rotation_evidence_is_visible_to_observer(self):
+        from document_store import rotate_document
+        source=self.write('sessions/A.md','# 活动记录\n原业务证据\n')
+        self.ack('A')
+        rotate_document(self.root,source,{'schema_version':1,'role':'A','task':'TASK-01','attempt':'attempt-1'},force=True)
+        archive=next(path for path in (self.root/'archive/role-runtime').glob('*/*.md') if not path.name.endswith('.active.md'))
+        archive.write_text('已被改变的归档\n')
+        result=observer.observe(self.root,'A')
+        self.assertTrue(result['wakeAgent'])
+        self.assertIn('DOCUMENT_CONFLICT',result.get('error',''))
+    def test_missing_rotation_index_or_replacement_and_invalid_provenance_are_visible(self):
+        from document_store import rotate_document
+        source=self.write('sessions/A.md','# 活动记录\n当前未完成事项\n')
+        self.ack('A')
+        rotate_document(self.root,source,{'schema_version':1,'role':'A','task':'TASK-01','attempt':'attempt-1'},force=True)
+        replacement=next((self.root/'archive/role-runtime').glob('*/*.active.md'))
+        raw=replacement.read_bytes();replacement.unlink()
+        self.assertIn('DOCUMENT_CONFLICT',observer.observe(self.root,'A').get('error',''))
+        replacement.write_bytes(raw)
+        index=self.root/'inbox/control/runtime/document-history.db'
+        db=index.read_bytes();index.unlink()
+        self.assertIn('DOCUMENT_CONFLICT',observer.observe(self.root,'A').get('error',''))
+        index.write_bytes(db)
+        self.write('inbox/control/runtime/observation-index/A.json',json.dumps({
+            'schema_version':1,'entries':[],'archived_entries':[{'generation':'a'*32,'entries':['damaged']}]}))
+        self.assertIn('DOCUMENT_CONFLICT',observer.observe(self.root,'A').get('error',''))
+    def test_quota_counter_alone_does_not_wake_coordinator(self):
+        with patch('strong_review.Ledger.status',return_value={'authorization':'AUTHORIZED','used_last_60_minutes':2}):
+            self.ack('COORDINATOR')
+        with patch('strong_review.Ledger.status',return_value={'authorization':'AUTHORIZED','used_last_60_minutes':1}):
+            self.assertFalse(observer.observe(self.root,'COORDINATOR')['wakeAgent'])
+    def test_continuation_remains_pending_after_observer_ack(self):
+        from context_input import publish_continuation
+        self.ack('A')
+        self.write('receipts/next-input.md','TASK-02 attempt-1 待完成下一验证\n')
+        self.write('inbox/control/runtime/checkpoints/A.json',json.dumps({
+            'schema_version':1,'role':'A','task':'TASK-02','attempt':'attempt-1','status':'RUNNING'}))
+        token=self.write('token.json',json.dumps({'token':'valid'}))
+        lease=self.write('inbox/control/runtime/leases/A.json',json.dumps({
+            'owner':'test','token':'valid','expires_at':time.time()+60}))
+        try:
+            publish_continuation(self.root,'A',{'continuation_id':'next','task':'TASK-02','attempt':'attempt-1',
+                'checkpoint':'receipts/next-input.md','next':'完成下一验证','runnable':True},token)
+        finally:
+            lease.unlink()
+        current=observer.observe(self.root,'A')
+        self.assertTrue(current['wakeAgent'])
+        observer.acknowledge(self.root,'A',current['fingerprint'])
+        self.assertTrue(observer.observe(self.root,'A')['wakeAgent'])
+    def test_legacy_continuation_conflict_reports_once_without_losing_intent_or_new_dispatch(self):
+        from context_input import publish_continuation, recover_continuation_input
+        checkpoint = {'schema_version':1,'role':'A','task':'TASK-02','attempt':'attempt-1','status':'RUNNING'}
+        self.write('inbox/control/runtime/checkpoints/A.json',json.dumps(checkpoint))
+        source=self.write('receipts/next-input.md','TASK-02 attempt-1 原始输入\n')
+        original=source.read_bytes()
+        token=self.write('token.json',json.dumps({'token':'valid'}))
+        lease=self.write('inbox/control/runtime/leases/A.json',json.dumps({'owner':'test','token':'valid','expires_at':time.time()+60}))
+        continuation=publish_continuation(self.root,'A',{'continuation_id':'next','task':'TASK-02','attempt':'attempt-1',
+            'checkpoint':'receipts/next-input.md','next':'完成下一验证','runnable':True},token)
+        path=next((self.root/'inbox/control/runtime/continuations/A').glob('*.json'))
+        del continuation['checkpoint_snapshot']; path.write_text(json.dumps(continuation))
+        source.write_text('TASK-02 attempt-1 消费完成事件已追加\n')
+        self.ack('A')
+        before=path.read_bytes()
+        self.assertFalse(observer.observe(self.root,'A')['wakeAgent'])
+        self.assertEqual(path.read_bytes(),before)
+        self.write('inbox/1号/TASK-03/new-dispatch.md','# 派单\n- status: PENDING\n')
+        # An unbound legacy lease is unknown ownership, not proof of an empty
+        # slot. Preserve the new input while requiring owner verification.
+        self.assertFalse(observer.observe(self.root,'A')['wakeAgent'])
+        self.ack('A')
+        self.write('receipts/recovered-original.md',original.decode())
+        recover_continuation_input(self.root,'A','next','receipts/recovered-original.md',token,
+                                   expected_sha256=continuation['input_sha256'])
+        self.assertFalse(observer.observe(self.root,'A')['wakeAgent'])
+        lease.unlink()
+        self.assertTrue(observer.observe(self.root,'A')['wakeAgent'])
+    def test_continuation_ack_cannot_make_stale_observer_ack_consume_a_new_dispatch(self):
+        from context_input import publish_continuation, acknowledge_continuation
+        self.write('inbox/control/runtime/checkpoints/A.json',json.dumps({
+            'schema_version':1,'role':'A','task':'TASK-02','attempt':'attempt-1','status':'RUNNING'}))
+        self.write('receipts/next-input.md','TASK-02 attempt-1 原始输入\n')
+        self.write('receipts/completed.md','TASK-02 attempt-1 已完成下一验证\n')
+        token=self.write('token.json',json.dumps({'token':'valid'}))
+        self.write('inbox/control/runtime/leases/A.json',json.dumps({'owner':'test','token':'valid','expires_at':time.time()+60}))
+        continuation=publish_continuation(self.root,'A',{'continuation_id':'next','task':'TASK-02','attempt':'attempt-1',
+            'checkpoint':'receipts/next-input.md','next':'完成下一验证','runnable':True},token)
+        observed=observer.observe(self.root,'A')
+        acknowledge_continuation(self.root,'A','next','receipts/completed.md',token,
+                                  expected_sha256=continuation['input_sha256'])
+        self.write('inbox/1号/TASK-03/new-dispatch.md','# 派单\n- status: PENDING\n')
+        with self.assertRaisesRegex(ValueError,'STALE_OBSERVATION'):
+            observer.acknowledge(self.root,'A',observed['fingerprint'])
+        next_poll=observer.observe(self.root,'A')
+        self.assertIn('inbox/1号/TASK-03/new-dispatch.md',next_poll['changed_sources'])
+    def test_coordinator_after_rebind_only_reads_operations_for_bound_roles(self):
+        binding=json.loads((self.root/'ROLE-BINDINGS.json').read_text())
+        binding['roles']={'COORDINATOR':binding['roles']['COORDINATOR']}
+        self.write('ROLE-BINDINGS.json',json.dumps(binding))
+        def operations(root, role):
+            if role not in binding['roles']: raise KeyError(role)
+            return []
+        with patch('runtime_tools.operation_states',side_effect=operations) as collect:
+            tick=observer.observe(self.root,'COORDINATOR')
+        self.assertNotEqual(tick['reason'],'observer_unavailable')
+        self.assertEqual([call.args[1] for call in collect.call_args_list],['COORDINATOR'])
     def test_group_instruction_is_not_consumed_by_observer_ack(self):
         from runtime_tools import pending_requests
         from coord_queue import enqueue, acknowledge_request
@@ -273,6 +437,42 @@ class ObserverTests(unittest.TestCase):
         self.assertEqual(observer.process_health(lease,lambda p:'101')['state'],'exited_or_reused')
         self.assertEqual(observer.process_health(lease,lambda p:None)['state'],'exited_or_reused')
         self.assertEqual(observer.process_health({'owner':'worker'})['state'],'unverified')
+
+    def test_expired_lease_keeps_live_owner_distinct_from_business_validity(self):
+        """TTL failure is visible but never proves that its writer exited."""
+        lease={'owner':'worker','pid':99,'process_start':'100',
+               'expires_at':time.time()-3600}
+        health=observer.process_health(lease,lambda p:'100')
+        self.assertEqual(health['state'],'unverified')
+        self.assertEqual(health['reason'],'lease_expired_owner_alive')
+        self.assertEqual(health['owner_process_state'],'alive')
+        self.assertTrue(observer.owner_blocks_new_execution(health))
+
+    def test_active_lease_with_live_process_still_counts_as_working(self):
+        """上限保护：租约有效且进程活着时仍判 alive，不能误放开并发唤醒。"""
+        lease={'owner':'worker','pid':99,'process_start':'100',
+               'expires_at':time.time()+300}
+        self.assertEqual(observer.process_health(lease,lambda p:'100')['state'],'alive')
+
+    def test_lease_without_expiry_keeps_legacy_liveness_semantics(self):
+        """旧租约没有 expires_at：维持原有判活语义，不因缺字段而误判停手。"""
+        lease={'owner':'worker','pid':99,'process_start':'100'}
+        self.assertEqual(observer.process_health(lease,lambda p:'100')['state'],'alive')
+
+    def test_stale_heartbeat_preserves_live_process_identity(self):
+        lease={'owner':'worker','pid':99,'process_start':'100',
+               'expires_at':time.time()+9999,
+               'last_seen':time.time()-(observer.STALE_HEARTBEAT_SECONDS+600)}
+        health=observer.process_health(lease,lambda p:'100')
+        self.assertEqual(health['state'],'unverified')
+        self.assertEqual(health['reason'],'heartbeat_stale_owner_activity_unverified')
+        self.assertEqual(health['owner_process_state'],'alive')
+
+    def test_fresh_heartbeat_on_active_lease_is_alive(self):
+        lease={'owner':'worker','pid':99,'process_start':'100',
+               'expires_at':time.time()+300,'last_seen':time.time()-60}
+        self.assertEqual(observer.process_health(lease,lambda p:'100')['state'],'alive')
+
     def test_process_change_wakes_and_never_deletes_lease(self):
         self.write('events/A/wait.json',json.dumps({'event_id':'wait','status':'REVIEW_PENDING','summary':'交付待验收'}))
         p=self.write('inbox/control/runtime/leases/A.json',json.dumps({'owner':'worker','pid':99,'process_start':'100'}))
@@ -282,6 +482,55 @@ class ObserverTests(unittest.TestCase):
         with patch('role_runtime.pid_identity',return_value='101'):
             self.assertTrue(observer.observe(self.root,'A')['wakeAgent'])
         self.assertTrue(p.exists())
+    def completed_checkpoint(self,status='TEST_REPORT_PENDING'):
+        event={'schema_version':1,'kind':'business','role':'A','event_id':'A:delivery',
+               'task':'TASK-02','attempt':'attempt-1','status':status,'evidence':'receipts/delivery.md'}
+        source='events/A/'+hashlib.sha256(event['event_id'].encode()).hexdigest()+'.json'
+        self.write('receipts/delivery.md','TASK-02 attempt-1 完成验证\n')
+        self.write(source,json.dumps(event))
+        return self.write('inbox/control/runtime/checkpoints/A.json',json.dumps({**event,'event':source}))
+    def test_delivered_checkpoint_with_exact_business_event_does_not_wake_on_normal_exit(self):
+        self.completed_checkpoint()
+        lease=self.write('inbox/control/runtime/leases/A.json',json.dumps({'owner':'worker','pid':99,'process_start':'100'}))
+        with patch('role_runtime.pid_identity',return_value='100'): self.ack('A')
+        with patch('role_runtime.pid_identity',return_value='101'):
+            self.assertFalse(observer.observe(self.root,'A')['wakeAgent'])
+            self.assertEqual(json.loads(Path(observer.observe(self.root,'A')['snapshot']).read_text())['processes']['A']['state'],'exited_or_reused')
+            self.write('inbox/1号/TASK-03/new-dispatch.md','# 派单\n- status: PENDING\n')
+            self.assertTrue(observer.observe(self.root,'A')['wakeAgent'])
+        self.assertTrue(lease.exists())
+    def test_completion_label_without_matching_delivery_event_keeps_worker_death_visible(self):
+        for mode in ('missing','mismatched','running'):
+            with self.subTest(mode=mode):
+                checkpoint=self.completed_checkpoint('RUNNING' if mode=='running' else 'TEST_REPORT_PENDING')
+                if mode=='missing':
+                    row=json.loads(checkpoint.read_text()); del row['event']; checkpoint.write_text(json.dumps(row))
+                elif mode=='mismatched':
+                    row=json.loads(checkpoint.read_text()); row['attempt']='attempt-2'; checkpoint.write_text(json.dumps(row))
+                self.write('inbox/control/runtime/leases/A.json',json.dumps({'owner':'worker','pid':99,'process_start':'100'}))
+                with patch('role_runtime.pid_identity',return_value='100'): self.ack('A')
+                with patch('role_runtime.pid_identity',return_value='101'):
+                    self.assertTrue(observer.observe(self.root,'A')['wakeAgent'])
+    def test_delivered_event_does_not_hide_active_operation_owner_exit(self):
+        self.completed_checkpoint()
+        self.write('inbox/control/runtime/leases/A.json',json.dumps({'owner':'worker','pid':99,'process_start':'100'}))
+        active={'source':str(self.root/'operations/ongoing.json'),'role':'A','status':'RUNNING','operation_id':'active'}
+        with patch('runtime_tools.operation_states',return_value=[active]):
+            with patch('role_runtime.pid_identity',return_value='100'): self.ack('A')
+            with patch('role_runtime.pid_identity',return_value='101'):
+                self.assertTrue(observer.observe(self.root,'A')['wakeAgent'])
+    def test_delivered_event_does_not_hide_runnable_continuation_owner_exit(self):
+        self.completed_checkpoint()
+        self.write('inbox/control/runtime/leases/A.json',json.dumps({'owner':'worker','pid':99,'process_start':'100'}))
+        pending={'source':'continuation/ongoing.json','role':'A','runnable':True,'runnable_now':True}
+        with patch('context_input.pending_continuations',return_value=[pending]):
+            with patch('role_runtime.pid_identity',return_value='100'): self.ack('A')
+            with patch('role_runtime.pid_identity',return_value='101'):
+                snapshot,_=observer.collect(self.root,'A')
+                # This remains new semantic input even independently of the
+                # continuation's normal forced wake.
+                cursor=json.loads((self.root/'inbox/control/runtime/observer/A.json').read_text())
+                self.assertNotEqual(snapshot['fingerprint'],cursor['acknowledged']['fingerprint'])
     def test_other_role_task_progress_does_not_wake_idle_role(self):
         self.write('TODO.md','| TASK-01 | ✅ | work | AC | none | DONE | 1号 |\n| TASK-02 | 🏃 | work | AC | none | RUNNING | 2号 |\n')
         self.ack()
@@ -584,13 +833,59 @@ class ObserverTests(unittest.TestCase):
         s=observer.refresh(self.root,'A');out=observer.render(s)
         self.assertLess(len(out),3000)
         self.assertIn('2020-01-01',out)
-        self.assertIn('非生产实时探测',out)
+        self.assertIn('未执行当次运行核验',out)
     def test_new_dispatch_overrides_old_idle_classification(self):
         self.write('events/TESTER/old.json',json.dumps({'event_id':'idle','status':'IDLE','summary':'曾无任务'}))
         self.write('inbox/TESTER/TASK-02/anything.md','# 派单\nstatus: PENDING\n')
         s=observer.refresh(self.root,'TESTER')
         self.assertFalse(s['confirmed_idle'])
         self.assertIn('新派单',observer.render(s))
+
+
+class PoolObserverTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
+        self.pool=Path(self.tmp.name)/'pool.json'
+        self.root=Path(self.tmp.name)/'target'
+        self.module=Mock()
+        self.module.status.return_value={'pending':[]}
+        self.module.resolve_role.return_value={'state':'ACTIVE','pool_path':str(self.pool),
+            'project_root':str(self.root),'generation':2,'requirement_id':'new-requirement','role':'A'}
+        for target, value in [('requirement_module',self.module)]:
+            cm=patch.object(observer.runtime,target,return_value=value);cm.start();self.addCleanup(cm.stop)
+        cm=patch.dict(os.environ,{},clear=True);cm.start();self.addCleanup(cm.stop)
+
+    def test_independent_poll_reconciles_and_observes_current_root(self):
+        with patch.object(observer,'_pool_adapter',return_value='adapter'), patch.object(observer,'observe',return_value={'wakeAgent':True}) as observe:
+            result=observer.pool_poll(self.pool,'A')
+        self.module.reconcile.assert_called_once_with(self.pool,scheduler_adapter='adapter',apply=True)
+        observe.assert_called_once_with(self.root,'A')
+        self.assertEqual(result['role_pool']['requirement_id'],'new-requirement')
+
+    def test_frozen_worker_does_not_follow_changed_current_generation(self):
+        with patch.dict(os.environ,{'HERMES_ROLE_POOL_PATH':str(self.pool),
+            'HERMES_ROLE_POOL_GENERATION':'1','HERMES_ROLE_NAME':'A',
+            'HERMES_ROLE_PROJECT_ROOT':str(self.root),'HERMES_ROLE_REQUIREMENT_ID':'old'}), patch.object(observer,'observe') as observe:
+            result=observer.pool_poll(self.pool,'A')
+        self.assertFalse(result['wakeAgent'])
+        self.assertEqual(result['reason'],'role_pool_frozen_scope_changed')
+        observe.assert_not_called();self.module.reconcile.assert_not_called()
+
+    def test_pending_selection_does_not_expose_old_scope_as_runnable(self):
+        self.module.status.return_value={'pending':[{'request_id':'new-request'}]}
+        with patch.object(observer,'observe') as observe:
+            result=observer.pool_poll(self.pool,'A',reconcile=False)
+        self.assertFalse(result['wakeAgent'])
+        self.assertEqual(result['reason'],'role_pool_selection_pending')
+        observe.assert_not_called()
+
+    def test_idle_pool_or_broken_resolution_never_wakes_model(self):
+        self.module.resolve_role.return_value={'state':'IDLE'}
+        with patch.object(observer,'observe') as observe:
+            self.assertFalse(observer.pool_poll(self.pool,'A',reconcile=False)['wakeAgent'])
+        observe.assert_not_called()
+        self.module.resolve_role.side_effect=ValueError('invalid pool')
+        self.assertFalse(observer.pool_poll(self.pool,'A',reconcile=False)['wakeAgent'])
 
 
 if __name__=='__main__':

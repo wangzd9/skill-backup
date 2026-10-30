@@ -2,17 +2,21 @@
 """本机协调者OCR唯一入口：冻结材料、独立systemd服务、只读状态、定向停止。"""
 
 import argparse
-from contextlib import ExitStack, contextmanager
+from contextlib import ExitStack, contextmanager, nullcontext
 from datetime import datetime, timezone
 import fcntl
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import signal
 import subprocess
+import sys
 import time
 import uuid
+import re
+import urllib.request
 
 from ocr_session_status import diagnose
 from ocr_results import inspect_results, execution_spec
@@ -24,16 +28,103 @@ SESSIONS = Path('/home/wang/.opencodereview/sessions')
 GLOBAL_LOCK = Path('/home/wang/.local/state/ocr-runtime/ocr.lock')
 PROVIDER = 'vllm-local'
 ENDPOINT = 'http://192.168.2.45:8002/v1'
-VERSION = '1.6.0'
-MODEL_SELECTOR = Path('/home/wang/work/hermes-role-runtime/ocr_model_route.py')
+VERSION = '1.7.0'
+METRICS_URL = 'http://192.168.2.45:8002/metrics'
+MODEL_SELECTOR = Path(__file__).resolve().parent/'ocr_model_route.py'
 ROUTING_PYTHON = Path('/home/wang/.hermes/hermes-agent/venv/bin/python')
 PARAMS = ['--audience', 'agent', '--format', 'json', '--provider', PROVIDER,
           '--timeout', '60', '--max-tokens', '0', '--effort', 'medium', '--concurrency', '1']
 SERVICE_KEYS = ['ActiveState', 'SubState', 'MainPID', 'ControlGroup', 'Result', 'ExecMainStatus']
 
 
+PREFLIGHT_RC = 78
+MANIFEST_SCHEMA = 'ocr.run-manifest/v1'
+# Version strings are not an admission policy: content identities earn receipts.
+
+
+class PreflightRejected(RuntimeError):
+    """Raised only before the native dispatch intent is written."""
+
+
+def execution_identity():
+    import re
+    launcher=OCR.resolve()
+    binary=launcher
+    platform=launcher.parent.parent/'scripts/platform.js'
+    launcher_files = {}
+    if launcher.suffix=='.js' and platform.is_file():
+        from ocr_compat import launcher_surface
+        launcher_files = launcher_surface(launcher)
+        resolved=json.loads(run_command(['node','-e',
+            'console.log(JSON.stringify(require(process.argv[1]).resolveNativeBinary()))',str(platform)]))
+        if not isinstance(resolved,dict) or not resolved.get('path'):
+            raise PreflightRejected('OCR_NATIVE_BINARY_UNVERIFIABLE')
+        binary=Path(resolved['path']).resolve()
+    before = digest(OCR.read_bytes())
+    native=binary.read_bytes();native_sha=digest(native)
+    schemas={s.decode() for s in re.findall(rb'ocr\.run-manifest/v[0-9]+',native)}
+    if schemas!={MANIFEST_SCHEMA}:
+        raise PreflightRejected('MANIFEST_SCHEMA_UNVERIFIABLE: installed binary schema needs validation')
+    version = run_command([str(binary), '--version'], env=environment()).decode().strip()
+    after = digest(OCR.read_bytes())
+    if before != after or digest(binary.read_bytes())!=native_sha:
+        raise PreflightRejected('EXECUTION_IDENTITY_MISMATCH: executable changed during inspection')
+    return {'version': version, 'launcher_sha256': after,
+            'native_binary_path':str(binary),'native_binary_sha256':native_sha,
+            'manifest_schema': next(iter(schemas)), 'launcher_files': launcher_files}
+
+
+def admit_ocr(state_dir=None):
+    from ocr_compat import ensure_admission, CompatibilityRejected
+    try:
+        return ensure_admission(sys.modules[__name__], state_dir=state_dir)
+    except CompatibilityRejected as exc:
+        error = PreflightRejected(str(exc))
+        error.compatibility = exc.details
+        raise error from exc
+
+
+def validate_execution_identity(spec):
+    expected = spec.get('execution_identity')
+    current = execution_identity()
+    if not expected or any(current.get(key) != value for key, value in expected.items()):
+        raise PreflightRejected('EXECUTION_IDENTITY_MISMATCH: 重新 prepare，禁止复用漂移执行体')
+
+
+def preflight_receipt(exc, operation):
+    import re
+    match = re.match(r'[A-Z][A-Z0-9_]+', str(exc))
+    return {'compatibility': getattr(exc, 'compatibility', None),
+            'schema': 'ocr.preflight-rejection/v1', 'stage': 'preflight',
+            'operation': operation, 'side_effects': 0, 'side_effect_scope': 'business_candidate',
+            'dispatch_performed': False,
+            'code': match.group(0) if match else 'PREFLIGHT_VALIDATION_FAILED',
+            'detail': str(exc) if isinstance(exc, RuntimeError) else type(exc).__name__}
+
+
 def now():
     return datetime.now(timezone.utc).isoformat()
+
+
+def concurrency_snapshot(url=METRICS_URL):
+    """Only GET local queue metrics; unknown load retains one OCR slot."""
+    sample = {'observed_at': now(), 'metrics_url': url, 'waiting': None, 'limit': 1}
+    try:
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with opener.open(url, timeout=3) as response:
+            raw = response.read(2_097_153)
+        if len(raw) > 2_097_152:
+            raise ValueError('METRICS_TOO_LARGE')
+        values = [float(m[1]) for line in raw.decode().splitlines()
+                  if (m := re.match(r'^vllm:num_requests_waiting(?:\{[^\n]*\})?\s+([^\s]+)(?:\s|$)', line))]
+        if not values or any(not math.isfinite(v) or v < 0 or not v.is_integer() for v in values):
+            raise ValueError('WAITING_UNVERIFIED')
+        sample['waiting'] = sum(values)
+        sample['limit'] = 2 if sample['waiting'] <= 1 else 1
+        sample['reason'] = 'LOCAL_QUEUE_OBSERVED'
+    except (OSError, ValueError):
+        sample['reason'] = 'LOCAL_QUEUE_UNKNOWN'
+    return sample
 
 
 def digest(data):
@@ -81,11 +172,12 @@ def environment():
     env = dict(os.environ)
     env['PATH'] = '/home/wang/.local/bin:/home/wang/.npm-global/bin:' + env.get('PATH', '')
     env['OCR_LLM_TIMEOUT'] = '900'
+    env['OCR_NO_UPDATE'] = '1'
     return env
 
 
-def select_model_route(project):
-    return json.loads(run_command([str(ROUTING_PYTHON), str(MODEL_SELECTOR),
+def select_model_route(project, *, selector=None):
+    return json.loads(run_command([str(ROUTING_PYTHON), str(selector or MODEL_SELECTOR),
                                   'select', str(project), '--ocr-config', str(CONFIG)]))
 
 
@@ -93,9 +185,12 @@ def batch_route(spec):
     policy = spec.get('model_routing')
     if not policy:
         return None
-    if digest(MODEL_SELECTOR.read_bytes()) != policy['selector_sha256']:
+    # The worker is copied into its run directory. Retain the exact selector
+    # dependency chosen by prepare instead of resolving beside that worker.
+    selector = Path(policy.get('selector_path') or MODEL_SELECTOR)
+    if digest(selector.read_bytes()) != policy['selector_sha256']:
         raise RuntimeError('MODEL_SELECTOR_CHANGED')
-    route = select_model_route(Path(spec['project']))
+    route = select_model_route(Path(spec['project']),selector=selector)
     if not route:
         raise RuntimeError('MODEL_ROUTING_DISABLED: 不回退到固定本地供应商')
     execution_spec(spec, {'execution_route': route})
@@ -149,9 +244,31 @@ def validate_snapshot(spec):
 
 
 def validate_control(spec):
+    if spec.get('workflow_action'):
+        validate_workflow_action(spec['workflow_action'],spec)
+        return
     value = read_json(Path(spec['project']) / 'ROLE-BINDINGS.json')
     if value.get('control') != 'ACTIVE':
         raise RuntimeError('PROJECT_NOT_ACTIVE')
+
+
+def validate_workflow_action(path, scope):
+    runtime_plugin=Path(os.environ.get('HERMES_HOME') or Path.home()/'.hermes')/'plugins/role-workflow-runtime'
+    if str(runtime_plugin) not in sys.path:
+        sys.path.append(str(runtime_plugin))
+    from workflow_services import validate_native_action
+    return validate_native_action(path,'ocr',{key:scope[key] for key in ('project','repo','base','head','task','attempt')})
+
+
+def provider_dispatch_guard(spec):
+    if not spec.get('workflow_action'):
+        return nullcontext()
+    runtime_plugin=Path(os.environ.get('HERMES_HOME') or Path.home()/'.hermes')/'plugins/role-workflow-runtime'
+    if str(runtime_plugin) not in sys.path:
+        sys.path.append(str(runtime_plugin))
+    from workflow_services import native_dispatch_guard
+    return native_dispatch_guard(spec['workflow_action'],'ocr',
+        {key:spec[key] for key in ('project','repo','base','head','task','attempt')})
 
 
 @contextmanager
@@ -193,7 +310,7 @@ def load_spec(directory):
         raise RuntimeError('SPEC_CHANGED: 创建新run，不改冻结材料')
     spec = json.loads(raw)
     version = spec.get('runtime_version')
-    if (spec.get('schema') != 'coordinator.ocr-run/v1' or version not in ('1.5.0', VERSION)
+    if (spec.get('schema') != 'coordinator.ocr-run/v1' or version not in ('1.5.0', '1.6.0', VERSION)
             or (version == '1.5.0' and spec.get('model_routing'))):
         raise RuntimeError('SPEC_VERSION_UNSUPPORTED')
     for name, expected in spec['artifacts'].items():
@@ -217,29 +334,43 @@ def prepare(args):
     project = args.project.resolve()
     if any(not getattr(args, name).strip() for name in ('task', 'attempt', 'authorization')):
         raise RuntimeError('TASK_ATTEMPT_AUTHORIZATION_REQUIRED')
-    if not (project / 'ROLE-BINDINGS.json').is_file():
-        raise RuntimeError('PROJECT_BINDING_REQUIRED')
-    binding = read_json(project / 'ROLE-BINDINGS.json')
-    if binding.get('control') != 'ACTIVE':
-        raise RuntimeError('PROJECT_NOT_ACTIVE')
+    workflow_action=getattr(args,'workflow_action',None)
+    if workflow_action:
+        validate_workflow_action(workflow_action,{'project':str(project),'repo':str(args.repo.resolve()),
+            'base':args.base,'head':args.head,'task':args.task,'attempt':args.attempt})
+    else:
+        if not (project / 'ROLE-BINDINGS.json').is_file():
+            raise RuntimeError('PROJECT_BINDING_REQUIRED')
+        binding = read_json(project / 'ROLE-BINDINGS.json')
+        if binding.get('control') != 'ACTIVE':
+            raise RuntimeError('PROJECT_NOT_ACTIVE')
     repo = args.repo.resolve()
     base = git(repo, 'rev-parse', '--verify', args.base + '^{commit}')
     head = git(repo, 'rev-parse', '--verify', args.head + '^{commit}')
     cfg_hash, model = configuration()
-    ocr_version = run_command([str(OCR), '--version'], env=environment()).decode().strip()
-    if 'v1.13.0' not in ocr_version:
-        raise RuntimeError('OCR_VERSION_UNVALIDATED: 先核对新版参数和manifest能力')
+    admission = admit_ocr()
+    identity_at_prepare = execution_identity()
+    ocr_version = identity_at_prepare['version']
+    if admission['record']['identity'] != identity_at_prepare:
+        raise PreflightRejected('EXECUTION_IDENTITY_MISMATCH: 版本校验后执行体变化，重新 prepare')
     spec = {'schema': 'coordinator.ocr-run/v1', 'runtime_version': VERSION,
             'project': str(project), 'repo': str(repo), 'base': base, 'head': head,
             'task': args.task, 'attempt': args.attempt, 'authorization_source': args.authorization,
             'config_sha256': cfg_hash, 'model': model, 'provider': PROVIDER, 'endpoint': ENDPOINT,
-            'ocr_version': ocr_version, 'ocr_launcher_sha256': digest(OCR.read_bytes()),
+            'ocr_version': ocr_version, 'ocr_launcher_sha256': identity_at_prepare['launcher_sha256'],
+            'execution_identity': identity_at_prepare, 'manifest_schema': MANIFEST_SCHEMA,
+            'ocr_admission': admission['record'],
             'diff_sha256': digest(run_command(['git', '-C', str(repo), 'diff', '--binary', base, head])),
             'created_at': now(), 'global_lock': str(GLOBAL_LOCK),
+            'concurrency_policy': {'kind': 'local_waiting', 'metrics_url': METRICS_URL,
+                                   'threshold': 1, 'idle_limit': 2, 'busy_limit': 1},
             'project_lock': str(project / 'inbox/ocr.lock'), 'artifacts': {}}
+    if workflow_action:
+        spec['workflow_action']=str(Path(workflow_action).resolve())
     route = select_model_route(project)
     if route:
-        spec['model_routing'] = {'selector_sha256': digest(MODEL_SELECTOR.read_bytes()),
+        spec['model_routing'] = {'selector_path':str(MODEL_SELECTOR.resolve()),
+                                 'selector_sha256': digest(MODEL_SELECTOR.read_bytes()),
                                  'allowed_routes': route['allowed_routes']}
     validate_snapshot(spec)
     background = args.background_file.read_bytes()
@@ -273,6 +404,7 @@ def prepare(args):
     identity = digest(json.dumps({'repo': str(repo), 'base': base, 'head': head,
                       'files': sorted(paths), 'background': digest(background), 'config': cfg_hash,
                       'rules': [b['rules_sha256'] for b in prepared],
+                      'execution_identity': identity_at_prepare,
                       'model_routing': spec.get('model_routing')},
                      sort_keys=True).encode())
     spec['review_identity'] = identity
@@ -305,10 +437,15 @@ def prepare(args):
                         batch['reuse_session'] = entry['session_file']
                         if entry.get('execution_route'):
                             batch['reuse_execution_route'] = entry['execution_route']
-    # 所有机械预检成功后才创建材料目录；不调用模型。
+    # 业务机械预检完成后创建目录；未知执行体的隔离自检已独立完成。
     directory.mkdir(parents=True)
     run_id = uuid.uuid4().hex
-    spec.update({'run_id': run_id, 'unit': 'coordinator-ocr-' + run_id + '.service',
+    runtime_plugin = Path(os.environ.get('HERMES_HOME') or Path.home()/'.hermes')/'plugins/role-workflow-runtime'
+    if str(runtime_plugin) not in sys.path:
+        sys.path.append(str(runtime_plugin))
+    from workflow_migration import code_version
+    spec.update({'runtime_version_digest': code_version()['digest'],
+                 'run_id': run_id, 'unit': 'coordinator-ocr-' + run_id + '.service',
                  'batches': prepared, 'preview': all_preview,
                  'parameters': PARAMS, 'request_timeout_seconds': 900,
                  'batch_hard_seconds': 3900})
@@ -316,7 +453,9 @@ def prepare(args):
                  'diff.patch': run_command(['git', '-C', str(repo), 'diff', '--binary', base, head]),
                  'ocr_runtime.py': Path(__file__).read_bytes(),
                  'ocr_results.py': Path(__file__).with_name('ocr_results.py').read_bytes(),
-                 'ocr_session_status.py': Path(__file__).with_name('ocr_session_status.py').read_bytes()}
+                 'ocr_session_status.py': Path(__file__).with_name('ocr_session_status.py').read_bytes(),
+                 'ocr_compat.py': Path(__file__).with_name('ocr_compat.py').read_bytes(),
+                 'ocr_compat_baseline.json': Path(__file__).with_name('ocr_compat_baseline.json').read_bytes()}
     for name, data in artifacts.items():
         (directory / name).write_bytes(data)
         spec['artifacts'][name] = digest(data)
@@ -331,6 +470,8 @@ def prepare(args):
 
 
 def launch(directory):
+    if os.environ.get('HERMES_ROLE_POOL_DRAIN_ONLY')=='1':
+        raise ValueError('需求切换收口回合不能启动新OCR')
     spec = load_spec(directory)
     with lock(directory / 'dispatch.lock'):
         state = read_json(directory / 'state.json')
@@ -339,19 +480,27 @@ def launch(directory):
         info = service_info(spec['unit'])
         if info.get('ActiveState') in ('active', 'activating', 'deactivating'):
             return status(directory)
-        if existing_ocr():
-            raise RuntimeError('LEGACY_OCR_BUSY: 现有审查仍在途，先观察收口')
-        with lock(GLOBAL_LOCK), lock(Path(spec['project_lock'])):
-            validate_control(spec)
-            validate_snapshot(spec)
-            cfg_hash, _ = configuration()
-            if cfg_hash != spec['config_sha256']:
-                raise RuntimeError('CONFIG_CHANGED: 重新预检，禁止改冻结spec')
-            ledger = Path(spec['project']) / 'inbox/control/runtime/ocr' / (spec['review_identity'] + '.json')
-            if ledger.exists():
-                previous_run = read_json(ledger)['run']
-                if previous_run != str(directory) and previous_run != spec.get('reuse_run'):
-                    raise RuntimeError('DUPLICATE_REVIEW: 已有同快照/背景/配置的run: ' + previous_run)
+        with ExitStack() as preparation_locks:
+            try:
+                preparation_locks.enter_context(lock(GLOBAL_LOCK))
+                preparation_locks.enter_context(lock(Path(spec['project_lock'])))
+                validate_execution_identity(spec)
+                if existing_ocr():
+                    raise RuntimeError('LEGACY_OCR_BUSY: 现有审查仍在途，先观察收口')
+                validate_control(spec)
+                validate_snapshot(spec)
+                cfg_hash, _ = configuration()
+                if cfg_hash != spec['config_sha256']:
+                    raise RuntimeError('CONFIG_CHANGED: 重新预检，禁止改冻结spec')
+                ledger = Path(spec['project']) / 'inbox/control/runtime/ocr' / (spec['review_identity'] + '.json')
+                if ledger.exists():
+                    previous_run = read_json(ledger)['run']
+                    if previous_run != str(directory) and previous_run != spec.get('reuse_run'):
+                        raise RuntimeError('DUPLICATE_REVIEW: 已有同快照/背景/配置的run: ' + previous_run)
+            except Exception as exc:
+                raise PreflightRejected(str(exc)) from exc
+            # Past this durable intent no failure may be classified side-effect-free.
+            atomic_json(directory / 'dispatch-intent.json', {'at': now(), 'unit': spec['unit']})
             ledger.parent.mkdir(parents=True, exist_ok=True)
             atomic_json(ledger, {'run': str(directory), 'unit': spec['unit'], 'updated_at': now()})
         deadline = len(spec['batches']) * spec['batch_hard_seconds'] + 120
@@ -378,11 +527,28 @@ def session_files(repo):
     return set((SESSIONS / str(repo).strip('/').replace('/', '-')).glob('*.jsonl'))
 
 
-def find_session(before, repo, base, head):
+def find_session(before, repo, base, head, files=None):
     matches = []
     for path in session_files(repo) - before:
         try:
-            first = json.loads(path.open(encoding='utf-8').readline())
+            with path.open(encoding='utf-8') as stream:
+                first = json.loads(stream.readline())
+                if files is not None:
+                    # Concurrent batches share cwd/base/head. Match the final
+                    # selected-file identity, never the newest session's mtime.
+                    manifests = []
+                    for line in stream:
+                        try:
+                            event = json.loads(line)
+                        except ValueError:
+                            continue
+                        if event.get('type') == 'session_end':
+                            manifests.append(event.get('run_manifest', {}))
+                    if len(manifests) != 1:
+                        continue
+                    chosen = [i.get('path') for i in manifests[0].get('coverage', {}).get('selected', [])]
+                    if sorted(chosen) != sorted(files):
+                        continue
             if (first.get('type') == 'session_start' and Path(first.get('cwd', '')).resolve() == repo
                     and first.get('diffFrom') == base and first.get('diffTo') == head):
                 matches.append(path)
@@ -430,129 +596,146 @@ def worker(directory):
               'process_start_ticks': Path('/proc/self/stat').read_text().rsplit(')', 1)[1].split()[19],
               'run_id': spec['run_id'], 'unit': spec['unit'], 'batches': [], 'gate_decision': 'NOT_EVALUATED'}
     atomic_json(directory / 'state.json', result)
-    child = None
+    children = {}
     guards = ExitStack()
     try:
         guards.enter_context(lock(GLOBAL_LOCK))
         guards.enter_context(lock(Path(spec['project_lock'])))
         if existing_ocr():
             raise RuntimeError('LEGACY_OCR_BUSY')
-        for batch in spec['batches']:
-            if cancelled[0]:
-                result['state'] = 'CANCELLED'
-                break
-            validate_control(spec)
-            validate_snapshot(spec)
-            if digest(OCR.read_bytes()) != spec['ocr_launcher_sha256']:
-                raise RuntimeError('OCR_LAUNCHER_CHANGED')
-            cfg_hash, _ = configuration()
-            if cfg_hash != spec['config_sha256']:
-                raise RuntimeError('CONFIG_CHANGED')
-            value = preview(Path(spec['repo']), spec['base'], spec['head'], batch['exclude'],
-                            directory / 'background.md')
-            if set(selected(value)) != set(batch['files']):
-                raise RuntimeError('PREVIEW_CHANGED')
-            rules = resolved_rules(Path(spec['repo']), spec['base'], spec['head'], batch,
-                                   directory / 'background.md')
-            if rules_digest(rules) != batch['rules_sha256']:
-                raise RuntimeError('REVIEW_RULES_CHANGED')
-            if batch.get('reuse_session'):
-                diagnosis = assess_session(Path(batch['reuse_session']), spec, batch,
-                                           batch.get('reuse_execution_route'))
-                if not diagnosis['coverage_complete']:
-                    raise RuntimeError('REUSE_COVERAGE_CHANGED')
-                atomic_json(directory / (batch['id'] + '-diagnosis.json'), diagnosis)
-                result['batches'].append({'id': batch['id'], 'files': batch['files'],
-                    'state': 'REVIEW_COMPLETE', 'returncode': 0, 'reused': True,
-                    'session_file': batch['reuse_session']})
-                if batch.get('reuse_execution_route'):
-                    result['batches'][-1]['execution_route'] = batch['reuse_execution_route']
-                atomic_json(directory / 'state.json', result)
+        run_batches(directory, spec, result, cancelled, children)
+    except Exception as exc:
+        result.update({'state': 'BLOCKED', 'error': str(exc) if isinstance(exc, RuntimeError)
+                       else type(exc).__name__})
+    finally:
+        # Keep both locks until every child is reaped, including on exceptions.
+        for child in children.values():
+            stop_child(child)
+        guards.close()
+        result.update({'updated_at': now(), 'ended_at': now()})
+        atomic_json(directory / 'state.json', result)
+    return result
+
+
+def stop_child(child):
+    if child.poll() is None:
+        try:
+            os.killpg(child.pid, signal.SIGTERM)
+            child.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            os.killpg(child.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    child.wait()
+
+
+def run_batches(directory, spec, result, cancelled, children):
+    """One service owns the global budget; each OCR child consumes one slot."""
+    pending = iter(spec['batches'])
+    batch = next(pending, None)
+    active = {}
+    before = session_files(Path(spec['repo']))
+    terminal = None
+    while batch is not None or active:
+        # Collect all observed completions/failures before admitting more work.
+        for identifier, current in list(active.items()):
+            child, entry, item, route, started = current
+            timed_out = time.monotonic() - started > spec['batch_hard_seconds']
+            if child.poll() is None and (cancelled[0] or timed_out):
+                stop_child(child)
+            if child.poll() is None:
                 continue
-            entry = {'id': batch['id'], 'files': batch['files'], 'state': 'RUNNING', 'started_at': now()}
-            route = batch_route(spec)
-            if route:
-                entry['execution_route'] = route
-            result['batches'].append(entry)
-            output = directory / (batch['id'] + '.log')
-            if output.exists():
-                raise RuntimeError('LOG_ALREADY_EXISTS')
-            before = session_files(Path(spec['repo']))
-            parameters = list(PARAMS)
-            if route:
-                parameters[parameters.index('--provider') + 1] = route['provider']
-                parameters[parameters.index('--effort') + 1] = route['effort']
-            command = [str(OCR), 'review', '--from', spec['base'], '--to', spec['head'], *parameters,
-                       '--model', route['model'] if route else spec['model'],
-                       '--background-file', str(directory / 'background.md')]
-            if batch['exclude']:
-                command += ['--exclude', ','.join(batch['exclude'])]
-            started = time.monotonic()
-            with output.open('x') as log:
-                child = subprocess.Popen(command, cwd=spec['repo'], env=environment(),
-                                         stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
-                entry['pid'] = child.pid
-                entry['process_start_ticks'] = Path(f'/proc/{child.pid}/stat').read_text().rsplit(')', 1)[1].split()[19]
-                timed_out = False
-                while child.poll() is None:
-                    path = find_session(before, Path(spec['repo']), spec['base'], spec['head'])
-                    if path:
-                        entry['session_file'] = str(path)
-                        entry['session_mtime'] = path.stat().st_mtime
-                    result['updated_at'] = now()
-                    atomic_json(directory / 'state.json', result)
-                    if cancelled[0] or time.monotonic() - started > spec['batch_hard_seconds']:
-                        timed_out = not cancelled[0]
-                        os.killpg(child.pid, signal.SIGTERM)
-                        try:
-                            child.wait(timeout=10)
-                        except subprocess.TimeoutExpired:
-                            os.killpg(child.pid, signal.SIGKILL)
-                        break
-                    time.sleep(2)
-                child.wait()
+            child.wait()
             entry.update({'returncode': child.returncode, 'ended_at': now(),
                           'duration_seconds': round(time.monotonic() - started, 2)})
-            path = find_session(before, Path(spec['repo']), spec['base'], spec['head'])
+            path = find_session(before, Path(spec['repo']), spec['base'], spec['head'], item['files'])
             complete = False
             if path:
                 entry['session_file'] = str(path)
-                diagnosis = assess_session(path, spec, batch, route)
-                atomic_json(directory / (batch['id'] + '-diagnosis.json'), diagnosis)
+                diagnosis = assess_session(path, spec, item, route)
+                atomic_json(directory / (identifier + '-diagnosis.json'), diagnosis)
                 complete = diagnosis['coverage_complete']
             cfg_hash, _ = configuration()
             if cfg_hash != spec['config_sha256']:
                 raise RuntimeError('CONFIG_CHANGED_DURING_REVIEW')
             validate_snapshot(spec)
+            validate_execution_identity(spec)
             if cancelled[0] or timed_out:
                 entry['state'] = 'CANCELLED' if cancelled[0] else 'HARD_DEADLINE'
             else:
                 entry['state'] = 'REVIEW_COMPLETE' if child.returncode == 0 and complete else 'REVIEW_INCOMPLETE'
-            result['updated_at'] = now()
-            atomic_json(directory / 'state.json', result)
             if entry['state'] != 'REVIEW_COMPLETE':
-                result['state'] = entry['state']
-                break  # 失败立即停链，不自动换参/重试/继续后批。
-        else:
-            result['state'] = 'AWAITING_DECISION'
-    except Exception as exc:
-        result.update({'state': 'BLOCKED', 'error': str(exc) if isinstance(exc, RuntimeError)
-                       else type(exc).__name__})
-    finally:
-        # 任意诊断/文件读取异常也必须收尾子进程，再结束服务；不能释放锁后留孤儿。
-        if child is not None and child.poll() is None:
-            try:
-                os.killpg(child.pid, signal.SIGTERM)
-                child.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                os.killpg(child.pid, signal.SIGKILL)
-                child.wait()
-            except ProcessLookupError:
-                child.wait()
-        guards.close()
-        result.update({'updated_at': now(), 'ended_at': now()})
+                terminal = terminal or entry['state']
+            del active[identifier]
+        if cancelled[0]:
+            terminal = 'CANCELLED'
+        if terminal and not active:
+            break
+        if batch is not None and not terminal:
+            policy = spec.get('concurrency_policy')
+            sample = (concurrency_snapshot(policy['metrics_url']) if policy else
+                      {'limit': 1, 'waiting': None, 'reason': 'FROZEN_SERIAL_POLICY'})
+            result['concurrency'] = sample
+            if len(active) < sample['limit']:
+                # A reduction drains existing children; it never kills valid work.
+                validate_control(spec)
+                validate_snapshot(spec)
+                validate_execution_identity(spec)
+                cfg_hash, _ = configuration()
+                if cfg_hash != spec['config_sha256']:
+                    raise RuntimeError('CONFIG_CHANGED')
+                value = preview(Path(spec['repo']), spec['base'], spec['head'], batch['exclude'],
+                                directory / 'background.md')
+                if set(selected(value)) != set(batch['files']):
+                    raise RuntimeError('PREVIEW_CHANGED')
+                rules = resolved_rules(Path(spec['repo']), spec['base'], spec['head'], batch,
+                                       directory / 'background.md')
+                if rules_digest(rules) != batch['rules_sha256']:
+                    raise RuntimeError('REVIEW_RULES_CHANGED')
+                entry = {'id': batch['id'], 'files': batch['files']}
+                result['batches'].append(entry)
+                if batch.get('reuse_session'):
+                    diagnosis = assess_session(Path(batch['reuse_session']), spec, batch,
+                                               batch.get('reuse_execution_route'))
+                    if not diagnosis['coverage_complete']:
+                        raise RuntimeError('REUSE_COVERAGE_CHANGED')
+                    atomic_json(directory / (batch['id'] + '-diagnosis.json'), diagnosis)
+                    entry.update({'state': 'REVIEW_COMPLETE', 'returncode': 0, 'reused': True,
+                                  'session_file': batch['reuse_session']})
+                    if batch.get('reuse_execution_route'):
+                        entry['execution_route'] = batch['reuse_execution_route']
+                else:
+                    route = batch_route(spec)
+                    if route:
+                        entry['execution_route'] = route
+                    entry.update({'state': 'RUNNING', 'started_at': now(), 'admission': sample})
+                    parameters = list(PARAMS)  # one subtask per child; no nested 2 x 2
+                    if route:
+                        parameters[parameters.index('--provider') + 1] = route['provider']
+                        parameters[parameters.index('--effort') + 1] = route['effort']
+                    command = [str(OCR), 'review', '--from', spec['base'], '--to', spec['head'], *parameters,
+                               '--model', route['model'] if route else spec['model'],
+                               '--background-file', str(directory / 'background.md')]
+                    if batch['exclude']:
+                        command += ['--exclude', ','.join(batch['exclude'])]
+                    with (directory / (batch['id'] + '.log')).open('x') as log:
+                        with provider_dispatch_guard(spec):
+                            child = subprocess.Popen(command, cwd=spec['repo'], env=environment(),
+                                stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+                            children[batch['id']] = child
+                    entry['pid'] = child.pid
+                    entry['process_start_ticks'] = Path(f'/proc/{child.pid}/stat').read_text().rsplit(')', 1)[1].split()[19]
+                    active[batch['id']] = (child, entry, batch, route, time.monotonic())
+                batch = next(pending, None)
+                result['updated_at'] = now()
+                atomic_json(directory / 'state.json', result)
+                # Recheck completions and queue depth before the next admission.
+                continue
+        result['updated_at'] = now()
         atomic_json(directory / 'state.json', result)
-    return result
+        if active:
+            time.sleep(1)
+    result['state'] = terminal or 'AWAITING_DECISION'
 
 
 def status(directory):
@@ -578,7 +761,9 @@ def stop(directory):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='action', required=True)
-    prepare_parser = sub.add_parser('prepare', help='零模型预检与冻结，默认逐文件')
+    sub.add_parser('preflight', help='业务登记前检查；未知执行体独立自检，不占业务额度')
+    sub.add_parser('compat', help='隔离版本自动兼容自检').add_argument('--state-dir', type=Path)
+    prepare_parser = sub.add_parser('prepare', help='业务预检与冻结；未知版本先独立自检，默认逐文件')
     for name in ('project', 'repo', 'background-file', 'output'):
         prepare_parser.add_argument('--' + name, type=Path, required=True)
     for name in ('base', 'head', 'task', 'attempt', 'authorization'):
@@ -586,11 +771,20 @@ def main():
     prepare_parser.add_argument('--batches-file', type=Path, help='二维JSON文件清单，必须覆盖全部入选文件')
     prepare_parser.add_argument('--reuse-run', type=Path, help='仅身份完全一致的已退出失败链，可复用成功批')
     prepare_parser.add_argument('--retry-reason', help='说明失败根因、实质处理和仍有效的调用授权')
+    prepare_parser.add_argument('--workflow-action', type=Path, help=argparse.SUPPRESS)
     for action in ('start', 'status', 'results', 'stop', '_worker'):
         sub.add_parser(action).add_argument('--run', type=Path, required=True)
     args = parser.parse_args()
     try:
-        if args.action == 'prepare':
+        if args.action == 'preflight':
+            owners=existing_ocr()
+            result={'state':'READY' if not owners else 'BUSY','ready':not bool(owners),
+                    'owner_pids':owners,'dispatch_performed':False}
+            if not owners:
+                result['compatibility'] = admit_ocr()
+        elif args.action == 'compat':
+            result = admit_ocr(args.state_dir)
+        elif args.action == 'prepare':
             result = prepare(args)
         else:
             directory = args.run.resolve()
@@ -598,6 +792,10 @@ def main():
                       'stop': stop, '_worker': worker}[args.action](directory)
         print(json.dumps(result, ensure_ascii=False, indent=2))
     except Exception as exc:
+        if args.action in ('prepare', 'preflight', 'compat') or isinstance(exc, PreflightRejected):
+            receipt = preflight_receipt(exc, args.action)
+            print(json.dumps({'state': 'REJECTED', 'success': False, 'preflight_rejection': receipt}, ensure_ascii=False))
+            return PREFLIGHT_RC
         print(json.dumps({'state': 'BLOCKED', 'error': str(exc) if isinstance(exc, RuntimeError)
                           else type(exc).__name__, 'gate_decision': 'NOT_EVALUATED'}, ensure_ascii=False))
         return 2

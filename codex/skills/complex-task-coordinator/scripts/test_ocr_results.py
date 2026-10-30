@@ -130,6 +130,35 @@ class ResultTests(unittest.TestCase):
         self.change_output(run, lambda output: output.pop('comments'))
         self.assert_insufficient(run)
 
+    def test_zero_finding_session_omits_comments_key(self):
+        # OCR v1.12.13..v1.13.1 omits `comments` on review_item_done when a
+        # file yields zero findings; the authoritative log still carries the
+        # explicit empty array. This is a genuine zero, not missing evidence.
+        run = self.fixture()
+        session = run / 'b01-session.jsonl'
+        events = [json.loads(line) for line in session.read_text().splitlines()]
+        for event in events:
+            if event.get('type') == 'review_item_done':
+                event.pop('comments')
+        session.write_text(''.join(json.dumps(event) + '\n' for event in events))
+        value = ocr_results.inspect_results(run)
+        self.assertEqual(value['evidence_state'], 'READY_FOR_ADJUDICATION', value)
+        self.assertTrue(value['coverage_complete'])
+        self.assertEqual(value['finding_counts']['total'], 0)
+
+    def test_zero_finding_session_absent_key_cannot_hide_log_finding(self):
+        # Session omits comments (looks like zero) but the log carries a real
+        # finding -> session/log count cross-check must fail closed.
+        run = self.fixture(findings=[{'content': 'Hidden blocker', 'severity': 'high'}])
+        session = run / 'b01-session.jsonl'
+        events = [json.loads(line) for line in session.read_text().splitlines()]
+        for event in events:
+            if event.get('type') == 'review_item_done':
+                event.pop('comments')
+        session.write_text(''.join(json.dumps(event) + '\n' for event in events))
+        value = self.assert_insufficient(run)
+        self.assertTrue(any(f['content'] == 'Hidden blocker' for f in value['findings']))
+
     def assert_insufficient(self, run):
         result = ocr_results.inspect_results(run)
         self.assertEqual(result['evidence_state'], 'INSUFFICIENT_EVIDENCE', result)

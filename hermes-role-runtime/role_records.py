@@ -5,9 +5,9 @@ import hashlib
 import json
 from pathlib import Path
 import re
-import sys
 
 from runtime_common import now, read_json, save_json
+from document_store import append_record
 
 
 def canonical(root, value):
@@ -20,13 +20,12 @@ def canonical(root, value):
 @contextmanager
 def role_guard(project, role, token_file):
     """Use the existing ACTIVE gate and lease; never claim or renew ownership."""
-    sys.path.insert(0, str(Path.home()/'.codex/skills/complex-task-coordinator/scripts'))
     import role_runtime
     root, data = role_runtime.binding(project)
     if role not in data['roles']:
         raise ValueError('角色未绑定')
     token = read_json(Path(token_file)).get('token')
-    with role_runtime.locked(role_runtime.lease_lock(root, role)):
+    with role_runtime.legacy_admission(project), role_runtime.locked(role_runtime.lease_lock(root, role)):
         root, data = role_runtime.binding(project)
         if role not in data['roles']:
             raise ValueError('角色绑定已改变')
@@ -71,11 +70,14 @@ def _occurrence(root, occurrence, recorded_at):
 
 
 def _validate(role, payload):
-    allowed = {'event_id', 'kind', 'task', 'attempt', 'status', 'summary', 'evidence', 'next', 'occurrence'}
+    allowed = {'event_id', 'kind', 'task', 'attempt', 'status', 'summary', 'evidence', 'next', 'occurrence',
+               'pending_actions', 'open_gates', 'references', 'verification'}
     if not isinstance(payload, dict) or set(payload) - allowed:
         raise ValueError('记录仅接受约定的 JSON 字段')
     if payload.get('kind') not in ('business', 'observation'):
         raise ValueError('kind 必须明确为 business 或 observation')
+    if 'verification' in payload and payload.get('kind') != 'business':
+        raise ValueError('verification 仅允许独立测试者的业务交付，观察记录不能确认验收结果')
     identifier = payload.get('event_id')
     if not isinstance(identifier, str) or not identifier.startswith(role + ':') or len(identifier) > 200 or any(ord(c) < 32 for c in identifier):
         raise ValueError('event_id 必须是以角色加冒号开头的稳定 ID，且不含控制字符')
@@ -85,6 +87,11 @@ def _validate(role, payload):
         clocks = re.findall(r'(?<![0-9A-Za-z])[\dXx?？]{1,2}[:：][\dXx?？]{1,2}(?:[:：][\dXx?？]{1,2})?(?![\dXx?？])', payload[key])
         if any(re.search(r'[xX?？]', clock) for clock in clocks):
             raise ValueError('禁止模糊钟点（如 10:2x）；请写发生时间未知，或给出有来源的可信时间区间')
+    for key in ('pending_actions', 'open_gates', 'references'):
+        if key in payload and (not isinstance(payload[key], list) or len(payload[key]) > 100
+                               or any(not isinstance(item, str) or not item.strip()
+                                      or len(item.encode()) > 4096 for item in payload[key])):
+            raise ValueError(key+' 须为最多100个非空短字符串；详情用证据引用')
     if len(json.dumps(payload, ensure_ascii=False).encode()) > 128 * 1024:
         raise ValueError('记录过大；详细输出应作为独立证据引用')
 
@@ -93,6 +100,12 @@ def record_role(project, role, payload, token_file):
     """Write a durable intent first, then recover idempotently across event/session files."""
     _validate(role, payload)
     with role_guard(project, role, token_file) as (root, binding):
+        if payload['kind']!='observation':
+            from requirement_scope import require_task_scope
+            require_task_scope(root,payload.get('task'))
+        if 'verification' in payload:
+            from acceptance_check import freeze_verification
+            payload = {**payload, 'verification': freeze_verification(root, role, payload['verification'], payload['task'])}
         key = hashlib.sha256(payload['event_id'].encode()).hexdigest()
         quiet = payload['kind'] == 'observation'
         folder = 'observations' if quiet else 'records'
@@ -130,23 +143,52 @@ def record_role(project, role, payload, token_file):
         if existing is None:
             save_json(event, row)
         marker = '<!-- role-record:' + key + ' -->'
-        text = session.read_text() if session.exists() else '# ' + role + '\n'
         clean = lambda value: str(value).replace('\r', ' ').replace('\n', ' ')
         when = row['occurred_at'] or '发生时间未知'
         block = ('\n' + marker + '\n- **' + clean(when) + '｜' + clean(row['status']) + '** ' +
                  clean(row['task']) + '/' + clean(row['attempt']) + '：' + clean(row['summary']) +
                  '；证据：' + clean(row['evidence']) + '；下一步：' + clean(row['next']) +
                  '；记录时间：' + row['recorded_at'] + '\n')
-        if marker in text:
-            if block not in text:
-                raise ValueError('已有会话记录与冻结内容不符，禁止静默覆盖')
-        else:
-            # Atomic replace preserves all old text; the role lease serializes cooperating writers.
-            import role_runtime
-            role_runtime.atomic(session, text + block)
+        import role_runtime
+        checkpoint = {**row, 'source': str(event.relative_to(root)), 'event': str(event.relative_to(root))}
+        lease = read_json(role_runtime.lease_path(root, role), {}) or {}
+        checkpoint['process_identity'] = {key: lease.get(key) for key in ('owner', 'pid', 'process_start')}
+        append_record(root, session, marker, block, checkpoint=checkpoint, writer=role_runtime.atomic)
         was_complete = old['complete']
         if not was_complete:
+            update_checkpoint(root, role, checkpoint)
             old['complete'] = True
             save_json(journal, old)
         return {'created': not was_complete, 'kind': 'business', 'recorded_at': row['recorded_at'],
                 'occurred_at': row['occurred_at'], 'path': str(journal), 'event': str(event), 'session': str(session)}
+
+
+def update_checkpoint(root, role, row):
+    """Publish current business identity, retaining a verified same-task slot release.
+
+    Called inside the role lease guard. This is a reconstructable pointer to the
+    immutable event; it does not grant dispatch, acceptance or release authority.
+    """
+    path = Path(root)/f'inbox/control/runtime/checkpoints/{role}.json'
+    previous = read_json(path, {}) or {}
+    if previous.get('recorded_at', '') > row.get('recorded_at', ''):
+        return previous
+    from requirement_scope import task_scope,task_allowed,park_checkpoint
+    scope=task_scope(root)
+    if previous and not task_allowed(scope,previous.get('task')):
+        park_checkpoint(root,role,previous)
+    value = {**row, 'schema_version': 1, 'role': role}
+    running = str(row.get('status', '')).upper()
+    same = all(previous.get(k) == row.get(k) for k in ('task', 'attempt'))
+    executing = any(term in running for term in ('RUNNING', 'ACKED', 'REWORK', 'CODING', 'DEVELOPING', 'TESTING'))
+    if same and not executing and previous.get('slot_released') is True:
+        value.update(slot_released=True, slot_release=previous.get('slot_release'))
+    else:
+        value['slot_released'] = False
+    if same:
+        for key in ('dispatch', 'dispatch_sha256', 'base', 'head', 'branch', 'worktree',
+                    'pending_actions', 'open_gates', 'references'):
+            if key in previous and key not in value:
+                value[key] = previous[key]
+    save_json(path, value)
+    return value

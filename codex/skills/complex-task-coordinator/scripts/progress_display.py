@@ -4,6 +4,7 @@ import re
 import json
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from role_status import LABELS as AVAILABILITY_LABELS, collect_role_statuses, render_status_line
 
 if __package__:
     from .progress_projection import build_projection, parse_task_rows, TERMINAL, PAUSED
@@ -148,6 +149,14 @@ def render_progress(snapshot, *, at=None, job=None, pending_count=None):
     if snapshot.get('projection'):
         return render_projection(snapshot['projection'],role=snapshot['role'],at=at,job=job,pending_count=pending_count)
     role=snapshot['role']
+    availability = snapshot.get('role_statuses')
+    if not isinstance(availability, dict):
+        project = snapshot.get('project')
+        availability = collect_role_statuses(project, at=at) if project and Path(project).is_dir() else {}
+    def name(who):
+        if role != 'COORDINATOR' or who == 'COORDINATOR':
+            return LABELS[who]
+        return LABELS[who]+'（'+AVAILABILITY_LABELS.get(availability.get(who, {}).get('status'), '待核实')+'）'
     tasks=snapshot.get('tasks',[])
     focus=(snapshot.get('events',{}).get('COORDINATOR') or {}).get('task') if role=='COORDINATOR' else None
     chosen=[t for t in tasks if t.get('task')==focus] or tasks[:2]
@@ -166,10 +175,10 @@ def render_progress(snapshot, *, at=None, job=None, pending_count=None):
         out.append('- **已完成：** TODO 登记 '+str(counts['done'])+' 项完成；另有 '+str(counts['open'])+' 项尚未收口、'+str(counts['paused'])+' 项暂缓（含父子任务条目，非完成率）。')
     roles=('A','B','C','TESTER') if role=='COORDINATOR' else (role,)
     for who in roles:
-        out.append('- **'+LABELS[who]+'：** '+role_line(snapshot,who,at))
+        out.append('- **'+name(who)+'：** '+role_line(snapshot,who,at))
     if snapshot.get('event_conflicts'):
         out.append('- **记录冲突：** **相同事件 ID 的内容不一致，待核对**；保留各来源，不据此批准或判定完成。')
-    blockers=[LABELS[r] for r in roles if (snapshot.get('events',{}).get(r) or {}).get('status','').upper() in ('BLOCKED','FAILED')]
+    blockers=[name(r) for r in roles if (snapshot.get('events',{}).get(r) or {}).get('status','').upper() in ('BLOCKED','FAILED')]
     if blockers:
         out.append('- **阻塞：** **'+ '、'.join(blockers)+' 有阻塞或失败记录**；解除条件需核对对应证据。')
     else:
@@ -193,7 +202,7 @@ def render_progress(snapshot, *, at=None, job=None, pending_count=None):
         out.append('- **调度：** 后台巡检'+poll+'；待处理指令 '+str(pending_count or 0)+' 条。查询不会恢复暂停或启动任务。')
     observed=instant(snapshot.get('observed_at'))
     observed_label=clock_label(observed,at) if observed else '时间未知'
-    out.append('\n文档读取：'+observed_label+'（非生产实时探测）；各角色分别标注发生、观测或补录时间。需原因分析或调整方向，可直接发消息。')
+    out.append('\n业务记录读取时间：'+observed_label+'；本报告未执行当次运行核验，当前状态请使用 live-progress。')
     return '\n'.join(out)
 
 

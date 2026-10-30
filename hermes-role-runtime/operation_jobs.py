@@ -38,6 +38,13 @@ def validate(plan):
     if not Path(plan['cwd']).is_dir(): raise ValueError('工作目录不存在')
     if not isinstance(plan.get('steps'),list) or not plan['steps']:
         raise ValueError('缺少操作步骤')
+    timeout = plan.get('timeout_seconds')
+    if timeout is not None and (isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or not 0 < timeout <= 86400):
+        raise ValueError('timeout_seconds 必须为0到86400之间的秒数')
+    environment = plan.get('environment', {})
+    if not isinstance(environment, dict) or any(not isinstance(key, str) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', key)
+            or not isinstance(value, str) or '\0' in value for key, value in environment.items()):
+        raise ValueError('environment 必须为有效变量名和字符串值')
     for step in plan['steps']:
         if set(step)-{'argv','stdin_gzip'}: raise ValueError('不支持的步骤字段')
         argv=step.get('argv')
@@ -47,10 +54,13 @@ def validate(plan):
             raise ValueError('gzip 输入不存在')
 
 
-def _step(step,cwd,log):
+def _step(step,cwd,log,*,timeout=None,environment=None,process_hook=None):
     process=subprocess.Popen(step['argv'],cwd=cwd,stdin=subprocess.PIPE if step.get('stdin_gzip') else subprocess.DEVNULL,
-                             stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+                             stdout=log,stderr=subprocess.STDOUT,start_new_session=True,
+                             env={**os.environ, **(environment or {})})
     try:
+        if process_hook is not None:
+            process_hook(process)
         if step.get('stdin_gzip'):
             try:
                 with gzip.open(step['stdin_gzip'],'rb') as stream:
@@ -68,7 +78,7 @@ def _step(step,cwd,log):
                         os.killpg(process.pid,signal.SIGKILL); code=process.wait()
                 log.write((f'\n输入解压/传输失败：{type(exc).__name__}\n').encode()); log.flush()
                 return code or 1
-        return process.wait()
+        return process.wait(timeout=timeout)
     finally:
         if process.poll() is None:
             # 仅本脚本刚创建的子进程组；不触碰其他任务或未知进程。
@@ -78,7 +88,7 @@ def _step(step,cwd,log):
                 os.killpg(process.pid,signal.SIGKILL); process.wait()
 
 
-def execute_plan(plan,state_path):
+def execute_plan(plan,state_path,*,process_hook=None):
     validate(plan); state_path=Path(state_path)
     state_path.parent.mkdir(parents=True,exist_ok=True)
     result={'operation_id':plan['operation_id'],'task':plan.get('task'),'attempt':plan.get('attempt'),
@@ -99,10 +109,14 @@ def execute_plan(plan,state_path):
                 code=0
                 for number,step in enumerate(plan['steps'],1):
                     result.update(current_step=number,updated_at=now()); save_json(state_path,result)
-                    code=_step(step,plan['cwd'],log)
+                    code=_step(step,plan['cwd'],log,timeout=plan.get('timeout_seconds'),environment=plan.get('environment'),process_hook=process_hook)
                     result['steps'].append({'step':number,'exit_code':code,'ended_at':now()})
                     if code: break
             result.update(status='SUCCEEDED' if code==0 else 'FAILED',exit_code=code)
+        except subprocess.TimeoutExpired:
+            result.update(status='TIMED_OUT',exit_code=124,error='COMMAND_TIMEOUT',timeout_seconds=plan['timeout_seconds'])
+        except KeyboardInterrupt:
+            result.update(status='CANCELLED',exit_code=130,error='COMMAND_CANCELLED')
         except Exception as exc:
             result.update(status='FAILED',exit_code=1,error=f'{type(exc).__name__}: {exc}')
         result.update(ended_at=now()); save_json(state_path,result)
@@ -139,7 +153,11 @@ def operation_states(project,role):
 
 
 def start_job(project,role,plan):
+    if os.environ.get('HERMES_ROLE_POOL_DRAIN_ONLY')=='1':
+        raise ValueError('需求切换收口回合不能提交新长操作')
     validate(plan)
+    from requirement_scope import require_task_scope
+    require_task_scope(project,plan.get('task'))
     if role not in ('COORDINATOR','A','B','C','TESTER'): raise ValueError('无效角色')
     base=Path(project).resolve()/'inbox/control/runtime/operations'/role/plan['operation_id']
     frozen={**plan,'role':role}; encoded=json.dumps(frozen,ensure_ascii=False,sort_keys=True).encode()
@@ -149,7 +167,10 @@ def start_job(project,role,plan):
         if spec.exists():
             if read_json(spec)!=frozen: raise ValueError('同一操作 ID 的输入改变，禁止覆盖')
             return {**inspect_state(state),'started':False}
-        busy=[r for r in operation_states(project,role) if r['status'] in ('PENDING','RUNNING','UNKNOWN')]
+        from requirement_scope import task_scope,task_allowed
+        scope=task_scope(project)
+        busy=[r for r in operation_states(project,role) if r['status'] in ('PENDING','RUNNING','UNKNOWN')
+              and task_allowed(scope,r.get('task'))]
         if busy:
             raise ValueError('本角色仍有在途或待对账工程操作，禁止启动第二项：'+busy[0]['operation_id'])
         save_json(spec,frozen)

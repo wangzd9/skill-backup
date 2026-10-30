@@ -1,16 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="960" viewBox="0 0 1200 960" role="img" aria-labelledby="title desc">
-<title id="title">触发机制：人工对话保留，业务执行互斥</title><desc id="desc">自然语言交给模型；明确业务才入队，共用角色租约；脚本处理机械工作。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1010" viewBox="0 0 1200 1010" role="img" aria-labelledby="title desc">
+<title id="title">触发机制：群聊默认只读，cron 按授权接续</title><desc id="desc">角色群每回合默认只读，当前用户明确全部权限才可取得租约后动作；真实cron按原授权接续，报告时点与门禁保留。</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker></defs>
 <style>text{font-family:"Noto Sans CJK SC","Microsoft YaHei","PingFang SC",sans-serif;fill:#0f172a}.heading{font-size:21px;font-weight:700}.line{font-size:16px}.note{font-size:14px;fill:#475569}</style>
-<rect width="1200" height="960" fill="#ffffff" rx="16"/>
-<text x="32" y="35" class="heading">触发机制：人工对话保留，业务执行互斥</text>
+<rect width="1200" height="1010" fill="#ffffff" rx="16"/>
+<text x="32" y="35" class="heading">触发机制：群聊默认只读，cron 按授权接续</text>
 <rect x="30" y="75" width="350" height="110" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
-<text x="48" y="104" class="heading">明确业务待办</text>
-<text x="48" y="130" class="line">模型先回应，明确动作才保存</text>
-<text x="48" y="153" class="line">原生身份去重，保留原文与引用</text>
+<text x="48" y="104" class="heading">已接受需求 scope 内业务待办</text>
+<text x="48" y="130" class="line">后台持久授权 / 当前业务根</text>
+<text x="48" y="153" class="line">普通群消息不写业务请求</text>
 <rect x="415" y="75" width="370" height="110" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
 <text x="433" y="104" class="heading">五分钟检查 / 同一角色 poll</text>
-<text x="433" y="130" class="line">文档 / 工程结果 / OCR JSON 终态</text>
+<text x="433" y="130" class="line">池解析当前根 / 显式订阅 / JSON终态</text>
 <text x="433" y="153" class="line">写 tick 与 pending；忙碌只排队</text>
 <polyline points="380,130 415,130" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
 <rect x="820" y="75" width="350" height="110" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
@@ -31,7 +31,7 @@
 <polyline points="785,290 1000,290 1000,405" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
 <text x="890" y="280" class="note">是且可接续</text>
 <rect x="820" y="405" width="350" height="110" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-<text x="838" y="434" class="heading">协调模型：群或后台</text>
+<text x="838" y="434" class="heading">业务模型：cron / 全权群回合</text>
 <text x="838" y="460" class="line">共同租约复读任务 / 裁决 / results</text>
 <text x="838" y="483" class="line">已有裁决不重做，忙碌不抢占</text>
 <polyline points="995,515 995,560" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
@@ -46,11 +46,12 @@
 <text x="48" y="638" class="line">gzip 先解压，非零即停；保留退出码、日志和进程身份</text>
 <text x="48" y="661" class="line">命令成功不代表业务 PASS；OCR / 强审仍用原唯一入口</text>
 <polyline points="740,620 780,620 780,210 600,210 600,235" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="7 5"/>
-<rect x="30" y="745" width="1140" height="110" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
-<text x="48" y="774" class="heading">统一角色报告：固定报告 no_agent=true</text>
-<text x="48" y="800" class="line">协调者白天 20 分钟、08 点夜间汇总；执行者 / 测试者 11 / 15 / 18 点</text>
-<text x="48" y="823" class="line">21–08 点只落盘；白天有意义变化即时报告，无变化仅本地记录</text>
-<text x="48" y="846" class="line">同一事实 → 按角色报告视图；协调者完整七区，其他角色仅自身工作</text>
-<text x="32" y="898" class="note">系统 / 工具前缀只读审计，不屏蔽合法规则更新，不改推理参数；所有测试、OCR、强审查与合入门禁保留。</text>
-<text x="32" y="930" class="note">人工问答走原生模型，不自动入队；原生 slash 控制保留；实际延迟受在途回合与模型队列影响。</text>
+<rect x="30" y="745" width="1140" height="155" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="48" y="774" class="heading">报告按入口分工，模型总结独立于业务执行</text>
+<text x="48" y="800" class="line">20分钟：纯脚本，仅列执行者A/B/C、测试者（空闲 / 工作中 / 等待 / 阻塞 / 暂停 / 待核实）</text>
+<text x="48" y="823" class="line">08点及个人11/15/18：脚本采集时段事实与本人本地/云端用量 → 独立只读模型整理</text>
+<text x="48" y="846" class="line">实质进展 / 审查失败：同源 outbox；20分钟加时间/需求，原 cron 通道回执审计</text>
+<text x="48" y="869" class="line">21–08点主动通知静默；人工问答照常；总结不占业务槽、不ACK业务pending</text>
+<text x="32" y="948" class="note">系统 / 工具前缀只读审计，不屏蔽合法规则更新，不改推理参数；所有测试、OCR、强审查与合入门禁保留。</text>
+<text x="32" y="980" class="note">群默认只读；普通全权业务须租约。唯可信选择控制请求可忙时排队，不抢 owner；后台 scope 持久。</text>
 </svg>

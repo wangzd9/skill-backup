@@ -575,6 +575,14 @@ def register(ctx):
 - `ctx.get_config()` / `ctx.set_config()` access only this plugin's settings namespace; `ctx.state` stores plugin-owned runtime data under the active profile.
 - If this function crashes, the plugin is disabled but Hermes continues fine
 
+Small command surfaces can use `ctx.register_tool(..., disclosure="direct")` to
+remain in the selected session's model-visible tool list. The default is
+`"deferred"`; an operator's explicit `tools.tool_search.defer` entry still takes
+precedence. This metadata stays out of provider schemas and grants no toolset,
+profile access, execution permission, or change to an existing session's cached
+prompt. Use it for the commands that drive a session's purpose, rather than
+promoting a plugin tool into the global core bundle.
+
 **`dispatch_tool` example — a slash command that runs a tool:**
 
 ```python
@@ -1027,9 +1035,12 @@ Each hook is documented in full on the **[Event Hooks reference](../../user-guid
 | [`post_tool_call`](../../user-guide/features/hooks.md#post_tool_call) | After any tool returns | `tool_name: str, args: dict, result: str, task_id: str, duration_ms: int` | ignored |
 | [`pre_llm_call`](../../user-guide/features/hooks.md#pre_llm_call) | Once per turn, before the tool-calling loop | `session_id: str, user_message: str, conversation_history: list, is_first_turn: bool, model: str, platform: str` | [context injection](#pre_llm_call-context-injection) |
 | [`post_llm_call`](../../user-guide/features/hooks.md#post_llm_call) | Once per turn, after the tool-calling loop (successful turns only) | `session_id: str, user_message: str, assistant_response: str, conversation_history: list, model: str, platform: str` | ignored |
+| `on_scheduler_tick` | After acquiring the cron tick lock, including idle ticks and before ESTOP/dispatch pause checks; skipped if another tick owns the lock | `home: Path` (the scheduler's Hermes profile home) | ignored; observation only, no dispatch permission or transport handle |
+| `transform_cron_result` | After saving the native output and composing its notice, before the existing delivery channel | `job, execution_id, agent_identity, content, final_response, success` | First valid `{content: str, suppress: bool, metadata: dict}` replaces the notice or suppresses delivery; Python only. No independent sender. |
+| `post_cron_delivery` | After native delivery/bookkeeping, or after the original gateway delivery queue commits its terminal outcome, with that profile still bound | `job, execution_id, metadata, home, content_sha256, stage, outcome, attempted, success, delivery_error, unverified_targets, queued` | ignored; reconcile the selected output adapter's receipt. `content_sha256` hashes the actual cleaned send text; absent before sending. `stage` distinguishes `native_final` and `native_queue_terminal`. Queued or unverified delivery is not confirmation; a later terminal callback does not send again. Terminal queue payloads remain privacy-pruned. |
 | `pre_api_request` | Before each raw provider API request (several per turn when the model calls tools) | `session_id: str, model: str, provider: str, base_url: str, api_mode: str, api_call_count: int, message_count: int, tool_count: int, approx_input_tokens: int, max_tokens: int, request: dict` | ignored |
 | `resolve_model_route` | Before constructing each physical main-model request, including retries | `session_id, platform, model, provider, base_url, api_mode` | `None`, `{"runtime": {...}}`, `{"error": "..."}`, or `{"action": "block", "message": "..."}`; policy failures block the original request |
-| `pre_gateway_busy_dispatch` | After native user/bot admission, before busy queueing or steering | `event, gateway` | `{"action": "skip"}` handles a control message immediately; otherwise native busy processing continues |
+| `pre_gateway_busy_dispatch` | After native user/bot admission, before busy queueing or steering, including the admitted priority path | `event, gateway` | `{"action": "skip"}` handles a control immediately; `{"action": "queue"}` preserves the original event as an independent FIFO turn, with optional `message` / `queue_full_message`; otherwise native busy processing continues |
 | `post_api_request` | After each raw provider API request returns | `pre_api_request` fields plus `api_duration: float, finish_reason: str, response_model: str \| None, usage: dict, response: dict, assistant_content_chars: int, assistant_tool_call_count: int` | ignored |
 | `api_request_error` | A provider API call raised | correlation fields plus `status_code: int \| None, retry_count: int \| None, max_retries: int \| None, retryable: bool \| None, reason: str \| None, error: dict, request: dict` | ignored |
 | `pre_auxiliary_call` | Before each provider attempt of an auxiliary LLM call (titling, compression, MoA, vision, approval, ...); not a `pre_api_request` | `aux_task: str` plus the `pre_api_request` fields (`session_id`/`task_id`/`turn_id` are the parent turn's or empty, `api_request_id: str`, `retry_count: int`, `streaming: bool`, `request: dict`) | ignored |

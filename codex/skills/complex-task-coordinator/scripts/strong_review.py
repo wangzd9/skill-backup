@@ -8,7 +8,9 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import signal
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -20,6 +22,170 @@ LIMIT = 5
 WINDOW = 3600
 STATE = Path.home() / '.local/state/complex-task-reviews'
 TZ = ZoneInfo('Asia/Shanghai')
+
+
+class ServiceNotSubmitted(ValueError):
+    """The launcher executable was never entered; systemd could not accept a unit."""
+
+
+def model_settings(path):
+    """Parse TOML locally; only model/profile fields may leave the parser."""
+    reader = '''import json,sys,tomllib
+d=tomllib.loads(sys.stdin.read())
+print(json.dumps({**{k:d.get(k) for k in ('model','profile','config_profile_v2')},
+ 'profiles':{k:{'model':v.get('model')} for k,v in d.get('profiles',{}).items() if isinstance(v,dict)}}))
+'''
+    try:
+        raw = Path(path).read_bytes()
+        if len(raw) > 1024*1024:
+            raise ValueError('oversized config')
+        try:
+            import tomllib
+        except ModuleNotFoundError:
+            interpreter = next((value for name in ('python3.11', 'python3.12', 'python3.13')
+                                if (value := shutil.which(name))), None)
+            if not interpreter:
+                raise ValueError('local TOML parser unavailable')
+            result = subprocess.run([interpreter, '-c', reader], input=raw.decode(), capture_output=True,
+                                    text=True, timeout=5)
+            if result.returncode:
+                raise ValueError('invalid config')
+            return json.loads(result.stdout)
+        data = tomllib.loads(raw.decode())
+        return {**{key: data.get(key) for key in ('model', 'profile', 'config_profile_v2')},
+                'profiles': {key: {'model': value.get('model')} for key, value in data.get('profiles', {}).items()
+                             if isinstance(value, dict)}}
+    except (OSError, ValueError, TypeError, AttributeError, subprocess.SubprocessError) as exc:
+        # Never include config text, parser diagnostics, credential fields or subprocess stderr.
+        raise ValueError('CODEX_DEFAULT_MODEL_CONFIG_UNREADABLE') from exc
+
+
+def checked_model(model):
+    if not isinstance(model, str) or not model or any(ord(char) < 33 for char in model):
+        raise ValueError('CODEX_DEFAULT_MODEL_UNDETERMINED: explicit configured or authorized model required')
+    return model
+
+
+def resolve_default_model(repo, target, project=None):
+    """Resolve known user/profile settings; reject ambiguous project precedence."""
+    codex_home = Path(os.environ.get('CODEX_HOME') or Path.home()/'.codex').expanduser().resolve()
+    config = codex_home/'config.toml'
+    data = model_settings(config)
+    selected = [data.get(key) for key in ('profile', 'config_profile_v2') if data.get(key) is not None]
+    if len(selected) > 1:
+        raise ValueError('CODEX_DEFAULT_MODEL_PROFILE_AMBIGUOUS')
+    model = data.get('model')
+    if selected:
+        profile = selected[0]
+        if not isinstance(profile, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', profile):
+            raise ValueError('CODEX_DEFAULT_MODEL_PROFILE_UNDETERMINED')
+        legacy = data.get('profiles', {}).get(profile)
+        overlay = codex_home/(profile+'.config.toml')
+        if legacy is not None and overlay.exists():
+            raise ValueError('CODEX_DEFAULT_MODEL_PROFILE_AMBIGUOUS')
+        if overlay.exists():
+            settings = model_settings(overlay)
+            if settings.get('profile') is not None or settings.get('config_profile_v2') is not None:
+                raise ValueError('CODEX_DEFAULT_MODEL_PROFILE_AMBIGUOUS')
+            model = settings.get('model') if settings.get('model') is not None else model
+        elif legacy is not None:
+            model = legacy.get('model') if legacy.get('model') is not None else model
+        else:
+            raise ValueError('CODEX_DEFAULT_MODEL_PROFILE_UNDETERMINED')
+    # Trust and project-layer precedence vary by CLI version. Without an explicit
+    # authorized model, never guess when a project can override the default.
+    directories = set()
+    for source in (Path(repo).resolve(), Path(project or repo).resolve()/'reviews/strongmodel/runs'):
+        directories.update((source, *source.parents))
+    for directory in directories:
+        candidate = directory/'.codex/config.toml'
+        if candidate.resolve() == config or not candidate.exists():
+            continue
+        settings = model_settings(candidate)
+        if (any(settings.get(key) is not None for key in ('model', 'profile', 'config_profile_v2'))
+                or any(value.get('model') is not None for value in settings.get('profiles', {}).values())):
+            raise ValueError('CODEX_DEFAULT_MODEL_SCOPE_AMBIGUOUS: explicit model authorization required')
+    if git(repo, 'ls-tree', '--name-only', target, '--', '.codex/config.toml').strip():
+        raise ValueError('CODEX_DEFAULT_MODEL_SCOPE_AMBIGUOUS: target contains project model configuration')
+    return checked_model(model)
+
+
+def atomic_bytes(path, content, mode=0o600):
+    path = Path(path)
+    temporary = path.with_name(path.name + '.' + uuid.uuid4().hex + '.tmp')
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, mode)
+    try:
+        with os.fdopen(fd, 'wb') as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def own_cgroup():
+    return Path('/proc/self/cgroup').read_text()
+
+
+def process_cgroup(pid):
+    try:
+        return Path(f'/proc/{int(pid)}/cgroup').read_text().strip()
+    except (OSError, TypeError, ValueError):
+        return None
+
+
+def require_service(unit):
+    cgroup = own_cgroup()
+    paths = [line.split(':', 2)[-1].split('/') for line in cgroup.splitlines()]
+    if not unit or not any(unit in path for path in paths) or 'hermes-worker-cron-' in cgroup:
+        raise ValueError('NOT_IN_DEDICATED_SERVICE')
+    return cgroup.strip()
+
+
+def service_info(unit):
+    if not unit:
+        return {}
+    try:
+        result = subprocess.run(['systemctl', '--user', 'show', unit,
+                                 '--property=LoadState,ActiveState,SubState,MainPID,ControlGroup,Result,ExecMainCode,ExecMainStatus'],
+                                capture_output=True, text=True, timeout=5)
+        fields = dict(line.split('=', 1) for line in result.stdout.splitlines() if '=' in line)
+        if result.returncode and fields.get('LoadState') != 'not-found':
+            return {'error': 'SERVICE_STATUS_UNAVAILABLE'}
+        return fields if 'ActiveState' in fields else {'error': 'SERVICE_STATUS_UNAVAILABLE'}
+    except (OSError, subprocess.TimeoutExpired):
+        return {'error': 'SERVICE_STATUS_UNAVAILABLE'}
+
+
+def check_user_manager():
+    """Fail before binding/submission if the required independent manager is unavailable."""
+    try:
+        result = subprocess.run(['systemctl', '--user', 'show', '--property=Version'],
+                                capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ValueError('USER_SYSTEMD_UNAVAILABLE_BEFORE_SUBMISSION') from exc
+    if result.returncode:
+        # Manager diagnostics may contain environment details; never include them.
+        raise ValueError('USER_SYSTEMD_UNAVAILABLE_BEFORE_SUBMISSION')
+
+
+def start_service(spec):
+    directory = Path(spec['run_directory'])
+    command = ['systemd-run', '--user', '--no-ask-password', '--unit=' + spec['unit'],
+               '--service-type=exec', '--property=Restart=no', '--property=KillMode=control-group',
+               '--property=TimeoutStopSec=20', '--property=RuntimeMaxSec=' + str(spec['timeout_seconds'] + 120),
+               '--property=StandardOutput=append:' + str(directory / 'service.log'),
+               '--property=StandardError=append:' + str(directory / 'service.log'),
+               '--working-directory=' + spec['repo'], '--setenv=PATH=' + spec['path'],
+               '/usr/bin/python3', str(directory / 'worker.py'), '_worker', '--run', str(directory)]
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=20)
+    except (FileNotFoundError, PermissionError) as exc:
+        raise ServiceNotSubmitted('SERVICE_NOT_SUBMITTED: systemd-run could not execute') from exc
+    if result.returncode:
+        # Do not log manager environment or executable output containing configuration.
+        raise ValueError('SERVICE_SUBMISSION_FAILED: independent user systemd service required')
 
 
 def stamp(value):
@@ -61,6 +227,14 @@ def project_binding(project, for_run=False):
     return root, data
 
 
+def workflow_action(path, scope):
+    runtime_plugin=Path(os.environ.get('HERMES_HOME') or Path.home()/'.hermes')/'plugins/role-workflow-runtime'
+    if str(runtime_plugin) not in sys.path:
+        sys.path.append(str(runtime_plugin))
+    from workflow_services import validate_native_action
+    return validate_native_action(path,'strong_review',scope)
+
+
 class Ledger:
     # Tests inject an isolated directory/clock. Production CLI has no state/quota override.
     def __init__(self, directory=STATE, clock=time.time):
@@ -92,6 +266,10 @@ class Ledger:
             ''')
             os.chmod(self.database, 0o600)
             con.execute('BEGIN IMMEDIATE')
+            columns = {row['name'] for row in con.execute('PRAGMA table_info(calls)')}
+            for name in ('unit', 'spec_path', 'spec_hash', 'wrapper_cgroup', 'request_hash'):
+                if name not in columns:
+                    con.execute('ALTER TABLE calls ADD COLUMN ' + name + ' TEXT')
             yield con
             con.commit()
         except BaseException:
@@ -138,19 +316,41 @@ class Ledger:
             raise ValueError('TASK_OUTSIDE_AUTHORIZATION')
         return row
 
-    def reserve(self, project, review_id, task_id, target, package_hash, retry_of=None, repo=None):
+    def reserve(self, project, review_id, task_id, target, package_hash, retry_of=None, repo=None, *,
+                base=None, timeout_seconds=None, risk=None, question=None, ac=None, gate=None,
+                workflow_authorization=None):
         with self.transaction() as con:
-            grant = self._authorization(con, project, task_id)
+            if workflow_authorization:
+                grant={'id':'workflow:'+workflow_authorization['authorization_id'],
+                       'repo':workflow_authorization['repo'],'model':None}
+                if (workflow_authorization['project']!=project or workflow_authorization['task_id']!=task_id
+                    or workflow_authorization['action_id']!=review_id):
+                    raise ValueError('WORKFLOW_REVIEW_AUTHORIZATION_SCOPE_MISMATCH')
+            else:
+                grant = self._authorization(con, project, task_id)
             if repo is not None and grant['repo'] != str(Path(repo).resolve()):
                 raise ValueError('REPOSITORY_OUTSIDE_AUTHORIZATION')
-            prior = con.execute('SELECT * FROM calls WHERE project=? AND review_id=? AND target=? AND package_hash=? ORDER BY rowid DESC LIMIT 1',
-                                (project, review_id, target, package_hash)).fetchone()
+            model = checked_model(grant['model']) if grant['model'] is not None else resolve_default_model(repo or grant['repo'], target, project)
+            identity = {'schema_version': 1, 'project': project, 'review_id': review_id, 'task_id': task_id,
+                        'repo': str(Path(repo or grant['repo']).resolve()), 'base': base, 'target': target,
+                        'package_hash': package_hash, 'model': model, 'timeout_seconds': timeout_seconds,
+                        'risk': risk, 'question': question, 'ac': ac, 'gate': gate, 'decision': 'REVIEW_NOW'}
+            request_hash = hashlib.sha256(json.dumps(identity, ensure_ascii=False, sort_keys=True,
+                                                    separators=(',', ':')).encode()).hexdigest()
+            prior = con.execute('SELECT * FROM calls WHERE project=? AND review_id=? ORDER BY rowid DESC LIMIT 1',
+                                (project, review_id)).fetchone()
             if prior:
+                if not prior['request_hash']:
+                    raise ValueError('LEGACY_REQUEST_IDENTITY_UNVERIFIABLE: inspect original evidence; do not silently reuse or retry')
+                if prior['request_hash'] != request_hash:
+                    raise ValueError('REVIEW_INPUT_IDENTITY_CONFLICT: frozen request changed; use a new review_id')
                 if prior['status'] == 'SUCCEEDED':
                     if not Path(prior['result_path']).is_file() or digest(prior['result_path']) != prior['result_hash']:
                         raise ValueError('RESULT_EVIDENCE_CHANGED: inspect instead of automatically recalling')
                     return {**dict(prior), 'reused': True}
                 if prior['status'] in ('RESERVED', 'RUNNING'):
+                    if prior['unit']:
+                        return {**dict(prior), 'reused': True}
                     raise ValueError('REVIEW_ALREADY_IN_FLIGHT')
                 if retry_of != prior['id']:
                     raise ValueError('FAILED_REVIEW_REQUIRES_EXPLICIT_RETRY_OF: no automatic retry loop')
@@ -165,11 +365,38 @@ class Ledger:
             output_dir = Path(project) / 'reviews/strongmodel/runs' / key
             con.execute('''INSERT INTO calls
                 (id,project,grant_id,review_id,task_id,target,package_hash,created,status,
-                 wrapper_pid,wrapper_start,result_path,log_path)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)''',
+                 wrapper_pid,wrapper_start,result_path,log_path,request_hash)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
                 (key, project, grant['id'], review_id, task_id, target, package_hash, self.clock(), 'RESERVED',
-                 os.getpid(), pid_start(os.getpid()), str(output_dir / 'result.md'), str(output_dir / 'codex.jsonl')))
-            return {**dict(con.execute('SELECT * FROM calls WHERE id=?', (key,)).fetchone()), 'model': grant['model'], 'reused': False}
+                 os.getpid(), pid_start(os.getpid()), str(output_dir / 'result.md'), str(output_dir / 'codex.jsonl'), request_hash))
+            return {**dict(con.execute('SELECT * FROM calls WHERE id=?', (key,)).fetchone()), 'model': model, 'reused': False}
+
+    def bind_service(self, call_id, unit, spec_path, spec_hash):
+        with self.transaction() as con:
+            call = con.execute('SELECT * FROM calls WHERE id=?', (call_id,)).fetchone()
+            if not call or call['status'] != 'RESERVED' or call['unit']:
+                raise ValueError('CALL_NOT_RESERVED_OR_ALREADY_BOUND')
+            con.execute('UPDATE calls SET unit=?,spec_path=?,spec_hash=? WHERE id=?',
+                        (unit, str(spec_path), spec_hash, call_id))
+
+    def call(self, call_id):
+        with self.transaction() as con:
+            call = con.execute('SELECT * FROM calls WHERE id=?', (call_id,)).fetchone()
+            if not call:
+                raise ValueError('UNKNOWN_CALL')
+            return dict(call)
+
+    def adopt_worker(self, call_id, spec_hash):
+        with self.transaction() as con:
+            call = con.execute('SELECT * FROM calls WHERE id=?', (call_id,)).fetchone()
+            if not call or call['status'] != 'RESERVED' or call['spec_hash'] != spec_hash:
+                raise ValueError('INVALID_WORKER_CLAIM')
+            cgroup = require_service(call['unit'])
+            if call['wrapper_cgroup']:
+                raise ValueError('WORKER_ALREADY_ADOPTED')
+            con.execute('UPDATE calls SET wrapper_pid=?,wrapper_start=?,wrapper_cgroup=? WHERE id=?',
+                        (os.getpid(), pid_start(os.getpid()), cgroup, call_id))
+            return dict(con.execute('SELECT * FROM calls WHERE id=?', (call_id,)).fetchone())
 
     def launch(self, call_id, launch_process):
         # Revoke and actual subprocess start serialize under the same global transaction.
@@ -177,11 +404,30 @@ class Ledger:
             call = con.execute('SELECT * FROM calls WHERE id=?', (call_id,)).fetchone()
             if not call or call['status'] != 'RESERVED':
                 raise ValueError('CALL_NOT_RESERVED')
-            grant = self._authorization(con, call['project'], call['task_id'])
-            if grant['id'] != call['grant_id']:
-                raise ValueError('AUTHORIZATION_REPLACED_BEFORE_LAUNCH')
-            project_binding(call['project'], for_run=True)
-            child = launch_process()
+            if call['grant_id'].startswith('workflow:'):
+                raw=Path(call['spec_path']).read_bytes()
+                if hashlib.sha256(raw).hexdigest()!=call['spec_hash']:
+                    raise ValueError('WORKFLOW_SERVICE_SPEC_CHANGED')
+                frozen=json.loads(raw)
+                grant=workflow_action(frozen['workflow_action'],{'project':call['project'],'repo':frozen['repo'],
+                    'base':frozen['base'],'head':call['target'],'task':call['task_id'],'review_id':call['review_id']})
+                if 'workflow:'+grant['authorization_id']!=call['grant_id']:
+                    raise ValueError('WORKFLOW_AUTHORIZATION_REPLACED_BEFORE_LAUNCH')
+            else:
+                grant = self._authorization(con, call['project'], call['task_id'])
+                if grant['id'] != call['grant_id']:
+                    raise ValueError('AUTHORIZATION_REPLACED_BEFORE_LAUNCH')
+                project_binding(call['project'], for_run=True)
+            if call['unit']:
+                require_service(call['unit'])
+            if call['grant_id'].startswith('workflow:'):
+                from workflow_services import native_dispatch_guard
+                with native_dispatch_guard(frozen['workflow_action'],'strong_review',{'project':call['project'],
+                    'repo':frozen['repo'],'base':frozen['base'],'head':call['target'],
+                    'task':call['task_id'],'review_id':call['review_id']}):
+                    child = launch_process()
+            else:
+                child = launch_process()
             con.execute('UPDATE calls SET status=?,child_pid=?,child_start=? WHERE id=?',
                         ('RUNNING', child.pid, pid_start(child.pid), call_id))
             return child
@@ -195,6 +441,14 @@ class Ledger:
             con.execute('UPDATE calls SET status=?,finished=?,detail=?,usage=?,result_hash=? WHERE id=?',
                         (status, self.clock(), detail, json.dumps(usage), result_hash, call_id))
 
+    def fail_unsubmitted(self, call_id, detail):
+        # An externally adopted worker must never be overwritten by a launcher failure.
+        with self.transaction() as con:
+            con.execute("""UPDATE calls SET status='FAILED',finished=?,detail=?
+                           WHERE id=? AND status='RESERVED'
+                           AND wrapper_cgroup IS NULL AND child_pid IS NULL""",
+                        (self.clock(), detail, call_id))
+
     def recover(self, call_id, evidence):
         evidence = Path(evidence).resolve()
         if not evidence.is_file():
@@ -203,6 +457,22 @@ class Ledger:
             call = con.execute('SELECT * FROM calls WHERE id=?', (call_id,)).fetchone()
             if not call or call['status'] not in ('RESERVED', 'RUNNING'):
                 raise ValueError('NO_UNRESOLVED_CALL')
+            if call['unit']:
+                service = service_info(call['unit'])
+                if service.get('ActiveState') not in ('inactive', 'failed'):
+                    raise ValueError('SERVICE_STILL_ALIVE_OR_UNVERIFIABLE')
+                if service.get('MainPID') not in (None, '', '0') and pid_start(service['MainPID']) is not None:
+                    raise ValueError('SERVICE_STILL_ALIVE_OR_UNVERIFIABLE')
+                group = service.get('ControlGroup', '')
+                if group:
+                    try:
+                        members = (Path('/sys/fs/cgroup') / group.lstrip('/') / 'cgroup.procs').read_text().strip()
+                        if members:
+                            raise ValueError('SERVICE_STILL_ALIVE_OR_UNVERIFIABLE')
+                    except FileNotFoundError:
+                        pass  # Inactive units may already have removed their empty cgroup.
+                    except OSError as exc:
+                        raise ValueError('SERVICE_STILL_ALIVE_OR_UNVERIFIABLE') from exc
             if alive(call['wrapper_pid'], call['wrapper_start']) or alive(call['child_pid'], call['child_start']):
                 raise ValueError('REVIEW_PROCESS_STILL_ALIVE_OR_UNVERIFIABLE')
             con.execute('UPDATE calls SET status=?,finished=?,detail=? WHERE id=?',
@@ -219,11 +489,30 @@ class Ledger:
         try:
             grant = con.execute('SELECT * FROM grants WHERE project=? ORDER BY rowid DESC LIMIT 1', (project,)).fetchone()
             calls = con.execute('SELECT created FROM calls WHERE created>? ORDER BY created DESC', (self.clock() - WINDOW,)).fetchall()
-            active = [dict(row) for row in con.execute("SELECT id,project,review_id,status,created FROM calls WHERE status IN ('RESERVED','RUNNING')")]
-            last = con.execute('SELECT id,review_id,status,created,finished,result_path,usage FROM calls WHERE project=? ORDER BY rowid DESC LIMIT 1', (project,)).fetchone()
+            columns = {row['name'] for row in con.execute('PRAGMA table_info(calls)')}
+            service_fields = ',unit,spec_path,wrapper_pid,wrapper_start,child_pid,child_start,wrapper_cgroup' if 'unit' in columns else ''
+            active = [dict(row) for row in con.execute("SELECT id,project,review_id,status,created,result_path,log_path" + service_fields + " FROM calls WHERE status IN ('RESERVED','RUNNING')")]
+            last = con.execute('SELECT id,review_id,status,created,finished,result_path,log_path,usage' + service_fields + ' FROM calls WHERE project=? ORDER BY rowid DESC LIMIT 1', (project,)).fetchone()
+            def observed(row):
+                row = dict(row)
+                info = service_info(row.get('unit'))
+                row['service'] = info
+                row['service_state'] = ('LEGACY' if not row.get('unit') else 'UNKNOWN' if 'error' in info else
+                                        'ACTIVE' if info.get('ActiveState') == 'active' else
+                                        'SUBMITTED' if info.get('ActiveState') == 'activating' else 'EXITED')
+                row['wrapper_alive'] = alive(row.get('wrapper_pid'), row.get('wrapper_start'))
+                row['child_alive'] = alive(row.get('child_pid'), row.get('child_start'))
+                row['actual_wrapper_cgroup'] = process_cgroup(row.get('wrapper_pid')) if row['wrapper_alive'] else None
+                row['service_identity'] = ('LEGACY' if not row.get('unit') else
+                    'VERIFIED' if row['wrapper_alive'] and row.get('wrapper_cgroup') == row['actual_wrapper_cgroup']
+                    and str(row.get('wrapper_pid')) == info.get('MainPID')
+                    and info.get('ControlGroup', '').endswith('/' + row['unit']) else
+                    'STOPPED' if row['service_state'] == 'EXITED' and not row['wrapper_alive'] and not row['child_alive'] else 'UNKNOWN')
+                return row
+            active = [observed(row) for row in active]
             result = {**empty, 'used_last_60_minutes': len(calls), 'active_calls': active,
                       'next_slot_at': stamp(calls[LIMIT - 1]['created'] + WINDOW) if len(calls) >= LIMIT else None,
-                      'last_call': dict(last) if last else None}
+                      'last_call': observed(last) if last else None}
             if grant:
                 state = 'REVOKED' if grant['revoked'] is not None else 'SCHEDULED' if self.clock() < grant['starts'] else 'EXPIRED' if grant['ends'] is not None and self.clock() >= grant['ends'] else 'AUTHORIZED'
                 _, binding = project_binding(project)
@@ -248,7 +537,18 @@ def git(repo, *args):
 
 
 def run_review(args, ledger):
-    project, _ = project_binding(args.project, for_run=True)
+    """Freeze a request and submit a short-lived launcher, never wait for Codex."""
+    if os.environ.get('HERMES_ROLE_POOL_DRAIN_ONLY')=='1':
+        raise ValueError('需求切换收口回合不能提交新强审')
+    action_path=getattr(args,'workflow_action',None)
+    workflow_authorization=None
+    if action_path:
+        workflow_authorization=workflow_action(action_path,{'project':str(Path(args.project).resolve()),
+            'repo':str(Path(args.repo).resolve()),'base':args.base,'head':args.target,
+            'task':args.task_id,'review_id':args.review_id})
+        project=Path(workflow_authorization['project'])
+    else:
+        project, _ = project_binding(args.project, for_run=True)
     repo = Path(args.repo).resolve()
     package = Path(args.package).resolve()
     if not package.is_relative_to(project) or not package.is_file():
@@ -256,19 +556,23 @@ def run_review(args, ledger):
     for text in (args.risk, args.question, args.ac, args.gate):
         if not text.strip():
             raise ValueError('SPECIFIC_RISK_QUESTION_AC_AND_GATE_REQUIRED')
+    if args.timeout_seconds <= 0:
+        raise ValueError('TIMEOUT_MUST_BE_POSITIVE')
     base, target = [git(repo, 'rev-parse', '--verify', '--end-of-options', value + '^{commit}') for value in (args.base, args.target)]
     package_bytes = package.read_bytes()
     package_text = package_bytes.decode()
-    call = ledger.reserve(str(project), args.review_id, args.task_id, target, hashlib.sha256(package_bytes).hexdigest(), args.retry_of, str(repo))
+    call = ledger.reserve(str(project), args.review_id, args.task_id, target,
+                          hashlib.sha256(package_bytes).hexdigest(), args.retry_of, str(repo),
+                          base=base, timeout_seconds=args.timeout_seconds, risk=args.risk,
+                          question=args.question, ac=args.ac, gate=args.gate,
+                          workflow_authorization=workflow_authorization)
     if call['reused']:
-        return call
+        return {**call, 'call_id': call['id'], 'approval': 'NOT_DECIDED'}
     folder = Path(call['result_path']).parent
-    snapshot = folder / 'snapshot'
-    temporary_result = folder / 'result.tmp'
+    bound = False
     try:
-        folder.mkdir(parents=True, exist_ok=False)
-        git(repo, 'worktree', 'add', '--detach', str(snapshot), target)
-        reviewer = Path(__file__).resolve().parents[2] / 'complex-task-reviewer/SKILL.md'
+        folder.mkdir(parents=True, exist_ok=False, mode=0o700)
+        reviewer = Path.home() / '.codex/skills/complex-task-reviewer/SKILL.md'
         prompt = '\n\n'.join([
             reviewer.read_text(),
             'You are a read-only reviewer authorized by the user. No code edits, model delegation, merges, deployments or extra review calls.',
@@ -278,28 +582,114 @@ def run_review(args, ledger):
             'Return the complete independent result as your final message; the wrapper writes it. Do not try to write a result file in the read-only sandbox. Freeze existing requirements; OUT_OF_SCOPE suggestions do not block.',
             'The following is the frozen review package. Read actual code in this detached snapshot and the cited verification evidence; do not merely trust the summary.',
             package_text])
-        (folder / 'input.md').write_text(prompt)
-        argv = ['codex', 'exec', '--sandbox', 'read-only', '-c', 'approval_policy="never"',
+        codex = shutil.which('codex')
+        if not codex:
+            raise ValueError('CODEX_EXECUTABLE_NOT_FOUND')
+        atomic_bytes(folder / 'input.md', prompt.encode())
+        atomic_bytes(folder / 'package.md', package_bytes)
+        atomic_bytes(folder / 'worker.py', Path(__file__).read_bytes(), mode=0o700)
+        runtime_plugin = Path(os.environ.get('HERMES_HOME') or Path.home()/'.hermes')/'plugins/role-workflow-runtime'
+        if str(runtime_plugin) not in sys.path:
+            sys.path.append(str(runtime_plugin))
+        from workflow_migration import code_version
+        spec = {'schema_version': 1, 'runtime_version_digest': code_version()['digest'],
+                'call_id': call['id'], 'project': str(project), 'repo': str(repo),
+                'base': base, 'target': target, 'review_id': args.review_id, 'task_id': args.task_id,
+                'grant_id': call['grant_id'], 'package_hash': call['package_hash'],
+                'request_hash': call['request_hash'],
+                'model': call.get('model'), 'timeout_seconds': args.timeout_seconds,
+                'run_directory': str(folder), 'unit': 'complex-task-strong-review-' + call['id'] + '.service',
+                'input_hash': digest(folder / 'input.md'), 'worker_hash': digest(folder / 'worker.py'),
+                'codex': str(Path(codex).absolute()), 'path': os.environ.get('PATH', '/usr/local/bin:/usr/bin:/bin')}
+        if action_path:
+            spec['workflow_action']=str(Path(action_path).resolve())
+        atomic_bytes(folder / 'spec.json', json.dumps(spec, ensure_ascii=False, sort_keys=True).encode())
+        check_user_manager()
+        ledger.bind_service(call['id'], spec['unit'], folder / 'spec.json', digest(folder / 'spec.json'))
+        bound = True
+        start_service(spec)
+        current = ledger.call(call['id'])
+        phase = 'SUBMITTED' if current['status'] == 'RESERVED' else 'ACTIVE' if current['status'] == 'RUNNING' else 'EXITED'
+        return {**current, 'call_id': call['id'], 'service_state': phase,
+                'reused': False, 'approval': 'NOT_DECIDED'}
+    except Exception as exc:
+        if not bound:
+            ledger.finish(call['id'], 'FAILED', str(exc))
+        elif isinstance(exc, ServiceNotSubmitted):
+            ledger.fail_unsubmitted(call['id'], str(exc))
+        else:
+            # A timeout or caller death may happen after systemd accepted the unit.
+            # Retain an uncertain reservation; never declare it safe to retry.
+            info = service_info(spec['unit'])
+            current = ledger.call(call['id'])
+            if info.get('ActiveState') in ('inactive', 'failed') and info.get('MainPID', '0') == '0' and current['status'] == 'RESERVED' and not current['wrapper_cgroup']:
+                ledger.finish(call['id'], 'FAILED', str(exc))
+        raise
+
+
+def stop_child(child):
+    if child is None or child.poll() is not None:
+        return
+    try:
+        os.killpg(child.pid, signal.SIGTERM)
+        child.wait(timeout=10)
+    except ProcessLookupError:
+        pass
+    except subprocess.TimeoutExpired:
+        os.killpg(child.pid, signal.SIGKILL)
+        child.wait()
+
+
+def worker(directory, ledger=None):
+    """Execute only an already reserved, hash-bound request inside its own service."""
+    ledger = ledger or Ledger()
+    folder = Path(directory).resolve()
+    spec_path = folder / 'spec.json'
+    raw = spec_path.read_bytes()
+    spec = json.loads(raw)
+    call = ledger.call(spec['call_id'])
+    if (call.get('spec_path') != str(spec_path) or call.get('spec_hash') != hashlib.sha256(raw).hexdigest()
+            or spec['run_directory'] != str(folder) or spec['unit'] != call.get('unit')
+            or spec['project'] != call['project'] or spec['target'] != call['target']
+            or spec['package_hash'] != call['package_hash'] or spec['grant_id'] != call['grant_id']
+            or spec.get('request_hash') != call.get('request_hash')):
+        raise ValueError('FROZEN_SPEC_CHANGED')
+    require_service(spec['unit'])
+    if spec.get('workflow_action'):
+        workflow_action(spec['workflow_action'],{'project':spec['project'],'repo':spec['repo'],
+            'base':spec['base'],'head':spec['target'],'task':spec['task_id'],'review_id':spec['review_id']})
+    call = ledger.adopt_worker(call['id'], call['spec_hash'])
+    repo = Path(spec['repo'])
+    snapshot = folder / 'snapshot'
+    temporary_result = folder / 'result.tmp'
+    child = None
+    def interrupted(*_):
+        raise ValueError('REVIEW_INTERRUPTED: independent service stopped')
+    previous_handlers = {sig: signal.getsignal(sig) for sig in (signal.SIGTERM, signal.SIGINT)}
+    for sig in previous_handlers:
+        signal.signal(sig, interrupted)
+    try:
+        if (digest(folder / 'input.md') != spec['input_hash'] or digest(folder / 'worker.py') != spec['worker_hash']
+                or digest(folder / 'package.md') != spec['package_hash']):
+            raise ValueError('FROZEN_INPUT_CHANGED')
+        if not spec.get('workflow_action'):
+            project_binding(call['project'], for_run=True)
+        git(repo, 'worktree', 'add', '--detach', str(snapshot), spec['target'])
+        argv = [spec['codex'], 'exec', '--sandbox', 'read-only', '-c', 'approval_policy="never"',
                 '-C', str(snapshot), '--json', '--output-last-message', str(temporary_result)]
-        if call.get('model'):
-            argv += ['--model', call['model']]
+        argv += ['--model', checked_model(spec.get('model'))]
         argv += ['-']
         with Path(call['log_path']).open('wb') as log:
             child = ledger.launch(call['id'], lambda: subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=log,
                                                                        stderr=subprocess.STDOUT, start_new_session=True))
             try:
-                child.communicate(prompt.encode(), timeout=args.timeout_seconds)
+                child.communicate((folder / 'input.md').read_bytes(), timeout=spec['timeout_seconds'])
             except subprocess.TimeoutExpired:
-                os.killpg(child.pid, signal.SIGTERM)
-                try:
-                    child.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    os.killpg(child.pid, signal.SIGKILL)
-                    child.wait()
+                stop_child(child)
                 raise ValueError('REVIEW_TIMEOUT: failed start remains in hourly count')
         if child.returncode != 0 or not temporary_result.is_file() or not temporary_result.read_text().strip():
             raise ValueError('REVIEW_FAILED_OR_EMPTY_RESULT: inspect log, never assume PASS')
-        if git(snapshot, 'rev-parse', 'HEAD') != target or git(snapshot, 'diff', '--name-only', 'HEAD'):
+        if git(snapshot, 'rev-parse', 'HEAD') != spec['target'] or git(snapshot, 'status', '--porcelain'):
             raise ValueError('REVIEW_SNAPSHOT_CHANGED')
         os.replace(temporary_result, call['result_path'])
         usage = []
@@ -313,9 +703,12 @@ def run_review(args, ledger):
         ledger.finish(call['id'], 'SUCCEEDED', 'CLI result received; coordinator must still verify snapshot and findings', usage or None)
         return {**call, 'status': 'SUCCEEDED', 'usage': usage or None, 'cost': None, 'approval': 'NOT_DECIDED'}
     except Exception as exc:
+        stop_child(child)
         ledger.finish(call['id'], 'FAILED', str(exc))
         raise
     finally:
+        for sig, handler in previous_handlers.items():
+            signal.signal(sig, handler)
         if snapshot.exists():
             # Only remove the snapshot created by this call; never reset the source worktree.
             try:
@@ -351,9 +744,12 @@ def main():
     run.add_argument('--decision', choices=['REVIEW_NOW'], required=True)
     run.add_argument('--retry-of')
     run.add_argument('--timeout-seconds', type=int, default=1800)
+    run.add_argument('--workflow-action', help=argparse.SUPPRESS)
     recover = commands.add_parser('recover')
     recover.add_argument('--call-id', required=True)
     recover.add_argument('--evidence', required=True)
+    worker_parser = commands.add_parser('_worker', help=argparse.SUPPRESS)
+    worker_parser.add_argument('--run', required=True)
     args = parser.parse_args()
     try:
         ledger = Ledger()
@@ -373,11 +769,13 @@ def main():
             result = run_review(args, ledger)
         elif args.action == 'recover':
             result = ledger.recover(args.call_id, args.evidence)
+        elif args.action == '_worker':
+            result = worker(args.run, ledger)
         else:
             project, _ = project_binding(args.project)
             result = ledger.status(str(project)) if args.action == 'status' else ledger.revoke(str(project), args.reason)
         print(json.dumps({'success': True, **result}, ensure_ascii=False))
-    except (ValueError, OSError, KeyError, sqlite3.Error, subprocess.CalledProcessError) as exc:
+    except (ValueError, OSError, KeyError, sqlite3.Error, subprocess.SubprocessError) as exc:
         print(json.dumps({'success': False, 'error': str(exc)}, ensure_ascii=False))
         sys.exit(1)
 

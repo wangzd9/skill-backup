@@ -129,7 +129,9 @@ def coverage(manifest, spec, batch, sid):
             'COMMIT_IDENTITY_MISMATCH')
     execution = manifest.get('execution', {})
     version = re.search(r'\bv\d+\.\d+\.\d+\b', spec['ocr_version'])
-    require(version and version.group() == 'v1.13.0', 'OCR_VERSION_UNSUPPORTED')
+    # Admission belongs to prepare; this read-only parser verifies protocol and
+    # the exact frozen execution identity, including during admission bootstrap.
+    require(version is not None, 'OCR_VERSION_UNVERIFIABLE')
     require(execution.get('provider') == spec['provider'] and execution.get('model') == spec['model']
             and execution.get('ocr_version') == version.group(), 'EXECUTION_IDENTITY_MISMATCH')
     cov = manifest.get('coverage', {})
@@ -181,7 +183,14 @@ def session_evidence(evidence, path, spec, batch, comments):
             ends.append(event)
         elif last_type == 'review_item_done':
             done.append(event)
-            comments.extend(validate_comments(event.get('comments'), batch['files']))
+            # OCR v1.12.13..v1.13.1 omits the `comments` key entirely when a
+            # reviewed file yields zero findings (63 historical zero-finding
+            # batches confirm this shape). An absent key is a genuine zero,
+            # not missing evidence: treat it as [] while still cross-checking
+            # against the authoritative log comments below (log_evidence), so
+            # a hidden log finding still fails the session/log count match.
+            if 'comments' in event:
+                comments.extend(validate_comments(event['comments'], batch['files']))
     require(len(starts) == len(ends) == 1 and last_type == 'session_end', 'SESSION_TERMINAL_REQUIRED')
     start = starts[0]
     require(Path(start.get('cwd', '')).resolve() == Path(spec['repo']).resolve()

@@ -10,7 +10,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
+import time
 from typing import Any
+import uuid
 
 from agent.message_sanitization import sanitize_outbound_kwargs, strip_images_for_rejecting_model
 from utils import env_var_enabled
@@ -64,6 +66,8 @@ def _fire_pre_api_request_hook(
                 task_id=effective_task_id,
                 turn_id=turn_id,
                 api_request_id=api_request_id,
+                physical_attempt_id=getattr(agent, '_current_api_physical_attempt_id', ''),
+                attempt_started_at=getattr(agent, '_current_api_attempt_started_at', api_start_time),
                 session_id=agent.session_id or "",
                 user_message=original_user_message,
                 conversation_history=list(messages),
@@ -102,6 +106,10 @@ def build_api_request(
     )
     from agent.request_routing import apply_model_route
 
+    # Establish this attempt before routing/preflight can fail. Error hooks must
+    # never attribute a new logical request to the previous physical attempt.
+    agent._current_api_physical_attempt_id = uuid.uuid4().hex
+    agent._current_api_attempt_started_at = time.time()
     apply_model_route(agent)
 
     agent._reset_stream_delivery_tracking()

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""无模型的活动观察、分时段总结与夜间汇总；不写业务状态或发送消息。"""
+"""活动和用量事实采集；由独立模型报告会话分析，不写业务状态或发送消息。"""
 import argparse
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -25,15 +25,37 @@ CRON_EXECUTIONS = Path.home() / '.hermes/cron/executions.db'
 
 @lru_cache(maxsize=1)
 def time_accounting_module():
-    candidates = (Path(__file__).resolve().parents[3] / 'runtime/time_accounting.py',
-                  Path('/home/wang/work/hermes-role-runtime/time_accounting.py'))
-    source = next((path for path in candidates if path.is_file()), None)
-    if source is None:
+    source = Path(__file__).resolve().with_name('time_accounting.py')
+    if not source.is_file():
         raise OSError('时间证据模块尚未安装')
     spec = importlib.util.spec_from_file_location('role_activity_time_accounting', source)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+@lru_cache(maxsize=1)
+def usage_accounting_module():
+    source = Path(time_accounting_module().__file__).parent / 'usage_accounting.py'
+    spec = importlib.util.spec_from_file_location('role_activity_usage_accounting', source)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@lru_cache(maxsize=1)
+def observation_store_module():
+    source = Path(time_accounting_module().__file__).parent / 'observation_store.py'
+    spec = importlib.util.spec_from_file_location('role_activity_observation_store', source)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+# This installation explicitly retains its legacy writer until an administrator
+# publishes a reviewed routing manifest. A v2-required marker prevents a lost or
+# damaged manifest from falling back to this legacy configuration.
+OBSERVATION_LEGACY_MODE = 'LEGACY_ONLY'
 
 
 def local_now():
@@ -68,7 +90,8 @@ def summary_text(value):
 def sample(snapshot, tick=None):
     role = snapshot['role']
     event = snapshot.get('events', {}).get(role, {})
-    health = snapshot.get('processes', {}).get(role, {}).get('state')
+    process = snapshot.get('processes', {}).get(role, {})
+    health = process.get('state')
     state = event_state(event.get('status'))
     reason = 'event_status:' + str(event.get('status') or 'missing')
     if str(event.get('status') or '').upper() == 'IDLE':
@@ -104,15 +127,37 @@ def sample(snapshot, tick=None):
            'observed_at': snapshot['observed_at'], 'recorded_at': event.get('recorded_at'),
            'raw_status': event.get('status'), 'classification_reason': reason,
            'confirmed_idle': bool(snapshot.get('confirmed_idle')),
-           'owner_process_state': health, 'classification_reasons': snapshot.get('classification_reasons', []),
+           'owner_process_state': process.get('owner_process_state', health),
+           'classification_reasons': snapshot.get('classification_reasons', []),
            'dispatch_source': (dispatch or {}).get('source'), 'dispatch_mtime': (dispatch or {}).get('mtime')}
+    reasons = list(snapshot['reason_codes']) if isinstance(snapshot.get('reason_codes'), list) else []
+    reasons.extend(process['reason_codes'] if isinstance(process.get('reason_codes'), list) else [])
+    if 'reason' in process:
+        row['reason'] = process['reason']  # preserve the old single value verbatim
+        if isinstance(process['reason'], str):
+            reasons.append(process['reason'])
+    if reasons:
+        row['reason_codes'] = list(dict.fromkeys(reasons))
+    facts = {}
+    for key in ('owner_process_state', 'business_authority_state', 'heartbeat_state', 'activity_source_state'):
+        value = process.get(key, health if key == 'owner_process_state' else 'NOT_CHECKED')
+        if isinstance(value, dict):
+            facts[key] = {field: value[field] for field in
+                ('state', 'value', 'source', 'checked_at', 'last_verified_at', 'evidence_ref') if field in value}
+        else:
+            facts[key] = {'value': value, 'source': process.get('source'),
+                'checked_at': process.get('checked_at'), 'evidence_ref': process.get('evidence_ref')}
+        if key != 'owner_process_state':
+            row[key] = value if not isinstance(value, dict) else value.get('state',value.get('value','NOT_CHECKED'))
+    row['process_facts'] = facts
+    for key in ('identity', 'source_refs'):
+        if key in snapshot:
+            row[key] = snapshot[key]
+    if 'event_id' in event:
+        row['event_id'] = event['event_id']
     root = Path(snapshot['project'])
-    at = datetime.fromisoformat(row['at']).astimezone(TZ)
-    path = root / f'inbox/control/runtime/activity/{at:%Y-%m-%d}/{role}.jsonl'
-    with runtime.locked(path.with_suffix('.lock')):
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open('a') as stream:
-            stream.write(json.dumps(row, ensure_ascii=False) + '\n')
+    observation_store_module().write_sample(root, row, legacy_mode=OBSERVATION_LEGACY_MODE,
+        observation_id=snapshot.get('observation_id'), source_checks=snapshot.get('source_checks', ()))
     return row
 
 
@@ -195,24 +240,23 @@ def recover_legacy_status(root, role, row):
             if raw_status == 'IDLE' else 'legacy_status_mapping_recovered:external_observation_or_waiting')
 
 
-def points(root, role, start, end):
+def points(root, role, start, end, *, observation_metadata=None):
     """读取原始观察与实质事件，缺记录时保持未知，不倒填工时。"""
     import role_observer as observer
     rows, events, errors = [], [], []
-    date = (start - timedelta(seconds=MAX_GAP)).date()
-    while date <= end.date():
-        path = root / f'inbox/control/runtime/activity/{date}/{role}.jsonl'
-        if path.exists():
-            for line in path.read_text().splitlines():
-                try:
-                    row = json.loads(line)
-                    row['_at'] = parse_at(row['at'])
-                    if row['_at'] <= end and row['_at'] >= start - timedelta(seconds=MAX_GAP):
-                        recover_legacy_status(root, role, row)
-                        rows.append(row)
-                except (ValueError, KeyError, TypeError):
-                    errors.append(str(path.relative_to(root)) + ': 存在损坏记录')
-        date += timedelta(days=1)
+    try:
+        observations, metadata = observation_store_module().read_samples(root, role, start, end,
+            legacy_mode=OBSERVATION_LEGACY_MODE)
+        if observation_metadata is not None:
+            observation_metadata.update(metadata)
+        for row in observations:
+            row['_at'] = parse_at(row['at'])
+            recover_legacy_status(root, role, row)
+            rows.append(row)
+    except (OSError, ValueError, KeyError, TypeError, sqlite3.Error) as exc:
+        errors.append('观察存储缺口：' + str(exc))
+        if observation_metadata is not None:
+            observation_metadata.update(collection_gap=str(exc), mode='UNVERIFIED')
     seen = set()
     for folder in (root / 'events' / role, root / 'inbox/events' / role):
         if not folder.exists():
@@ -284,9 +328,10 @@ def intervals(rows, start, end):
     return segments, totals
 
 
-def summarize(root, role, start, end, *, timing_index=None, executions_db=None):
+def summarize(root, role, start, end, *, timing_index=None, executions_db=None, usage_index=None, include_usage=True):
     root = Path(root)
-    rows, events, errors = points(root, role, start, end)
+    observation_metadata = {}
+    rows, events, errors = points(root, role, start, end, observation_metadata=observation_metadata)
     segments, totals = intervals(rows, start, end)
     delivered = [e for e in events if any(p in str(e.get('status', '')).upper() for p in ('DELIVER', 'PASS', 'DONE', 'MERGED', 'COMPLETED', 'ACCEPTED'))]
     gaps = [s for s in segments if s['category'] == 'unknown']
@@ -294,6 +339,20 @@ def summarize(root, role, start, end, *, timing_index=None, executions_db=None):
     result = {'role': role, 'start': start.isoformat(), 'end': end.isoformat(), 'totals_seconds': totals,
             'segments': segments, 'events': events, 'delivery_records': delivered, 'unverified_sources': errors,
             'unclassified_intervals': gaps, 'classification_reasons': reasons}
+    # Independent diagnostics retain the original fact times and all reasons.
+    # They do not alter the historical interval classifier or duration totals.
+    diagnostic_fields = ('at', 'observed_at', 'recorded_at', 'source', 'basis', 'identity',
+        'reason', 'reason_codes', 'owner_process_state', 'business_authority_state',
+        'heartbeat_state', 'activity_source_state', 'process_facts', 'source_refs')
+    result['observation_diagnostics'] = [
+        {key: row[key] for key in diagnostic_fields if key in row}
+        for row in rows if row.get('reason_codes') or row.get('process_facts')]
+    result['observation_reason_codes'] = list(dict.fromkeys(code for row in rows
+        for code in (row.get('reason_codes') if isinstance(row.get('reason_codes'),list) else [])
+        if isinstance(code, str)))
+    result['observation_reason_text'] = {code: (reason_text(code) if reason_text(code) != '业务状态尚未分类'
+        else '待核诊断：'+code) for code in result['observation_reason_codes']}
+    result['observation_storage'] = observation_metadata
     try:
         from report_gate import task_rows
         result['task_functions'] = {key: cells[2] for key, cells in task_rows((root/'TODO.md').read_text()).items()}
@@ -316,6 +375,13 @@ def summarize(root, role, start, end, *, timing_index=None, executions_db=None):
         evidence_errors.append({'dimension': 'client_model_wait', 'reason': 'timing_index_or_module_unavailable:' + type(exc).__name__,
             'recovery_sources': [str(timing_index or TIME_INDEX), '~/.hermes/logs/agent.log*']})
     result['time_accounting']['collection_errors'] = evidence_errors
+    if include_usage:
+        try:
+            result['model_usage'] = usage_accounting_module().summarize(
+                usage_index or TIME_INDEX.with_name('role-usage.db'), role, start, end, project=root.resolve())
+        except (OSError, ValueError, KeyError, TypeError, sqlite3.Error) as exc:
+            result['model_usage'] = {'role': role, 'source_available': False,
+                                     'collection_error': type(exc).__name__ + ': ' + str(exc)}
     return result
 
 
@@ -332,6 +398,14 @@ def category_label(category, role):
 
 def reason_text(value):
     value = str(value or '')
+    process_reasons = {
+        'lease_owner_missing': '已读到旧租约但缺少owner，写入来源待核实',
+        'lease_expired_owner_alive': '旧租约权限已过期，owner进程仍存活；不能接管',
+        'heartbeat_stale_owner_activity_unverified': '心跳陈旧，工具或业务活动尚待核实；不代表进程死亡',
+        'process_identity_fields_missing': '进程身份字段缺失，不能核实owner',
+        'process_identity_unreadable': '进程身份来源不可读，不能核实owner'}
+    if value in process_reasons:
+        return process_reasons[value]
     recorded_status = {'recorded_event_status:NIGHT_SUMMARY': '夜间汇总事件未定义业务阶段',
                        'recorded_event_status:SUPERSEDED_A_DISPATCH': '旧派单替换事件未定义业务阶段',
                        'recorded_event_status:DISPATCHED_TESTER_VERIFY': '测试派发事件未定义业务阶段'}
@@ -517,6 +591,10 @@ def digest_timing_lines(item, snapshot):
         lines.append(f'**计时核对：** {missing}暂不可读；具体原因与恢复来源见证据。')
     if item['unverified_sources'] or snapshot.get('error'):
         lines.append('**历史时间待核：** ' + (observer.plain(summary_text(snapshot['error']), 65) if snapshot.get('error') else str(len(item['unverified_sources'])) + '份事件缺少可用时间，已排除时长计算') + '；来源见证据。')
+    if item.get('observation_reason_codes'):
+        meanings = item.get('observation_reason_text', {})
+        lines.append('**运行事实核对：** ' + '；'.join(
+            observer.plain(meanings.get(code, code), 140) for code in item['observation_reason_codes']) + '。')
     return lines
 
 
@@ -585,7 +663,8 @@ def render_digest(data):
     return render_report(report)
 
 
-def build(root, role, kind, at=None, *, timing_index=None, executions_db=None):
+def build(root, role, kind, at=None, *, timing_index=None, executions_db=None, usage_index=None,
+          collect_current=True, include_progress=True, usage_roles=None):
     import role_observer as observer
     from runtime_tools import refresh_progress_facts
     root = Path(root).resolve()
@@ -595,21 +674,33 @@ def build(root, role, kind, at=None, *, timing_index=None, executions_db=None):
     current = {}
     for who in selected:
         try:
-            current[who] = observer.refresh(root, who)
+            if collect_current:
+                current[who] = observer.refresh(root, who)
+            else:
+                current[who] = runtime.load(root / f'inbox/control/runtime/snapshots/{who}.json')
+                if not isinstance(current[who], dict):
+                    raise ValueError('尚无角色观察快照；本次仅根据历史事件汇总')
         except (OSError, ValueError, KeyError, TypeError) as exc:
             current[who] = {'role': who, 'observed_at': at.isoformat(), 'error': str(exc), 'project': str(root)}
-            sample(current[who])
+            if collect_current:
+                sample(current[who])
     artifact = f'inbox/control/runtime/digests/{end:%Y-%m-%d}/{role}-{kind}-{end:%H%M}.json'
     data = {'schema_version': 2, 'generated_at': at.isoformat(), 'role': role, 'kind': kind,
             'start': start.isoformat(), 'end': end.isoformat(), 'artifact': artifact,
-            'roles': [summarize(root, who, start, end, timing_index=timing_index, executions_db=executions_db) for who in selected], 'current': current}
+            'roles': [summarize(root, who, start, end, timing_index=timing_index, executions_db=executions_db,
+                                usage_index=usage_index, include_usage=usage_roles is None or who in usage_roles)
+                      for who in selected], 'current': current}
     try:
-        data['progress_facts'] = refresh_progress_facts(root, at=at, snapshot=current.get(role) or next(iter(current.values()), None))
+        data['progress_facts'] = (refresh_progress_facts(root, at=at, snapshot=current.get(role) or next(iter(current.values()), None))
+                                  if include_progress else None)
     except (OSError, ValueError, KeyError, TypeError) as exc:
         data['progress_facts'] = None
         data['progress_facts_error'] = type(exc).__name__ + ': ' + str(exc)
     if kind == 'morning':
-        data['evening_supplement'] = [summarize(root, who, start - timedelta(hours=3), start, timing_index=timing_index, executions_db=executions_db) for who in selected]
+        data['evening_supplement'] = [summarize(root, who, start - timedelta(hours=3), start,
+                                             timing_index=timing_index, executions_db=executions_db,
+                                             usage_index=usage_index, include_usage=usage_roles is None or who in usage_roles)
+                                      for who in selected]
     runtime.save(root / artifact, data)
     return data
 

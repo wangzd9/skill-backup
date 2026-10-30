@@ -134,7 +134,7 @@ VALID_HOOKS: Set[str] = {
     # Run-all-then-pick-first (see get_plugin_error_classification). Privacy: error_message/
     # error_body may be unredacted.
     "transform_api_error_classification", "on_session_start", "on_session_end",
-    "on_session_finalize", "on_session_reset",
+    "on_session_finalize", "on_session_reset", "on_turn_end",
     # on_skill_lifecycle: successful skill lifecycle facts (local skill name visible to plugins).
     "on_skill_lifecycle", "subagent_start", "subagent_stop",
     # pre_gateway_dispatch: once per incoming MessageEvent, after the internal-event guard, BEFORE
@@ -180,6 +180,12 @@ VALID_HOOKS: Set[str] = {
     #   (privacy: task ids, assignees, workspace paths).
     "on_kanban_worker_spawned", "on_kanban_worker_exited", "on_kanban_worker_stale_claim",
     "on_kanban_task_updated", "on_kanban_dispatch_tick",
+    # Lightweight profile-scoped observers, even when no job is due. No dispatch rights.
+    "on_scheduler_tick",
+    # Native cron output adapters, before its existing delivery channel and after bookkeeping.
+    # transform_cron_result: {content: str, suppress: bool, metadata: dict} or None;
+    # first valid result wins. post_cron_delivery observes the resulting delivery outcome.
+    "transform_cron_result", "post_cron_delivery",
     # gateway_platform_event: normalized envelopes only, never raw SDK objects or adapter handles.
     # Kwargs: platform, event_type, payload (event_type-local; see hooks.md). New event types land
     # only together with real fire-sites.
@@ -210,7 +216,7 @@ VALID_HOOKS: Set[str] = {
 
 # Hooks whose directive the shell-hook response parser has no channel for. VALID_HOOKS doubles as
 # the shell-hook allow-list, so these are refused loudly instead of having output silently ignored.
-SHELL_UNSUPPORTED_HOOKS: Set[str] = {"transform_api_error_classification"}
+SHELL_UNSUPPORTED_HOOKS: Set[str] = {"transform_api_error_classification", "transform_cron_result"}
 
 _env_enabled = env_var_enabled  # imported by plugins/memory
 _UNSET = object()
@@ -462,6 +468,7 @@ class PluginContext:
         self, name: str, toolset: str, schema: dict, handler: Callable,
         check_fn: Callable | None = None, requires_env: list | None = None, is_async: bool = False,
         description: str = "", emoji: str = "", override: bool = False,
+        disclosure: str = 'deferred',
     ) -> Optional[PluginRegistration]:
         """Register a tool in the global registry and track it as plugin-provided. ``override=True``
         replaces a same-named built-in (without it a name claimed by another toolset is rejected) and
@@ -489,6 +496,7 @@ class PluginContext:
             name=name, toolset=toolset, schema=schema, handler=handler, check_fn=check_fn,
             requires_env=requires_env, is_async=is_async, description=description, emoji=emoji,
             override=override, scope=scope,
+            disclosure=disclosure,
         )
         registered = registry.snapshot_registration(name, scope=scope)
         handle = None
@@ -1860,6 +1868,7 @@ def _get_pre_tool_call_directive_details(
     tool_name: str, args: Optional[Dict[str, Any]], task_id: str = "", session_id: str = "",
     tool_call_id: str = "", turn_id: str = "", api_request_id: str = "",
     middleware_trace: Optional[List[Dict[str, Any]]] = None,
+    platform_message_id: Optional[str] = None, trusted_turn_input: Optional[Dict[str, Any]] = None,
 ) -> _PreToolCallDirective:
     """Check ``pre_tool_call`` hooks for ``{"action": "block", "message"}`` (veto; message becomes
     the tool result) or ``{"action": "approve", "message", "rule_key"?}`` (escalate ANY tool to the
@@ -1876,6 +1885,8 @@ def _get_pre_tool_call_directive_details(
         "pre_tool_call", tool_name=tool_name, args=args if isinstance(args, dict) else {},
         task_id=task_id, session_id=session_id, tool_call_id=tool_call_id, turn_id=turn_id,
         api_request_id=api_request_id, middleware_trace=list(middleware_trace or []),
+        **({"platform_message_id": platform_message_id, "trusted_turn_input": dict(trusted_turn_input or {})}
+           if platform_message_id is not None or trusted_turn_input is not None else {}),
     )
     modified_args: Optional[Dict[str, Any]] = None
     first_approve: Optional[Tuple[Optional[str], Optional[str]]] = None  # (message, rule_key)

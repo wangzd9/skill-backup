@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "rule_version": "ruflo-observation/2",
+  "config_version": "fixture-policy/1",
+  "fixture_id": "expired-and-stale-multiple-reasons",
+  "label": "FAULT",
+  "identity": {
+    "pool": "/fixture/pool.json",
+    "generation": 1,
+    "run_id": "run-one",
+    "role": "A",
+    "work_id": "work-one",
+    "task_id": "T1",
+    "attempt": 1,
+    "execution_id": "exec-one",
+    "execution_generation": 1
+  },
+  "basis_refs": [
+    "RUFLO-BORROWINGS.md#B3",
+    "RUFLO-BORROWINGS.md#B8"
+  ],
+  "judgment": {
+    "reviewer": "implementation-spec-review",
+    "basis": "Specification-derived synthetic trajectory; no claim of user reviewed or production history"
+  },
+  "coverage_gaps": [],
+  "frames": [
+    {
+      "now": 2400,
+      "observation": {
+        "processes": [
+          {
+            "identity": "owner-one",
+            "source": "pid-source",
+            "lease": {
+              "owner": "worker",
+              "pid": 123,
+              "process_start": "100",
+              "expires_at": 2000,
+              "last_seen": 0
+            },
+            "actual": "100",
+            "severity": 1
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "lease_expired_owner_alive",
+          "transition": "first",
+          "notification_state": "PENDING"
+        },
+        {
+          "type": "heartbeat_stale_owner_activity_unverified",
+          "transition": "first",
+          "notification_state": "PENDING"
+        }
+      ],
+      "expected_reasons": [
+        "lease_expired_owner_alive",
+        "heartbeat_stale_owner_activity_unverified"
+      ],
+      "expected_gate_blocks": {
+        "owner-one": true
+      }
+    },
+    {
+      "now": 3000,
+      "observation": {
+        "processes": [
+          {
+            "identity": "owner-one",
+            "source": "pid-source",
+            "lease": {
+              "owner": "worker",
+              "pid": 123,
+              "process_start": "100",
+              "expires_at": 2000,
+              "last_seen": 0
+            },
+            "actual": "100",
+            "severity": 2
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "lease_expired_owner_alive",
+          "transition": "escalated",
+          "notification_state": "PENDING"
+        },
+        {
+          "type": "heartbeat_stale_owner_activity_unverified",
+          "transition": "escalated",
+          "notification_state": "PENDING"
+        }
+      ],
+      "expected_gate_blocks": {
+        "owner-one": true
+      }
+    },
+    {
+      "now": 3100,
+      "observation": {
+        "processes": [
+          {
+            "identity": "owner-one",
+            "source": "pid-source",
+            "lease": {
+              "owner": "worker",
+              "pid": 123,
+              "process_start": "100",
+              "expires_at": 5000,
+              "last_seen": 3100
+            },
+            "actual": "100",
+            "severity": 1
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "lease_expired_owner_alive",
+          "transition": "recovered",
+          "notification_state": "PENDING"
+        },
+        {
+          "type": "heartbeat_stale_owner_activity_unverified",
+          "transition": "recovered",
+          "notification_state": "PENDING"
+        }
+      ],
+      "expected_gate_blocks": {
+        "owner-one": true
+      }
+    }
+  ],
+  "rule_migration": {
+    "from": "ruflo-observation/1",
+    "source_sha256": "b5768f640affa6e8213c3a950e00ed3e27bbaf4bb71097b7b58b047ba965ef48",
+    "basis": "Existing specification judgments retained; added timestamps and legacy three-state reclassification do not change these expected transitions."
+  }
+}

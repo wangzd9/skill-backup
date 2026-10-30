@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="740" viewBox="0 0 1200 740" role="img" aria-labelledby="title desc">
+<title id="title">事务工作单模式：ACTIVE 已上线，技术会话安全接续</title><desc id="desc">五个常驻运行角色共用账本。R2与周期恢复使用同一准入，安全交接保留工作单、未知结果与完整writer退出证明。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker></defs>
+<style>text{font-family:"Noto Sans CJK SC","Microsoft YaHei","PingFang SC",sans-serif;fill:#0f172a}.heading{font-size:21px;font-weight:700}.line{font-size:16px}.note{font-size:14px;fill:#475569}</style>
+<rect width="1200" height="740" fill="#ffffff" rx="16"/>
+<text x="32" y="35" class="heading">事务工作单模式：ACTIVE 已上线，技术会话安全接续</text>
+<rect x="35" y="75" width="355" height="135" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+<text x="53" y="104" class="heading">手动 / 按需 Skill</text>
+<text x="53" y="130" class="line">规划者：用户手动调用</text>
+<text x="53" y="153" class="line">审查者：沿原授权入口按需加载</text>
+<text x="53" y="176" class="line">不建角色池、cron、租约或工作单</text>
+<rect x="440" y="75" width="725" height="135" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+<text x="458" y="104" class="heading">固定运行角色：协调者 / A / B / C / 测试者</text>
+<text x="458" y="130" class="line">需求一次接纳 → 开发/验证/本地合入全自动</text>
+<text x="458" y="153" class="line">短裁决原文先入账，后台关联；不要求重发</text>
+<polyline points="800,210 800,260" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="440" y="260" width="725" height="145" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="458" y="289" class="heading">唯一业务账本：任务 / attempt → work → execution</text>
+<text x="458" y="315" class="line">R2及周期恢复共用准入；checkpoint精确接续</text>
+<text x="458" y="338" class="line">短裁决先登记再关联处置；补验身份不可被checkpoint覆盖</text>
+<text x="458" y="361" class="line">阶段并行须匹配版本契约；集成与验收门禁保留</text>
+<rect x="35" y="260" width="355" height="145" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="53" y="289" class="heading">原生执行与独立服务</text>
+<text x="53" y="315" class="line">旧验证退休→原角色退出→核退自动收口</text>
+<text x="53" y="338" class="line">OCR waiting≤1两批，否则一批</text>
+<text x="53" y="361" class="line">裁决登记不替代验收门禁</text>
+<polyline points="390,330 440,330" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="800,405 800,455" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="440" y="455" width="725" height="130" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="458" y="484" class="heading">同源视图与报告</text>
+<text x="458" y="510" class="line">TODO / 状态 / 时间线由账本导出</text>
+<text x="458" y="533" class="line">脚本事实 → 只读模型分析 → 程序排版 → 唯一 outbox</text>
+<text x="458" y="556" class="line">实质进展/审查阻塞走 outbox；短报原通道，正文SHA匹配才记送达</text>
+<rect x="35" y="455" width="355" height="130" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+<text x="53" y="484" class="heading">开发与验证</text>
+<text x="53" y="510" class="line">下游领取自动锚定已集成base</text>
+<text x="53" y="533" class="line">拒绝空候选；补验身份独立保存</text>
+<text x="53" y="556" class="line">PASS 与旧 FAIL 闭环明确核验</text>
+<rect x="35" y="635" width="1130" height="75" rx="12" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+<text x="53" y="664" class="heading">退出、结果和送达分别留证：ENDED ≠ 业务成功，UNKNOWN 不盲重放</text>
+<text x="53" y="690" class="line">阶段开发提前不跳过集成/验收；ACTIVE观察只读账本；单群积压可追溯摘要，保留投递额度、原件及SENT/UNKNOWN回执。</text>
+</svg>

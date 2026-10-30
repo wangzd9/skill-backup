@@ -1,0 +1,264 @@
+{
+  "schema_version": 1,
+  "rule_version": "ruflo-observation/2",
+  "config_version": "fixture-policy/1",
+  "fixture_id": "blind-source-and-recovery",
+  "label": "MIXED",
+  "identity": {
+    "pool": "/fixture/pool.json",
+    "generation": 1,
+    "run_id": "run-one",
+    "role": "A",
+    "work_id": "work-one",
+    "task_id": "T1",
+    "attempt": 1,
+    "execution_id": "exec-one",
+    "execution_generation": 1
+  },
+  "basis_refs": [
+    "RUFLO-BORROWINGS.md#B3",
+    "RUFLO-BORROWINGS.md#B8"
+  ],
+  "judgment": {
+    "reviewer": "implementation-spec-review",
+    "basis": "Specification-derived synthetic trajectory; no claim of user reviewed or production history"
+  },
+  "coverage_gaps": [],
+  "frames": [
+    {
+      "now": 100,
+      "observation": {
+        "no_activity_seconds": 600,
+        "activities": [
+          {
+            "identity": {
+              "pool": "/fixture/pool.json",
+              "generation": 1,
+              "run_id": "run-one",
+              "role": "A",
+              "work_id": "work-one",
+              "task_id": "T1",
+              "attempt": 1,
+              "execution_id": "exec-one",
+              "execution_generation": 1
+            },
+            "current_work_valid": true,
+            "required_sources": [
+              "tools",
+              "model_requests"
+            ],
+            "sources": [
+              {
+                "source_id": "tools",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 100,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:tools"
+              },
+              {
+                "source_id": "model_requests",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 100,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:model_requests"
+              }
+            ],
+            "checkpoint_at": 0,
+            "checkpoint_evidence_ref": "fixture:checkpoint",
+            "lifecycles": [],
+            "heartbeat_at": 100
+          }
+        ]
+      },
+      "expected_events": []
+    },
+    {
+      "now": 601,
+      "observation": {
+        "no_activity_seconds": 600,
+        "activities": [
+          {
+            "identity": {
+              "pool": "/fixture/pool.json",
+              "generation": 1,
+              "run_id": "run-one",
+              "role": "A",
+              "work_id": "work-one",
+              "task_id": "T1",
+              "attempt": 1,
+              "execution_id": "exec-one",
+              "execution_generation": 1
+            },
+            "current_work_valid": true,
+            "required_sources": [
+              "tools",
+              "model_requests"
+            ],
+            "sources": [
+              {
+                "source_id": "tools",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 601,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:tools"
+              },
+              {
+                "source_id": "model_requests",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 601,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:model_requests"
+              }
+            ],
+            "checkpoint_at": 0,
+            "checkpoint_evidence_ref": "fixture:checkpoint",
+            "lifecycles": [],
+            "heartbeat_at": 601
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "NO_ACTIVITY",
+          "transition": "first",
+          "notification_state": "PENDING"
+        }
+      ]
+    },
+    {
+      "now": 700,
+      "observation": {
+        "no_activity_seconds": 600,
+        "activities": [
+          {
+            "identity": {
+              "pool": "/fixture/pool.json",
+              "generation": 1,
+              "run_id": "run-one",
+              "role": "A",
+              "work_id": "work-one",
+              "task_id": "T1",
+              "attempt": 1,
+              "execution_id": "exec-one",
+              "execution_generation": 1
+            },
+            "current_work_valid": true,
+            "required_sources": [
+              "tools",
+              "model_requests"
+            ],
+            "sources": [
+              {
+                "source_id": "tools",
+                "source_version": "fixture-native/1",
+                "check_status": "UNVERIFIED",
+                "complete": true,
+                "last_verified_at": 700,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:tools"
+              },
+              {
+                "source_id": "model_requests",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 700,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:model_requests"
+              }
+            ],
+            "checkpoint_at": 0,
+            "checkpoint_evidence_ref": "fixture:checkpoint",
+            "lifecycles": [],
+            "heartbeat_at": 700
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "ACTIVITY_SOURCE_UNVERIFIABLE",
+          "transition": "first",
+          "notification_state": "PENDING"
+        }
+      ],
+      "expected_reasons": [
+        "source_missing_incomplete_or_stale:tools"
+      ]
+    },
+    {
+      "now": 800,
+      "observation": {
+        "no_activity_seconds": 600,
+        "activities": [
+          {
+            "identity": {
+              "pool": "/fixture/pool.json",
+              "generation": 1,
+              "run_id": "run-one",
+              "role": "A",
+              "work_id": "work-one",
+              "task_id": "T1",
+              "attempt": 1,
+              "execution_id": "exec-one",
+              "execution_generation": 1
+            },
+            "current_work_valid": true,
+            "required_sources": [
+              "tools",
+              "model_requests"
+            ],
+            "sources": [
+              {
+                "source_id": "tools",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 800,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:tools"
+              },
+              {
+                "source_id": "model_requests",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 800,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:model_requests"
+              }
+            ],
+            "checkpoint_at": 800,
+            "checkpoint_evidence_ref": "fixture:checkpoint",
+            "lifecycles": [],
+            "heartbeat_at": 800
+          }
+        ]
+      },
+      "expected_events": [
+        {
+          "type": "ACTIVITY_SOURCE_UNVERIFIABLE",
+          "transition": "recovered",
+          "notification_state": "PENDING"
+        },
+        {
+          "type": "NO_ACTIVITY",
+          "transition": "recovered",
+          "notification_state": "PENDING"
+        }
+      ]
+    }
+  ],
+  "rule_migration": {
+    "from": "ruflo-observation/1",
+    "source_sha256": "675c4eccce39a3bb64b96f8a7e6295c0b5172f0b54a76d0ab694d380d578bb85",
+    "basis": "Existing specification judgments retained; added timestamps and legacy three-state reclassification do not change these expected transitions."
+  }
+}

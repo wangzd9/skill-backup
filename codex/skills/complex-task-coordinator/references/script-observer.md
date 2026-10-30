@@ -12,11 +12,11 @@
 
 未消费通知保存于`runtime/observer/<ROLE>.json`的`pending`：首次/最近检查时间、最新fingerprint及累计changed_sources。这是可合并的文档变化通知，不是第二份任务状态或逐次commit开发队列；同一路径多次改动合并，消费时重读最新有效派单，过时/撤销单不重做。
 
-角色原生job在途时，Hermes现有claim/in-flight机制拒绝第二个同job；人工群会话保留；明确业务动作才保存原请求，群与poll争取同一角色租约，取得后复核当前任务及已有处理证据，避免重复执行。问答不自动入队，也不触发后台业务。其他角色群与cron仍使用角色owner/租约互斥，不能借新群消息抢占已有任务。独立scan只积压通知，不确认、不删租约、不重启或kill。已有角色工作结束后，后续poll消费pending；事件提前run仍走同一门禁。正常无在途阻塞时，发现变化按5分钟兜底（再加原生调度/模型队列延迟），不能承诺长任务在途时5分钟完成接单。
+角色原生job在途时，Hermes现有claim/in-flight机制拒绝第二个同job；人工群会话保留并默认只读，含“继续”“帮我修”也不写请求/inbox/ACK、不领取或触发后台业务。只有当前用户明确全部权限才允许本回合尝试，在原授权内取得同一角色租约后复核任务及已有证据；拿不到不执行、不代写队列，下一普通回合恢复只读。专用可信需求选择是独立控制排队例外，不取业务租约、不派单/ACK/开发。cron按已接受需求的持久scope及原门禁接续，不要求逐轮群全权，不继承群只读限制，不能借新群消息抢owner。独立scan只积压通知，不确认、不删租约、不重启或kill。已有角色工作结束后，后续poll消费pending；事件提前run仍走同一门禁。正常无在途阻塞时，发现变化按5分钟兜底（再加原生调度/模型队列延迟），不能承诺长任务在途时5分钟完成接单。
 
 ## 消费之后才确认
 
-被唤醒模型先读当次`runtime_tools.py report-input --project ROOT --role ROLE`本角色报告契约与pending，按需重读相关权威材料；完整pending和watch在observer文件内，12个定位条目不是完整覆盖限制。安全检查点、当前派单交付/阻塞记录后检查是否新增待处理输入。未读新输入不得清空队列。
+被唤醒业务模型先读当次`runtime_tools.py context-input --project ROOT --role ROLE`本角色最新checkpoint、未完成索引与pending，按需重读相关权威材料；完整pending和watch在observer文件内，12个定位条目不是完整覆盖限制。安全检查点、当前派单交付/阻塞记录后检查是否新增待处理输入。未读新输入不得清空队列。
 
 处理本轮输入之后、final之前执行：
 
@@ -28,9 +28,9 @@ python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/role_observer.
 
 ## 汇报与部署
 
-报告沿用[夜间静默与时段总结](reporting-policy.md)：协调者08:00夜间汇总/白天20分钟；个人11/15/18，全部no_agent。21–08只落盘，工作不暂停。脚本刷新runtime/activity观察，时长是状态估算；等待、阻塞、未知不算空闲。报告不重跑测试、不读全部历史。模型与脚本从同一权威投影取得本角色报告契约，完整投影仅按需取证，字段保留来源与真实时间；冲突写明不同来源各自结论，刷新时间不当业务进展。
+报告沿用[状态短报与模型时段总结](reporting-policy.md)：协调者白天20分钟仅脚本报告A/B/C/测试者是否可领任务；08:00与个人11/15/18由脚本采集、短只读模型整理各自时段及本地/云端用量。总结身份与业务owner/租约/pending隔离，不能抢占或误计业务忙碌。21–08只落盘，工作不暂停。脚本刷新runtime/activity观察，时长是状态估算；等待、阻塞、未知不自动计作历史真实空闲，明确释放槽可显示可接新单。报告不重跑测试、不读全部历史。模型与脚本从同一权威投影取得本角色报告契约，完整投影仅按需取证，字段保留来源与真实时间；冲突写明不同来源各自结论，刷新时间不当业务进展。
 
-独立timer与原生poll都使用同一短锁/持久游标，检查重复不会重复启动模型或消费事件。保留poll job ID、5分钟错峰、origin/deliver、在途任务与门禁；迁移只更新必要prompt，不重启gateway或正在开发的worker。旧轮自然结束后，新轮加载更新规则。结束专项后由协调者停止专项job；scanner只读注册项目控制，不启动非ACTIVE业务。
+独立timer与原生poll都使用同一短锁/持久游标，检查重复不会重复启动模型或消费事件。保留poll job ID、5分钟错峰、origin/deliver、在途任务与门禁；迁移只更新必要prompt，不重启gateway或正在开发的worker。旧轮自然结束后，新轮加载更新规则。固定池完成需求后保存收口证据并保留当前选择待命，五角色固定job不停止，无新业务输入不唤业务模型；非池历史专项按原协议停止重复job。scanner只读当前控制，非ACTIVE不开展业务。池选择/解析见[固定角色池](role-pool.md)，pool-poll按当前generation冻结实际根；旧在途owner及独立操作未安全收口前不切换。
 
 验收覆盖：无变化零模型、新文档入队、同角色忙碌不再启动、反复检查去重、旧ack不能吞新输入、重启保留pending、暂停不开展业务、真实timer在模型长回合期间仍执行。文档/脚本校验、自然运行检查和真实业务验收分别记录；不能用配置已部署宣称功能已完成。
 
@@ -52,3 +52,9 @@ python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/role_observer.
 正常等待只写runtime/observations，脚本持续保留观测时间，不能再追加长session/事件制造自身回声。显式旧观察排除必须经现有租约注册确切完整行字节范围与SHA，内容改变重新唤醒；不得整份忽略session或按自由文字nochange过滤真实问题。未知格式保留核对。canonical/inbox镜像按角色、event_id与完整业务载荷去重，冲突仍唤醒并在event_conflicts保留来源。
 
 处理后先重新poll核对新增通知，真正处理完再ACK对应指纹；不自动ACK最新输入。固定task采样由scan每项目执行一次，当前结果供各角色共享事实，状态变化notice才参与指纹。模型继续独立解释异常、进行开发/验证及审核。
+
+## 强审终态、自己的ACK回声与继续（v3）
+
+strong_review.py短提交独立systemd service，协调者观察其原账本call_id/冻结身份、unit/PID/start/cgroup及终态；只在生命周期、结果、失败或未知变化时接入原pending，日志增长不唤醒。RESERVED/SUBMITTED不是模型已开始，SUCCEEDED不是PASS，UNKNOWN/INTERRUPTED保留门禁；不另开审查、不自动retry/recover。
+
+同一pending指纹在owner仍忙时合并积压，不每轮重发模型；精确排除本角色已消费ACK产生的回声，未读新输入不被顺带确认。自然安全检查点有未完成工作时持久continuation，后续业务回合对账后接续并确认对应ID；不能静默结束后期待不变文档自动唤醒。归档/checkpoint索引维护不作为新业务事件，细节见[上下文与归档](context-and-archives.md)。

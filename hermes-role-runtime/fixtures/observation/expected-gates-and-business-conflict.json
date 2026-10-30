@@ -1,0 +1,277 @@
+{
+  "schema_version": 1,
+  "rule_version": "ruflo-observation/2",
+  "config_version": "fixture-policy/1",
+  "fixture_id": "expected-gates-and-business-conflict",
+  "label": "BENIGN",
+  "identity": {
+    "pool": "/fixture/pool.json",
+    "generation": 1,
+    "run_id": "run-one",
+    "role": "A",
+    "work_id": "work-one",
+    "task_id": "T1",
+    "attempt": 1,
+    "execution_id": "exec-one",
+    "execution_generation": 1
+  },
+  "basis_refs": [
+    "RUFLO-BORROWINGS.md#B3",
+    "RUFLO-BORROWINGS.md#B8"
+  ],
+  "judgment": {
+    "reviewer": "implementation-spec-review",
+    "basis": "Specification-derived synthetic trajectory; no claim of user reviewed or production history"
+  },
+  "coverage_gaps": [],
+  "frames": [
+    {
+      "now": 100,
+      "observation": {
+        "no_activity_seconds": 600,
+        "activities": [
+          {
+            "identity": {
+              "pool": "/fixture/pool.json",
+              "generation": 1,
+              "run_id": "run-one",
+              "role": "A",
+              "work_id": "work-one",
+              "task_id": "T1",
+              "attempt": 1,
+              "execution_id": "exec-one",
+              "execution_generation": 1
+            },
+            "current_work_valid": true,
+            "required_sources": [
+              "tools",
+              "model_requests"
+            ],
+            "sources": [
+              {
+                "source_id": "tools",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 100,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:tools"
+              },
+              {
+                "source_id": "model_requests",
+                "source_version": "fixture-native/1",
+                "check_status": "VERIFIED",
+                "complete": true,
+                "last_verified_at": 100,
+                "max_gap_seconds": 120,
+                "evidence_ref": "fixture:model_requests"
+              }
+            ],
+            "checkpoint_at": 0,
+            "checkpoint_evidence_ref": "fixture:checkpoint",
+            "lifecycles": [
+              {
+                "operation_id": "read-100",
+                "kind": "tool",
+                "source_id": "tools",
+                "verified": true,
+                "started_at": 99,
+                "ended_at": 100,
+                "evidence_ref": "fixture:read"
+              }
+            ],
+            "heartbeat_at": 100
+          }
+        ],
+        "write_decisions": [
+          {
+            "pool_path": "/fixture/pool.json",
+            "identity": {
+              "generation": 1,
+              "run_id": "run-one",
+              "role": "A",
+              "work_id": "work-one",
+              "task_id": "T1",
+              "attempt": 1,
+              "execution_id": "exec-one",
+              "execution_generation": 1
+            },
+            "context": {
+              "operation": "checkpoint",
+              "capability": "checkpoint",
+              "operation_id": "op-one",
+              "command_id": "op-one",
+              "phase": "TRANSACTION_GATE",
+              "side_effect_state": "NONE",
+              "input_validated": true,
+              "capability_allowed": false
+            },
+            "capture": {
+              "capture_id": "capture-op-one-100",
+              "rule_version": "write-diagnostics-v1",
+              "db_checked_at": 100,
+              "allow_drain": false,
+              "identity_verdict": "NOT_CHECKED",
+              "requested_identity": {
+                "generation": 1,
+                "run_id": "run-one",
+                "role": "A",
+                "work_id": "work-one",
+                "task_id": "T1",
+                "attempt": 1,
+                "execution_id": "exec-one",
+                "execution_generation": 1
+              },
+              "facts": {
+                "authority": {
+                  "check_status": "OBSERVED",
+                  "value": {
+                    "mode": "ACTIVE",
+                    "generation": 1,
+                    "current_run_id": "run-one",
+                    "admission_open": true
+                  }
+                }
+              },
+              "process": {
+                "check_status": "OBSERVED",
+                "checked_at": 100
+              },
+              "branches": []
+            },
+            "result": {
+              "status": "REJECTED",
+              "code": "CONTROL_BLOCKS_NEW_ACTION"
+            }
+          },
+          {
+            "pool_path": "/fixture/pool.json",
+            "identity": {
+              "generation": 1,
+              "run_id": "run-one",
+              "role": "A",
+              "work_id": "work-one",
+              "task_id": "T1",
+              "attempt": 1,
+              "execution_id": "exec-one",
+              "execution_generation": 1
+            },
+            "context": {
+              "operation": "checkpoint",
+              "capability": "checkpoint",
+              "operation_id": "stale",
+              "command_id": "stale",
+              "phase": "TRANSACTION_GATE",
+              "side_effect_state": "NONE",
+              "input_validated": true,
+              "capability_allowed": false
+            },
+            "capture": {
+              "capture_id": "capture-stale-100",
+              "rule_version": "write-diagnostics-v1",
+              "db_checked_at": 100,
+              "allow_drain": false,
+              "identity_verdict": "NOT_CHECKED",
+              "requested_identity": {
+                "generation": 1,
+                "run_id": "run-one",
+                "role": "A",
+                "work_id": "work-one",
+                "task_id": "T1",
+                "attempt": 1,
+                "execution_id": "exec-one",
+                "execution_generation": 1
+              },
+              "facts": {
+                "authority": {
+                  "check_status": "OBSERVED",
+                  "value": {
+                    "mode": "ACTIVE",
+                    "generation": 1,
+                    "current_run_id": "run-one",
+                    "admission_open": true
+                  }
+                }
+              },
+              "process": {
+                "check_status": "OBSERVED",
+                "checked_at": 100
+              },
+              "branches": []
+            },
+            "result": {
+              "status": "REJECTED",
+              "code": "STALE_MODE_GENERATION"
+            }
+          },
+          {
+            "pool_path": "/fixture/pool.json",
+            "identity": {
+              "generation": 1,
+              "run_id": "run-one",
+              "role": "A",
+              "work_id": "work-one",
+              "task_id": "T1",
+              "attempt": 1,
+              "execution_id": "exec-one",
+              "execution_generation": 1
+            },
+            "context": {
+              "operation": "checkpoint",
+              "capability": "checkpoint",
+              "operation_id": "conflict",
+              "command_id": "conflict",
+              "phase": "TRANSACTION_GATE",
+              "side_effect_state": "NONE",
+              "input_validated": true,
+              "capability_allowed": true
+            },
+            "capture": {
+              "capture_id": "capture-conflict-100",
+              "rule_version": "write-diagnostics-v1",
+              "db_checked_at": 100,
+              "allow_drain": false,
+              "identity_verdict": "ALLOWED",
+              "requested_identity": {
+                "generation": 1,
+                "run_id": "run-one",
+                "role": "A",
+                "work_id": "work-one",
+                "task_id": "T1",
+                "attempt": 1,
+                "execution_id": "exec-one",
+                "execution_generation": 1
+              },
+              "facts": {
+                "authority": {
+                  "check_status": "OBSERVED",
+                  "value": {
+                    "mode": "ACTIVE",
+                    "generation": 1,
+                    "current_run_id": "run-one",
+                    "admission_open": true
+                  }
+                }
+              },
+              "process": {
+                "check_status": "OBSERVED",
+                "checked_at": 100
+              },
+              "branches": []
+            },
+            "result": {
+              "status": "REJECTED",
+              "code": "VERSION_CONFLICT"
+            }
+          }
+        ]
+      },
+      "expected_events": []
+    }
+  ],
+  "rule_migration": {
+    "from": "ruflo-observation/1",
+    "source_sha256": "b42a50435a830791f68870e6003ad85b2ff23ab0b538671972e50ffe46eb3fe0",
+    "basis": "Existing specification judgments retained; added timestamps and legacy three-state reclassification do not change these expected transitions."
+  }
+}

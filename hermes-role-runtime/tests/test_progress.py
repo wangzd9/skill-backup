@@ -107,7 +107,7 @@ class ProgressTests(unittest.TestCase):
         row['events']['A']['occurred_at']='2026-10-14T09:59+08:00'
         answer=render_progress(row,at=AT)
         self.assertIn('发生 2026-10-14 09:59 +08:00',answer)
-        self.assertNotIn('发生时间未知',answer.split('- **执行者 A：**')[1].split('\n')[0])
+        self.assertNotIn('发生时间未知',answer.split('- **执行者 A（待核实）：**')[1].split('\n')[0])
         self.assertNotIn('09:59:00',answer)
         self.assertEqual(row['events']['A']['occurred_at'],'2026-10-14T09:59+08:00')
 

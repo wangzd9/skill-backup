@@ -1,10 +1,20 @@
 name: role-workflow-runtime
-version: 0.6.2
-description: "原生人工对话与共享执行权；飞书模型切换、本地资源保护、机械指标直读及提示指纹观察"
+version: 0.12.0
+description: "原生角色执行与状态汇报；独立模型总结、按角色调用计量、任务领取通知及有界上下文"
 provides_hooks:
+  - on_scheduler_tick
   - pre_gateway_dispatch
+  - pre_llm_call
+  - transform_llm_output
+  - pre_tool_call
+  - on_turn_end
   - pre_api_request
   - post_api_request
   - api_request_error
+  - pre_auxiliary_call
+  - post_auxiliary_call
   - resolve_model_route
   - pre_gateway_busy_dispatch
+  - post_tool_call
+  - transform_cron_result
+  - post_cron_delivery
