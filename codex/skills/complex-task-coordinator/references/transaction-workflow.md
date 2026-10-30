@@ -71,3 +71,5 @@ ACK、checkpoint、worker退出分别不代表业务完成。核最近真实状�
 2026-10-30 / 0.16.2：决策目录的execution_kind=guidance不是命令；follow_verification_repair材料指向当前返修候选及related_decision_ids，先处理真实OCR/裁决/合入，不重开旧处置。OCR已证明零派发的拒绝重新核当前零模型预览，READY才可按有效预算新action_id提交；BLOCKED/UNVERIFIED保持覆盖门禁。异常在后续attempt沿原生previous_candidate_id谱系接续，真实同源MySQL补验PASS后显式close。SNAPSHOT_STALE看refresh_readiness，提供方齐备及旧writer核退后原生刷新，不手工改快照。后台会话超过原交接阈值后，继续只读翻历史也被要求checkpoint(yield_execution=true)并结束；不ACK未读前缀，保留原work与全部门禁。
 
 0.16.3：预览中的repository_path是固定base/head的Git相对路径元数据；path/sha256才是不可变证据引用。准备材料不因前者缺文件哈希而误报UNVERIFIED，真实证据缺失、变化或缺哈希仍阻断；FOUND不表示模型已读或业务通过。
+
+0.16.4：related_decision_ids同时覆盖按candidate_id提交与按action_id收集/裁决的动作；后者仅沿原生external_action的候选归属关联，结果返回后继续跟进当前返修，不借旧异常重开返修或串到其他候选。

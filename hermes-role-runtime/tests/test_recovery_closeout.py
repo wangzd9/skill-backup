@@ -45,6 +45,19 @@ class RecoveryTests(unittest.TestCase):
         from workflow_contracts import validate_payload
         with self.assertRaises(ValueError):validate_payload('follow_verification_repair',{})
 
+    def test_repair_guidance_keeps_link_after_review_result_arrives(self):
+        p,s=synthetic()
+        p['external_actions'].append({'action_id':'other','candidate_id':'foreign','kind':'ocr','state':'RESULT_READY'})
+        p['next_actions']=[{'action':'follow_verification_repair','observation_event_id':42,
+            'repair_followup':{'candidate_id':'c','phase':'REVIEW','owner':'COORDINATOR'}},
+            {'action':'service_decide','action_id':'a'},
+            {'action':'service_decide','action_id':'other'}]
+        # Projection includes only valid candidate records, as in real inputs.
+        p['candidates'].append({**p['candidates'][0],'candidate_id':'foreign','state':'SUPERSEDED'})
+        rows=context.directory(p,s)['items']
+        self.assertEqual([rows[1]['decision_id']],rows[0]['related_decision_ids'])
+        self.assertNotIn(rows[2]['decision_id'],rows[0]['related_decision_ids'])
+
     def refusal(self,root,code='OCR_REVIEW_COVERAGE_UNAVAILABLE'):
         candidate={'candidate_id':'c','run_id':'r','task_id':'t','attempt':8,'repo':'/isolated','base':'a','head':'b'}
         action={'kind':'ocr','state':'REJECTED','action_id':'refused','candidate_id':'c'}

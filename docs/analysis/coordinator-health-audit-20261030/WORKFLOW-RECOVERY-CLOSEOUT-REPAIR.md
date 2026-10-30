@@ -1,6 +1,6 @@
 # OCR 拒绝与异常返修接续修复
 
-日期：2026-10-30，Asia/Shanghai（+08:00）。当前运行时 **0.16.3**，提交 `9ead79defc953f941606620d2c6dbf004e4fd973`；主要接续修复为0.16.2 / `ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa`。
+日期：2026-10-30，Asia/Shanghai（+08:00）。当前运行时 **0.16.4**，提交 `260450a39bb927228702e8c0162c60d74c6c1c5f`；主要接续修复为0.16.2 / `ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa`。
 
 **机制有缺陷，但不是“REJECTED 永久锁住 REVIEW”或“根本没有快照刷新”。** 本次先修复通用接续缺口，再由原生角色执行实际业务动作；不修改业务数据库状态来制造完成。
 
@@ -57,3 +57,9 @@
 当前真实等待点是OCR结果尚未返回。MN-04 a8仍为REVIEW；e14173仍是REPAIR_QUEUED；MN-07仍为SNAPSHOT_STALE。后续由原协调者读取完整审查结果并裁决，满足门禁后批准/合入/完成a8；再由原TESTER完成同源MySQL补验，真实PASS后显式close异常；MN-07在提供方及writer条件齐备后原生刷新并最终验证。当前未伪造这些后续动作或宣称需求完成。
 
 机制0.16.3与指南已提交并推送GitHub **wangzd9/skill-backup/main**：`f95c6ce`，远端HEAD已核对一致；本节业务接续证据另随显式快照提交同步。保留该仓原有未跟踪文件，不上传数据库、原始会话、凭据及含token的invocation。
+
+## OCR结果返回与审查生命周期关联修复
+
+20:59后的原生账本水位升至 **e14254**，新OCR被自动收集为 RESULT_READY。21:01:25只读 results 核实覆盖完整、READY_FOR_ADJUDICATION、findings=[]，没有错误；仍为 NOT_EVALUATED，不自动登记PASS。当前目录明确给出 service_decide。
+
+追加发现：异常提示关联只按目标candidate_id匹配，结果返回后的service_decide只带action_id，导致related_decision_ids为空。0.16.4改为沿原生external_action归属解析候选，补齐收集/裁决阶段，排除其他候选；不改变命令身份、授权或裁决。接续10项、决策28项共38项回归通过；21:01:10网关热加载68项源码哈希一致，21:01:25生产材料FOUND，e14173提示已正确关联新OCR的service_decide。当前原协调者仍负责阅读原件并实际裁决，后续门禁未被伪造完成。

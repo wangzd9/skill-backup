@@ -8,7 +8,7 @@
 
 ![已上线的事务工作单模式及会话安全交接](skill-development-workflow/transaction-workflow.svg)
 
-> **文档版本：3.31｜核对日期：2026-10-30｜运行时区：Asia/Shanghai（+08:00）**\
+> **文档版本：3.32｜核对日期：2026-10-30｜运行时区：Asia/Shanghai（+08:00）**\
 > 本文是当前五角色协作流程的长期参考。依据现有 Skill、脚本、项目协议和 Hermes 配置整理；后续调整这些机制时同步更新本文。本文不保存实时任务状态，也不新增开发或生产授权。规则变化时以用户指令及适用的当前协议为依据核对差异，不把本指南当成额外验收门禁。
 
 **用户提出需求，规划者先确定需求归属和独立文档根，再做架构和初始拆分；协调者派单与接续，A/B/C 各自开发，测试者独立验证，协调者核对审查与证据后批准合入。** 强模型审查者只在有明确纠错需求时介入。角色通过文档交接；Hermes 负责实际唤醒与投递；脚本承担机械巡检、状态短报与统计采集，时段统计由短只读模型分析整理。
@@ -16,6 +16,8 @@
 2026-10-30 接续修复（0.16.2）：后台超限后只读历史也进入安全交接；决策目录区分命令/责任提示并指向当前返修；OCR 零派发拒绝用新零模型预览重核适配，不盲重投；异常关联沿原生 attempt 谱系接续；失效集成快照公开真实冻结等待原因。原测试、审查、授权和实际 writer 核退不变。见[修复记录](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md)。
 
 2026-10-30 生产入口追加修正（0.16.3）：OCR 选择预览使用 repository_path 表达 Git 元数据，真实证据继续以 path/sha256 核验，修复合法预览导致准备材料误报 UNVERIFIED；不忽略缺哈希证据，不改变审查门禁。
+
+0.16.4 补齐结果返回后的关联：异常返修提示通过原生 action_id 的 candidate_id 关联收集/裁决命令，防止只在提交阶段有下一动作链接；不同候选不互相关联。
 
 2026-10-30 只读进度入口修复：0.16.1 对观察健康分层中的嵌套明细实施有界引用，保留 UNKNOWN/UNVERIFIED、精确总数及完整原件哈希。旧投影超限从原件重新生成；不因摘要超限退回旧 checkpoint，也不把证据损坏伪装为成功。见[只读入口修复记录](analysis/coordinator-health-audit-20261030/LIVE-PROGRESS-OBSERVATION-BUDGET-REPAIR.md)。
 
@@ -904,3 +906,5 @@ Hermes主模型/provider、OCR及claude-mem记忆压缩均使用 `http://192.168
 | 3.30 | 2026-10-30 | 超限只读循环交接、OCR拒绝后预览重核、责任提示与真实动作关联、返修谱系及快照冻结诊断 | [实施与核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md) |
 
 | 3.31 | 2026-10-30 | 区分预览代码路径元数据与不可变证据引用，修正生产材料误报未核实 | [实施与核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md) |
+
+| 3.32 | 2026-10-30 | 审查结果返回后继续按原生action归属关联异常返修裁决动作 | [实施与核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md) |

@@ -127,12 +127,14 @@ def directory(packet, snapshot):
             'target':target,'reason':action.get('reason'),
             'execution_kind':'command' if _is_command(packet['role'],action['action']) else 'guidance',
             'material_fingerprint':digest(_basis(packet,snapshot,action))})
+    action_candidates={a['action_id']:a['candidate_id'] for a in packet.get('external_actions',[])}
     for item in items:
         action=next(a for a in packet['next_actions'] if a['action']==item['action'] and _target(a)==item['target'])
         followup=action.get('repair_followup') or {}
         if followup.get('candidate_id'):
             item['related_decision_ids']=[i['decision_id'] for i in items if i is not item
-                and i['target'].get('candidate_id')==followup['candidate_id']]
+                and (i['target'].get('candidate_id')
+                    or action_candidates.get(i['target'].get('action_id')))==followup['candidate_id']]
     from workflow_user_decisions import pending
     # The directory lists all obligations, even if next_actions intentionally
     # prioritizes final closure or safe retirement. No pending user answer is lost.
