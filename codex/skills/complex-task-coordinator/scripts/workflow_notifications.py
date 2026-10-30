@@ -31,11 +31,16 @@ def drain_business_notifications(pool_path, *, transport=None, max_messages=10, 
     ledger = open_ledger(pool_path, readonly=False)
     results = []
     attempts=0
-    kinds=EVENT_KINDS | {'COORDINATOR_PROGRESS','SERVICE_ARTIFACT_RECORDED','EXTERNAL_ACTION_REJECTED'}
+    from workflow_notification_registry import REGISTRY,suppress_stale
+    kinds=frozenset(REGISTRY)
     for item in ledger.outbox_items(kinds=tuple(kinds),states=('PENDING',),limit=max_scan):
         if attempts>=max_messages or time.monotonic()>=deadline:
             break
         if item['kind'] not in kinds or item['state'] != 'PENDING':
+            continue
+        stale=suppress_stale(ledger,item)
+        if stale:
+            results.append(stale)
             continue
         role = item['role']
         chat = pool.get('roles', {}).get(role, {}).get('chat_id')

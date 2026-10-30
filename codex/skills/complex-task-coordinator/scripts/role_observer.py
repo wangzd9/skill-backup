@@ -379,8 +379,18 @@ def workflow_activities(database, pool, home, facts, now):
             'required_sources': ['tools', 'model_requests'], 'sources': sources, 'lifecycles': lifecycles,
             'checkpoint_at': checkpoints.get(work['work_id']),
             'checkpoint_evidence_ref': str(database)+'#checkpoint:'+work['work_id']})
-    return {'activities': activities, 'no_activity_seconds': threshold,
-            'activity_policy': {'state': policy_reason, 'source': str(policy_file)}}
+    progress=[]
+    for role in facts['roles']:
+        work=works.get(role.get('current_work_id'))
+        if work:
+            progress.append({'role':role['role'],'work_id':work['work_id'],'state':work['state'],
+                'processed_through':work['processed_through'],'issued_through':work['issued_through'],
+                'last_checkpoint_at':checkpoints.get(work['work_id']),
+                'checkpoint_is_not_proof_of_progress':True})
+    return {'activities': activities, 'no_activity_seconds': threshold,'business_progress':progress,
+            'activity_policy': {'state': policy_reason, 'source': str(policy_file),
+                'no_activity_seconds':threshold,'adoption':'READ_FROM_SOURCE' if policy_reason=='CONFIGURED' else 'NOT_ADOPTED',
+                'meaning':'观察阈值，不是任务超时或接管权限；登记中的合法操作按任务期限观察。'}}
 
 
 def _workflow_observation(database, pool, home, instant):
@@ -409,6 +419,14 @@ def _workflow_observation(database, pool, home, instant):
     snapshot.update(mode=facts['mode'], generation=facts['generation'],
         current_run_id=facts['current_run_id'], admission_open=facts['admission_open'],
         event_high_water=facts['event_high_water'])
+    from workflow_notification_registry import diagnostics as notification_diagnostics
+    observed_ledger=BusinessLedger(database,readonly=True,clock=lambda:instant)
+    snapshot['notification_health']=notification_diagnostics(observed_ledger)
+    database_bytes=Path(database).stat().st_size
+    snapshot['capacity']={'database_bytes':database_bytes,'warning_bytes':2*1024**3,
+        'state':'CAPACITY_WARNING' if database_bytes>=2*1024**3 else 'OBSERVED',
+        'new_input_page_limit_bytes':65536,'historical_compaction_performed':False,
+        'retention':'保留命令、原始事件及不可变页；归档须一并保存哈希引用，不在线删库或VACUUM。'}
     snapshot['closed_work_ids'] = [row['work_id'] for row in facts['works'] if row['state'] == 'ENDED']
     snapshot['closed_execution_ids'] = []
     try:
@@ -557,7 +575,19 @@ def _workflow_observation(database, pool, home, instant):
         unit = None
         value = {key: action.get(key) for key in ('action_id', 'candidate_id', 'kind', 'state')}
         value.update(service_id=None, unit=None, observation='unverified')
+        service_candidate=next((r for r in facts['candidates'] if r['candidate_id']==action['candidate_id']),{})
+        value['run_id']=service_candidate.get('run_id')
         snapshot['services'].append(value)
+        if action['state'] not in ('SUBMITTED','UNKNOWN'):
+            try:
+                from workflow_terminal_observation import terminal
+                candidate=next(r for r in facts['candidates'] if r['candidate_id']==action['candidate_id'])
+                value.update(terminal(action,candidate,facts))
+            except (OSError,ValueError,KeyError,TypeError,StopIteration) as exc:
+                value.update(observation='terminal_receipt_unverified',reason=str(exc)[:160])
+                fault('observer_terminal_service_evidence_unverified',database,
+                    action_id=action['action_id'],reason=str(exc)[:160])
+            continue
         invocation_path = Path(database).parent/'services'/hashlib.sha256(action['action_id'].encode()).hexdigest()/'invocation.json'
         try:
             invocation = json.loads(text_read(invocation_path))
@@ -976,6 +1006,8 @@ def observe_pool_leases(pool_path, *, home=None, state_dir=None, clock=time.time
         if any(item.get('active') for item in snapshot['activity'].values()):
             snapshot['health'] = 'unverified'
         snapshot['anomalies'] = list(next_cursor['active'].values())
+        from workflow_terminal_observation import layers
+        snapshot['health_layers']=layers(snapshot)
         snapshot['source_states'] = next_cursor['source_states']
         quiet = activity_report.quiet(datetime.fromtimestamp(snapshot['at'], ZoneInfo('Asia/Shanghai')))
         for event in transitions:

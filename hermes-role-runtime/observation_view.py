@@ -36,6 +36,8 @@ def health_view(observation, directory):
         write_path_states=dict(Counter(row.get('write_path_state', 'UNKNOWN')
                                       for row in diagnostics.get('write_paths', []))),
         full_observation=reference,
+        health_layers=observation.get('health_layers'),
+        activity_policy=observation.get('activity_policy'),
         omitted_fields=sorted(set(observation)-set(result)), omitted_counts={})
     # Category cardinality and text can also be unbounded. Preserve exact
     # denominators plus a reference, and never turn omitted UNKNOWN into zero.

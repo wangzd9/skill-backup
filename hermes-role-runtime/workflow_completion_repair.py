@@ -10,7 +10,8 @@ def queue_repairs(ledger, snapshot, run_id):
         return []
     grouped={}
     for issue in report['payload']['issues']:
-        if issue.get('kind')=='code':
+        from workflow_issue_policy import auto_repair
+        if auto_repair(issue):
             grouped.setdefault(issue['task_id'],[]).append(issue)
     results=[]
     for task_id,issues in grouped.items():

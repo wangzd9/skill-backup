@@ -177,6 +177,12 @@ CREATE TABLE IF NOT EXISTS outbox (
  state TEXT NOT NULL, receipt TEXT, created_at REAL NOT NULL);
 CREATE TABLE IF NOT EXISTS imports (
  import_id TEXT PRIMARY KEY, manifest TEXT NOT NULL, created_at REAL NOT NULL);
+CREATE INDEX IF NOT EXISTS events_run_event ON events(run_id,event_id);
+CREATE INDEX IF NOT EXISTS events_work_kind_event ON events(work_id,kind,event_id);
+CREATE INDEX IF NOT EXISTS works_run_role_state ON works(run_id,role,state);
+CREATE INDEX IF NOT EXISTS executions_work_state ON executions(work_id,state);
+CREATE INDEX IF NOT EXISTS external_candidate_state ON external_actions(candidate_id,state);
+CREATE INDEX IF NOT EXISTS outbox_state_kind_event ON outbox(state,kind,event_id);
 """
 
 
@@ -331,6 +337,9 @@ class BusinessLedger:
                             result = {'status': 'REJECTED', 'code': 'COMMAND_ID_CONFLICT'}
                         else:
                             original = json.loads(previous['result'])
+                            if verb=='work_inputs':
+                                from workflow_input_pages import expand_result
+                                original=expand_result(self,original)
                             result = {**original, 'status': 'DUPLICATE', 'original_status': original['status']}
                             if original.get('decision'):
                                 result['decision'] = {**original['decision'], 'replayed': True,
@@ -355,10 +364,14 @@ class BusinessLedger:
                             side_effect_state='POSSIBLE' if result['status']=='COMMITTED' else 'NONE', at=self.clock())
                         result['decision'].update(receipt_inserted_at=self.clock(),
                                                   receipt_storage='business_commands_result')
+                        stored_result=result
+                        if verb=='work_inputs':
+                            from workflow_input_pages import compact_result
+                            stored_result=compact_result(self,result)
                         inserted = db.execute('INSERT INTO commands VALUES(?,?,?,?,?)',
-                                   (command_id, verb, fingerprint, _json(result), self.clock()))
+                                   (command_id, verb, fingerprint, _json(stored_result), self.clock()))
                         result['decision']['command_rowid'] = inserted.lastrowid
-                        db.execute('UPDATE commands SET result=? WHERE command_id=?', (_json(result),command_id))
+                        db.execute('UPDATE commands SET result=? WHERE command_id=?', (_json(stored_result),command_id))
                         db.commit()
                         result['decision'].update(recorded_at=self.clock(), receipt_recorded_at=self.clock())
                 except BaseException:
@@ -397,6 +410,8 @@ class BusinessLedger:
         event_id = db.execute('INSERT INTO events(kind,run_id,work_id,role,payload,created_at) VALUES(?,?,?,?,?,?)',
                              (kind, run_id, work_id, role, _json(payload), self.clock())).lastrowid
         if notify:
+            from workflow_notification_registry import REGISTRY
+            if kind not in REGISTRY:raise ValueError('NOTIFICATION_CONTRACT_REQUIRED:'+kind)
             local = datetime.fromtimestamp(self.clock(), ZoneInfo('Asia/Shanghai'))
             quiet = local.hour >= 21 or local.hour < 8
             db.execute('INSERT INTO outbox VALUES(?,?,?,?,?,?,?,?,?)',
@@ -408,7 +423,7 @@ class BusinessLedger:
         with self._connection() as db:
             return self._authority(db)
 
-    def snapshot(self, run_id=None):
+    def snapshot(self, run_id=None, *, event_after=0):
         with self._connection() as db:
             db.execute('BEGIN')
             result = {'schema_version': SCHEMA_VERSION, **self._authority(db),
@@ -436,19 +451,23 @@ class BusinessLedger:
             result['verifications'] = [_row(r) for r in db.execute(
                 'SELECT v.* FROM verifications v JOIN candidates c USING(candidate_id)' +
                 (' WHERE c.run_id=?' if run_id else ''), (run_id,) if run_id else ())]
-            result['executions'] = [_row(r) for r in db.execute('SELECT * FROM executions')]
-            result['execution_tools'] = [_row(r) for r in db.execute('SELECT * FROM execution_tools')]
-            result['attempts'] = [_row(r) for r in db.execute('SELECT * FROM attempts')]
-            result['decisions'] = [_row(r) for r in db.execute('SELECT * FROM decisions')]
-            result['external_actions'] = [_row(r) for r in db.execute('SELECT * FROM external_actions')]
-            result['events'] = [_row(r) for r in db.execute('SELECT * FROM events ORDER BY event_id')]
-            outcomes = {event['payload']['execution_id']:event['payload'] for event in result['events']
+            result['executions'] = [_row(r) for r in db.execute('SELECT e.* FROM executions e JOIN works w USING(work_id)'+(' WHERE w.run_id=?' if run_id else ''),(run_id,) if run_id else ())]
+            result['execution_tools'] = [_row(r) for r in db.execute('SELECT t.* FROM execution_tools t JOIN executions e USING(execution_id) JOIN works w USING(work_id)'+(' WHERE w.run_id=?' if run_id else ''),(run_id,) if run_id else ())]
+            result['attempts'] = [_row(r) for r in db.execute('SELECT * FROM attempts'+(' WHERE run_id=?' if run_id else ''),(run_id,) if run_id else ())]
+            result['decisions'] = [_row(r) for r in db.execute('SELECT a.* FROM decisions a JOIN candidates c USING(candidate_id)'+(' WHERE c.run_id=?' if run_id else ''),(run_id,) if run_id else ())]
+            result['external_actions'] = [_row(r) for r in db.execute('SELECT a.* FROM external_actions a JOIN candidates c USING(candidate_id)'+(' WHERE c.run_id=?' if run_id else ''),(run_id,) if run_id else ())]
+            result['events'] = [_row(r) for r in db.execute('SELECT * FROM events WHERE event_id>?'+(' AND (run_id=? OR run_id IS NULL)' if run_id else '')+' ORDER BY event_id',(event_after,run_id) if run_id else (event_after,))]
+            outcome_rows=result['events'] if not event_after else [_row(r) for r in db.execute(
+                "SELECT * FROM events WHERE kind='EXECUTION_OUTCOME_OBSERVED'"+
+                (' AND (run_id=? OR run_id IS NULL)' if run_id else '')+' ORDER BY event_id',
+                (run_id,) if run_id else ())]
+            outcomes = {event['payload']['execution_id']:event['payload'] for event in outcome_rows
                         if event['kind']=='EXECUTION_OUTCOME_OBSERVED'}
             for execution in result['executions']:
                 execution['native_outcome'] = outcomes.get(execution['execution_id'],{}).get('native_outcome','UNOBSERVED')
                 execution['writer_cleared'] = execution['state']=='ENDED'
             result['authorizations'] = [_row(r) for r in db.execute('SELECT * FROM authorizations')]
-            result['merges'] = [_row(r) for r in db.execute('SELECT * FROM merges')]
+            result['merges'] = [_row(r) for r in db.execute('SELECT a.* FROM merges a JOIN candidates c USING(candidate_id)'+(' WHERE c.run_id=?' if run_id else ''),(run_id,) if run_id else ())]
             db.commit()
             return result
 
@@ -506,6 +525,9 @@ class BusinessLedger:
                                 'wait_recheck':recheck}
                     return {'can_start_model':False,'reason':'WAITING_EXTERNAL_WITHOUT_NEW_BUSINESS_EVENT',
                             'work_id':work['work_id'],'waiting_external':waiting,'wait_recheck':recheck}
+                from workflow_resumption import admission
+                backoff=admission(self,db,work,relevant)
+                if backoff:return backoff
                 return {'can_start_model':True,'reason':'PENDING_BUSINESS_EVENT' if relevant else 'CHECKPOINT_RESUMPTION',
                         'work_id':work['work_id'],'event_ids':[v['event_id'] for v in relevant]}
             if role=='COORDINATOR':
@@ -1051,7 +1073,7 @@ class BusinessLedger:
             upper=high if through is None else through
             bounds={'processed_through':work['processed_through'],
                     'issued_through':work['issued_through'],'requested_after':start,
-                    'hint':'续读省略 after；历史回读使用只读事件查询，不回退业务确认水位。'}
+                    'hint':'先处理本页再显式确认；未确认时续读用 next_after。历史回读不改变确认水位。'}
             if type(start) is not int:
                 _deny('INVALID_PAGE_AFTER',**bounds)
             if start<work['processed_through']:
@@ -1062,11 +1084,17 @@ class BusinessLedger:
                 _deny('PAGE_THROUGH_NOT_FROZEN_VALID_HIGH_WATER')
             rows = [_row(r) for r in db.execute('SELECT * FROM events WHERE event_id>? AND event_id<=? AND (run_id=? OR run_id IS NULL) ORDER BY event_id LIMIT ?',
                                                (start,upper,work['run_id'],limit))]
+            from workflow_input_pages import bounded_events
+            rows=bounded_events(self,rows)
             issued = rows[-1]['event_id'] if rows else start
             db.execute('UPDATE works SET issued_through=MAX(issued_through,?) WHERE work_id=?',(issued,work['work_id']))
             more=bool(db.execute('SELECT 1 FROM events WHERE event_id>? AND event_id<=? AND (run_id=? OR run_id IS NULL) LIMIT 1',
                                  (issued,upper,work['run_id'])).fetchone())
-            return {'events':rows,'through':issued,'frozen_through':upper,'has_more':more,'processed_through':work['processed_through']}
+            return {'events':rows,'through':issued,'issued_through':max(issued,work['issued_through']),
+                'frozen_through':upper,'has_more':more,'processed_through':work['processed_through'],
+                'next_after':issued,'can_ack':True,'page_limit_bytes':65536,
+                'ack_action':{'action':'ack_events','payload':{'through':issued}},
+                'notice':'读取不等于处理；核对完整事件后显式确认已发行的连续前缀。'}
         return self._command('work_inputs',command_id,[identity,limit,after,through],operation)
 
     def _ack(self, db, work, through):
@@ -1086,6 +1114,12 @@ class BusinessLedger:
             work,execution = self._identity(db,identity,allow_drain=True)
             if not isinstance(payload,dict) or len(_json(payload).encode()) > 128*1024:
                 _deny('INVALID_CHECKPOINT')
+            misplaced=sorted(set(payload)&{'processed_through','yield_execution','issued_through'})
+            if misplaced:
+                _deny('CHECKPOINT_CONTROL_FIELDS_MISPLACED',fields=misplaced,
+                    expected={'checkpoint':{'summary':'正文'},'processed_through':'外层整数（不大于已发行水位）','yield_execution':'外层布尔值'},
+                    effective_processed_through=work['processed_through'],issued_through=work['issued_through'],
+                    saved=False,acknowledged=False,yielded=False)
             waiting = payload.get('waiting_external', [])
             if (not isinstance(waiting, list) or len(waiting)>32
                     or any(not isinstance(value,str) or not value.strip() or len(value)>512 for value in waiting)):
@@ -1096,12 +1130,19 @@ class BusinessLedger:
             if yield_execution:
                 db.execute("UPDATE executions SET state='DRAINING' WHERE execution_id=?",(execution['execution_id'],))
                 db.execute("UPDATE works SET state='QUEUED',active_execution_id=NULL WHERE work_id=?",(work['work_id'],))
-            event_payload = {'checkpoint':payload,'yield_execution':yield_execution}
+            event_payload = {'checkpoint':payload,'yield_execution':yield_execution,
+                'previous_processed_through':work['processed_through'],
+                'processed_through':processed_through if processed_through is not None else work['processed_through'],
+                'acknowledged':processed_through is not None}
             if waiting and work['role']=='COORDINATOR':
                 from workflow_wait import repo_observation
                 event_payload['wait_observation'] = repo_observation(self._one(db,'runs','run_id',work['run_id'])['repo'])
             event = self._event(db,'CHECKPOINT_SAVED',event_payload,run_id=work['run_id'],work_id=work['work_id'],role=work['role'])
-            return {'event_id':event,'work_id':work['work_id'],'writer_clearance_required':yield_execution}
+            effective=_row(db.execute('SELECT * FROM works WHERE work_id=?',(work['work_id'],)).fetchone())
+            return {'event_id':event,'work_id':work['work_id'],'writer_clearance_required':yield_execution,
+                'processed_through':effective['processed_through'],'issued_through':effective['issued_through'],
+                'work_state':effective['state'],'execution_state':'DRAINING' if yield_execution else execution['state'],
+                'acknowledged':processed_through is not None,'yielded':yield_execution,'checkpoint_saved':True}
         return self._command('checkpoint',command_id,[identity,payload,processed_through,yield_execution],operation)
 
     def _writer_clear(self, execution):

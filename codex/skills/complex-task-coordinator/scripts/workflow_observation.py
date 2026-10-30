@@ -218,6 +218,9 @@ def step(prior_state, observation, now):
                 'severity': process.get('severity', 1), 'source': process.get('source', 'process'),
                 'facts': facts}
     transitions = []
+    terminal_closures=deepcopy((prior_state or {}).get('terminal_service_closures',{}))
+    terminal_services={s['action_id']:s for s in observation.get('services',[])
+        if s.get('observation')=='terminal_receipt_verified'}
     # SQLite/cache pressure can make a single observer sample temporarily
     # unverifiable. Keep the health fact immediately, but require a stable
     # 120-second episode before notifying and the same stable interval before
@@ -254,6 +257,12 @@ def step(prior_state, observation, now):
                         'episode': old.get('episode') if old else digest([key, now])}
     for key, old in previous.items():
         if key in current:
+            continue
+        if old.get('type')=='observer_independent_service_unverified' and old.get('action_id') in terminal_services:
+            # Reclassify only on verified durable stop evidence. Archive the
+            # original incident without replaying dozens of old recovery alerts.
+            terminal_closures[key]={'original':old,'closed_at':now,
+                'basis':terminal_services[old['action_id']], 'transition':'terminal_receipt_verified'}
             continue
         if key in observation.get('observation_reclassifications',[]):
             transitions.append({**old,'event_id':digest([old['episode'],'reclassified_unverified']),
@@ -311,7 +320,8 @@ def step(prior_state, observation, now):
            value['identity'].get('execution_id') not in observation.get('closed_execution_ids', [])}
     next_state = {'schema_version': SCHEMA_VERSION, 'ruleset_version': RULE_VERSION,
                   'observed_at': now, 'active': current, 'source_states': sources,
-                  'activity_states': activity_states, 'process_states': process_states, 'write_paths': write_paths}
+                  'activity_states': activity_states, 'process_states': process_states, 'write_paths': write_paths,
+                  'terminal_service_closures':terminal_closures}
     return next_state, outputs
 
 
@@ -341,6 +351,9 @@ def saved_health(home, pool_path, *, now, max_age=180):
                                         for reason in row.get('reason_codes', [row['type']])}),
                 'anomalies': value.get('anomalies', []),
                 'write_diagnostics': value.get('write_diagnostics'),
+                'health_layers':value.get('health_layers'),
+                'activity_policy':value.get('activity_policy'),
+                'business_progress':value.get('business_progress',[]),
                 'activity': value.get('activity', {})}
     except (OSError, ValueError, TypeError, KeyError) as exc:
         return {'state': 'DEGRADED', 'reason_codes': ['observer_snapshot_unavailable'],

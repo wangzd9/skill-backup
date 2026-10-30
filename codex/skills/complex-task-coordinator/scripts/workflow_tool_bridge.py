@@ -29,7 +29,8 @@ def usage(role, *, include_background=False):
     elif role=='COORDINATOR':
         text+=('completion是原生需求级验收计划，叶任务完成不等于需求完成。前置齐备由系统自动派TESTER最终集成验证，'
                '无需用户裁决或手动派发。FAIL按问题ID回原owner新attempt，保留原测试/OCR/审查/合入门禁；'
-               '最终PASS后用complete_requirement复核逐AC、本次证据及historical_failures处置并本地收口；'
+               '最终PASS后用complete_requirement复核逐AC、本次证据及historical_failures处置并本地收口；coverage_review逐项给closure obligation_id、validation_event_id、result、reason，明确场景/断言/环境语义是否对应；issue_dispositions给issue_id/reason/evidence。'
+               '环境预算耗尽后，取得真实恢复证据再用environment_recovered(validation_event_id,summary,evidence)登记新预算，不改原FAIL或UNVERIFIED。'
                '不得用开发任务完成代替验收，不把本地收口称生产启用。规划者仍由用户手动触发。')
         text+=('协调者的普通 terminal/write_file/patch 按角色禁用；这不是用户授权缺失，不要请求开放 shell。'
                '本地自动开发按local_development_automation持久执行，派单/验证/返修/安全收口/基线刷新/本地合入不逐项征求同意。'
@@ -55,8 +56,9 @@ def usage(role, *, include_background=False):
         text+=('integration_verification是最终集成验证，固定目标/原合同见integration_validation。'
                '用verify_integration分批执行，payload含argv、profile=local/mysql、report_format及timeout_seconds；'
                'mysql由受控临时8.4实例提供MN01_MYSQL_URL，不接生产连接。结果保留INTEGRATION_TEST_RECORDED事件。'
-               '全部AC完成后deliver_integration，checks逐项填id/result/mode/test_event_ids/notes，'
-               'issues填id/kind=code或environment/task_id/test_event_ids/summary；代码问题须关联原任务和真实FAIL事件。'
+               '按integration_validation.plan.obligations区分local_validation/local_closure/real_nodes/production，不能用协调收口作测试前置。'
+               '逐AC完成本地义务后deliver_integration，checks逐项填id/result/mode/test_event_ids/notes；coverage逐项给obligation_id、phase、contract_sha256、scenario、assertion、environment、test_event_id、case_id（JUnit的classname::name）。AC10报告索引用event_ids。'
+               'issues填id/kind/task_id/test_event_ids/summary及blocking/confidence/accepted_scope/ac_ids/disposition/owner。仅已确认且阻断本地合同的code issue自动返修。非阻断或范围外须rationale和review_required=true，协调者逐项复核才能收口。'
                '替身与实物分开写明，未执行/环境失败为UNVERIFIED，不可用skip或一句总结冒充PASS。')
         text+=('收到supplemental_verification工作时，用verify_supplemental，payload={}；固定候选MySQL8.4隔离补验由受控入口提供数据库，'
                '不能改用普通verify跳过profile，不能把skip写成MySQL通过；无需普通shell或用户提供生产数据库。')

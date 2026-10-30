@@ -196,7 +196,9 @@ def prepare(job, *, pool_path, execution, home, session_id):
         '不要每轮从头通读全部合同和全部scope；未变化的材料按需回查。完成一个可验证的最小实现后及时保存真实改动与定位。'
         '交接checkpoint记录已读材料的路径/哈希、已确认接口、代码进度、未决点和下一处文件/函数；不把重复核验说成开发成果。'
         'candidate_approvals 表示已记录批准，CURRENT 不等于尚未批准；按 next_actions 当前阶段推进，不重复 APPROVE。'
-        '续读事件省略 after；回看已确认旧事件用 role_work_input history=true，历史回读不能用于 ACK。'
+        '检查点正文只放业务事实；processed_through/yield_execution 必须放 payload 外层，检查回执中的实际水位和yielded。'
+        '先处理已发行事件，再用 ack_events(through) 或外层 processed_through 确认；不能跳过未发行前缀。'
+        '未确认时续读下一页用 paging.next_after；历史回读用 role_work_input history=true，不能用于 ACK。'
         'requires_paging 仅为体积提示；事件续读看 paging.events_may_have_more，反复翻旧页不能缩减非事件字段。'
         'detail_artifacts 为未展开的完整证据；waiting_external 只在仅余外部授权或结果时按建议保存。'
         + usage(role,include_background=role=='COORDINATOR')+'\n'
@@ -441,7 +443,8 @@ def project_events(ledger, events):
 def current_input(pool_path, role, *, scope=None, at=None, event_page=None):
     at = _now(at)
     ledger = open_ledger(pool_path)
-    snapshot = ledger.snapshot()
+    selected=(scope or {}).get('run_id') or (ledger.current_work(role) or {}).get('run_id') or ledger.mode()['current_run_id']
+    snapshot = ledger.snapshot(selected)
     row = next((item for item in snapshot['roles'] if item['role'] == role), None)
     if row is None:
         raise ValueError('ROLE_NOT_IN_RUNTIME')
@@ -488,10 +491,13 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None):
                 'event_through': event_page.get('frozen_through', snapshot['event_high_water']) if event_page else snapshot['event_high_water'],
                 'displayed_through': through,
                 'issued_through': event_page.get('through') if event_page else None,
-                'events_may_have_more': event_page.get('has_more', False) if event_page else len(events) == 100},
+                'events_may_have_more': event_page.get('has_more', False) if event_page else len(events) == 100,
+                'next_after':event_page.get('next_after',through) if event_page else through,
+                'can_ack':bool(event_page and event_page.get('can_ack')),
+                'ack_action':event_page.get('ack_action') if event_page else None},
               'run': next((item for item in snapshot['runs'] if item['run_id'] ==
                           ((work or {}).get('run_id') or snapshot.get('current_run_id'))), None)}
-    accepted=ledger.events(run_id=run_id,limit=10000)
+    accepted=snapshot['events']
     packet['accepted_requirements']=[row['payload'] for row in accepted
                                     if row['run_id']==run_id and row['kind']=='REQUIREMENT_ACCEPTED'][-1:]
     # Keep complete gates/specifications. Oversized inputs require explicit paging,
@@ -511,6 +517,11 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None):
     if (work or {}).get('kind')=='integration_verification':
         packet['integration_validation']=completion_context(snapshot,work)
     packet['next_actions']=next_actions(packet,ledger)
+    misplaced=sorted(set((work or {}).get('checkpoint',{}))&{'processed_through','issued_through','yield_execution'})
+    if misplaced:
+        packet['checkpoint_contract_warnings']={'code':'LEGACY_CHECKPOINT_CONTROL_FIELDS_IGNORED',
+            'fields':misplaced,'processed_through':work['processed_through'],'issued_through':work['issued_through'],
+            'instruction':'历史正文中的控制字段未生效；按paging连续读取并显式ack_events确认，不据正文跳水位。新checkpoint控制字段放payload外层。'}
     from workflow_wait import capabilities
     packet['runtime_capabilities']=capabilities(role)
     if (work or {}).get('checkpoint', {}).get('waiting_external'):
@@ -607,18 +618,23 @@ def command(scope, action, payload, *, command_id):
 
 
 def _execute_command(scope, action, payload, *, command_id):
-    guard(scope, allow_drain=action in {'checkpoint', 'safe_release'})
+    guard(scope, allow_drain=action in {'checkpoint', 'safe_release','ack_events'})
     identity = identity_from_scope(scope)
-    extra=({'extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','complete_requirement','append_development_log','commit_documentation','resolve_user_decision'}
+    extra=({'extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','complete_requirement','append_development_log','commit_documentation','resolve_user_decision','environment_recovered'}
            if scope['role']=='COORDINATOR' else {'verify_supplemental','verify_integration','deliver_integration'} if scope['role']=='TESTER' else set())
-    if action not in COMMANDS[scope['role']] and action not in extra:
+    if action not in COMMANDS[scope['role']] and action not in extra and action!='ack_events':
         raise ValueError('COMMAND_NOT_ALLOWED_FOR_ROLE')
     if not isinstance(payload, dict):
         raise ValueError('PAYLOAD_MUST_BE_OBJECT')
     if any(key in payload for key in ('role', 'run_id', 'work_id', 'execution_id', 'generation', 'token')):
         raise ValueError('IDENTITY_IS_RUNTIME_BOUND')
     from workflow_contracts import validate_payload
-    validate_payload(action, payload)
+    try:validate_payload(action, payload)
+    except ValueError as exc:
+        raise rejected(scope,str(exc),operation=action,command_id=command_id,result={
+            'status':'REJECTED','code':str(exc),'phase':'INVALID_NOT_STARTED','side_effect_state':'NONE',
+            'retryable':True,'new_command_id_required':False,
+            'next_action':'参数未通过预检，未启动动作；按工具 schema 修正后可沿用 command_id。'}) from exc
     with diagnostics.operation_context(scope, operation=action,
             capability=diagnostics.CAPABILITIES.get(action, action), command_id=command_id,
             input_validated=True, capability_allowed=True):
@@ -631,6 +647,9 @@ def _validated_command(scope, action, payload, identity, *, command_id):
         from workflow_completion import verify, deliver, complete
         function={'verify_integration':verify,'deliver_integration':deliver,'complete_requirement':complete}[action]
         return function(ledger,identity,payload,command_id=command_id)
+    if action=='environment_recovered':
+        from workflow_issue_policy import environment_recovered
+        return environment_recovered(ledger,identity,payload,command_id=command_id)
     if action=='resolve_user_decision':
         from workflow_user_decisions import resolve
         return resolve(ledger,identity,payload,command_id=command_id)
@@ -662,6 +681,8 @@ def _validated_command(scope, action, payload, identity, *, command_id):
         from workflow_service_recovery import resume
         return resume(ledger,identity,payload['action_id'],payload['new_action_id'],payload['reason'],
                       authorization=payload.get('authorization'),command_id=command_id)
+    if action=='ack_events':
+        return ledger.ack_events(identity,payload['through'],command_id=command_id)
     if action == 'checkpoint':
         return ledger.checkpoint(identity, payload.get('checkpoint', {}),
                                  processed_through=payload.get('processed_through'),

@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "no_activity_seconds": 1800,
+  "meaning": "Observation only; registered operations retain their own wait/deadline grace. No takeover or retry permission."
+}

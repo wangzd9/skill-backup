@@ -310,6 +310,24 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
     from operation_jobs import validate
     if not isinstance(command_id, str) or not command_id or len(command_id) > 240:
         raise ValueError('command_id 必须为稳定非空身份')
+    # Inspect an existing identity read-only before reporting NOT_STARTED.
+    # Correctable new requests never reserve that identity; a prepared request
+    # remains immutable even when its replacement parameters are invalid.
+    requested = {'identity':identity,'candidate_id':candidate_id,'argv':argv,
+        'timeout_seconds':timeout_seconds,'supersedes':supersedes or [],
+        'evidence':evidence if evidence is not None else {},'report_format':report_format}
+    if verification_profile:requested['verification_profile']=verification_profile
+    existing_folder=ledger.path.parent/'operations'/hashlib.sha256(command_id.encode()).hexdigest()[:32]
+    previous=read_json(existing_folder/'request.json',{})
+    if previous and previous.get('input_sha256')!=_hash(requested):
+        raise ValueError('TEST_COMMAND_ID_CONFLICT')
+    invalid=preflight_test_request(argv,timeout_seconds,evidence,report_format,
+        verification_profile=verification_profile,environment_overrides=environment_overrides)
+    if invalid:
+        if previous:
+            return {**invalid,'phase':'PREPARED','side_effect_state':'POSSIBLE',
+                'new_command_id_required':True,'next_action':'已有冻结请求；核对原执行状态，不得改参重用 command_id。'}
+        return invalid
     if not isinstance(argv, list) or not argv or any(not isinstance(v, str) or not v or '\0' in v for v in argv):
         raise ValueError('测试命令必须为完整 argv 列表')
     if report_format not in ('pytest', 'junit'):
@@ -372,13 +390,15 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
             candidate['work_id'] = work['work_id']
             if work['run_id'] != candidate['run_id'] or work['task_id'] != candidate['task_id'] or work['attempt'] != candidate['attempt']:
                 raise ValueError('TEST_WORK_CANDIDATE_IDENTITY_MISMATCH')
-            save_json(manifest_path, {'input_sha256': _hash(requested), 'candidate': candidate})
+            save_json(manifest_path, {'input_sha256': _hash(requested), 'candidate': candidate,'state':'PREPARED'})
         if not checkout.exists():
             _git(candidate['repo'], 'worktree', 'add', '--detach', str(checkout), candidate['head'])
         if _git(checkout, 'rev-parse', 'HEAD').decode().strip() != candidate['head']:
             raise ValueError('TEST_CHECKOUT_HEAD_MISMATCH')
         runner_path = state.with_suffix('.evidence.json')
         if not runner_path.exists():
+            live_identity=ledger.validate_identity(identity)
+            if not live_identity.get('valid'):return live_identity
             if state.exists() or state.with_suffix('.before.json').exists():
                 return {'status': 'UNVERIFIED', 'code': 'TEST_EXECUTION_RECOVERY_REQUIRED', 'state_path': str(state)}
             if _git(checkout, 'status', '--porcelain'):
@@ -443,6 +463,7 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
                 }, command_id=tool_id)
                 if result.get('status') not in ('COMMITTED', 'DUPLICATE'):
                     raise ValueError(result.get('code', 'TEST_PROCESS_REGISTRATION_FAILED'))
+            save_json(folder/'execution-phase.json',{'state':'STARTED','command_id':command_id})
             execute_with_evidence(plan, state, process_hook=register_process)
         row = read_json(runner_path)
         stats = parse_test_results(report, execution_status=row['execution_status'], exit_code=row['exit_code'])
@@ -477,4 +498,38 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
         else:
             result['code'] = 'TEST_RESULT_UNVERIFIED'
         save_json(folder/'verification.json', result)
+        save_json(folder/'execution-phase.json',{'state':'RESULT_READY','command_id':command_id})
         return result
+
+
+def preflight_test_request(argv, timeout_seconds, evidence, report_format, *, verification_profile=None, environment_overrides=None):
+    import math
+    code=None;field=None
+    if not isinstance(argv,list) or not argv or any(not isinstance(v,str) or not v or '\0' in v for v in argv):
+        code='INVALID_TEST_ARGV';field='argv'
+    elif report_format not in ('pytest','junit'):
+        code='INVALID_TEST_REPORT_FORMAT';field='report_format'
+    elif type(timeout_seconds) not in (int,float) or not math.isfinite(timeout_seconds) or not 0<timeout_seconds<=86400:
+        code='INVALID_TEST_TIMEOUT';field='timeout_seconds'
+    elif report_format=='pytest' and not (Path(argv[0]).name.startswith('pytest') or
+            '-m' in argv and argv[argv.index('-m')+1:argv.index('-m')+2]==['pytest']):
+        code='PYTEST_COMMAND_REQUIRED';field='argv'
+    elif report_format=='pytest' and any(arg.startswith(('--junitxml','--junit-xml')) for arg in argv):
+        code='JUNIT_PATH_RUNTIME_MANAGED';field='argv'
+    elif report_format=='junit' and not any('{junit_xml}' in arg for arg in argv):
+        code='JUNIT_PLACEHOLDER_REQUIRED';field='argv'
+    if code is None:
+        try:validate_evidence({} if evidence is None else evidence)
+        except (ValueError,TypeError,AttributeError):code='INVALID_TEST_EVIDENCE';field='evidence'
+    if code is None and environment_overrides is not None and (
+            not isinstance(environment_overrides,dict) or set(environment_overrides)!={'MN01_MYSQL_URL'}
+            or verification_profile not in ('mysql_migration','integration_mysql')
+            or not isinstance(environment_overrides.get('MN01_MYSQL_URL'),str)
+            or not environment_overrides['MN01_MYSQL_URL'] or '\0' in environment_overrides['MN01_MYSQL_URL']):
+        code='FIXED_MYSQL_PROFILE_ENVIRONMENT_REQUIRED';field='environment_overrides'
+    if code:
+        return {'status':'REJECTED','code':code,'phase':'INVALID_NOT_STARTED','side_effect_state':'NONE',
+            'retryable':True,'new_command_id_required':False,'invalid_fields':[field],
+            'publication':None,'business_pass':False,
+            'next_action':'修正所列参数后可沿用 command_id；尚未冻结请求、建立 checkout 或启动测试。'}
+    return None

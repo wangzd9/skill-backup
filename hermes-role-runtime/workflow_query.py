@@ -46,6 +46,58 @@ def checkpoint_history(work, events):
     return history(event.get('created_at'), event_id=event.get('event_id'))
 
 
+def progress_context(snapshot, run_id, role):
+    """Business descriptions for reports; saved narratives keep their own dates."""
+    def excerpt(value, limit=800):
+        text = str(value or '').strip()
+        return text if len(text) <= limit else text[:limit] + '…（节选）'
+    roles = ('A', 'B', 'C', 'TESTER') if role == 'COORDINATOR' else (role,)
+    result = {'run_id': run_id, 'event_high_water': snapshot['event_high_water'],
+              'roles': {}, 'tasks': {}, 'history_policy': HISTORY_NOTICE}
+    for who in roles:
+        works = [w for w in snapshot['works'] if w['run_id'] == run_id and w['role'] == who]
+        records = [(checkpoint_history(w, snapshot['events']), w) for w in works if w.get('checkpoint')]
+        if records:
+            stamp, work = max(records, key=lambda row: row[0].get('event_id') or 0)
+            checkpoint = work['checkpoint']
+            if isinstance(checkpoint, dict):
+                waiting = checkpoint.get('waiting_external') or []
+                if not isinstance(waiting, list):
+                    waiting = [waiting]
+                result['roles'][who] = {**stamp, 'work_id': work['work_id'],
+                    'task_id': work.get('task_id'), 'work_state': work['state'],
+                    'summary': excerpt(checkpoint.get('summary') or checkpoint.get('done')),
+                    'next': excerpt(checkpoint.get('next')),
+                    'waiting_external': [excerpt(v, 240) for v in waiting[:3]]}
+    for task in snapshot['tasks']:
+        if task['run_id'] != run_id or task['role'] not in roles:
+            continue
+        candidate = next((c for c in reversed(snapshot['candidates'])
+            if c['run_id'] == run_id and c['task_id'] == task['task_id']
+            and c['attempt'] == task['attempt'] and c['state'] == 'CURRENT'), None)
+        result['tasks'][task['task_id']] = {'role': task['role'], 'phase': task['phase'],
+            'required_checks': task['required_checks'],
+            'description': excerpt(str(candidate.get('summary') or '').split('\n\n')[0], 500) if candidate else '',
+            'source': 'candidate_delivery' if candidate else 'task_contract'}
+    from workflow_completion import facts
+    final = facts(snapshot, run_id)
+    report = final.get('report') or {}
+    payload = report.get('payload') or {}
+    result['completion'] = {'state': final['state'],
+        'head': (final.get('target') or {}).get('head'),
+        'event_id': report.get('event_id'), 'recorded_at': report.get('created_at'),
+        'result': payload.get('result'), 'summary': excerpt(payload.get('summary')),
+        'checks': [{key: check[key] for key in ('id', 'result') if key in check}
+                   for check in payload.get('checks', [])],
+        'issues': [{key: excerpt(issue[key]) for key in ('id', 'task_id', 'kind', 'summary') if key in issue}
+                   for issue in payload.get('issues', [])]}
+    candidate_ids = {c['candidate_id'] for c in snapshot['candidates'] if c['run_id'] == run_id}
+    result['strong_review_actions'] = [{key: action[key] for key in ('action_id', 'state')}
+        for action in snapshot['external_actions']
+        if action['candidate_id'] in candidate_ids and action['kind'] != 'ocr']
+    return result
+
+
 def _artifact(ledger, name, value):
     from workflow_runtime import verified_input_view
     return verified_input_view(ledger.path.parent/'query-views', name, value, pretty=True)
@@ -355,6 +407,9 @@ def live_progress(pool_path, role):
         ledger,role+'-runtime-capabilities',runtime_capabilities)
     packet['runtime_capabilities']={key:runtime_capabilities[key] for key in (
         'ordinary_workspace_write','ordinary_terminal','coordinator_shell_available')}
+    # Business bodies stay reachable without growing the 8 KiB core envelope.
+    packet['artifacts']['report_context'] = _artifact(
+        ledger, role+'-report-context', progress_context(snapshot, run_id, role))
     admission = {name: ledger.admission_hint(name)
                  for name in ('COORDINATOR','A','B','C','TESTER')}
     packet['artifacts']['model_admission'] = _artifact(ledger, role+'-admission', admission)

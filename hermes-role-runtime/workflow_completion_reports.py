@@ -27,9 +27,13 @@ def validation_receipt(ledger, work, ctx, payload, result):
         '', '## 逐项验收证据','']
     for check in payload['checks']:
         lines.append(f"- **{check['id']}：{check['result']}**；类型 {check['mode']}；测试事件 {check['test_event_ids']}；{check['notes']}")
+        for proof in check.get('coverage',[]):
+            lines.append(f"  - 义务 {proof['obligation_id']}；场景 {proof['scenario']}；断言 {proof['assertion']}；环境 {proof['environment']}；定位 {proof.get('test_event_id',proof.get('event_ids'))} / {proof.get('case_id','报告索引')}")
     lines+=['','## 问题与回派','']
     lines += [f"- **{i['id']} → {i.get('task_id') or '环境核查'}：** {i['summary']}；测试事件 {i['test_event_ids']}" for i in payload['issues']] or ['- 本次无新增已确认代码问题。']
     lines+=['','本地替身/隔离测试结果不代表真实节点、生产或 NAS 已启用。']
+    lines+=['','## 尚未完成的后置义务','']
+    lines += [f"- {o['id']}：{o['state']}" for o in ctx['plan'].get('obligations',[]) if not o['applicable']]
     return _save(ledger,work,Path('test-receipts')/ctx['plan']['validation_task_id']/f"attempt-{work['attempt']}.md",'\n'.join(lines))
 
 
@@ -40,4 +44,7 @@ def closure_receipt(ledger, work, state, payload):
         '## 历史失败处置','']
     lines += [f"- **{row['verification_id']}：** {row['reason']}；本次复验证据事件 {row['test_event_ids']}" for row in payload['historical_failures']] or ['- 无待处置历史失败。']
     lines+=['','本次完成仅指已接受的本地开发范围；真实节点验收、生产启用、远端 push 等按原后置条件单独记录。']
+    lines+=['','## 逐项覆盖语义审查','']
+    lines += [f"- {r['obligation_id']}：{r['result']}；{r['reason']}" for r in payload.get('coverage_review',[])]
+    lines += [f"- 问题 {r['issue_id']}：{r['reason']}；证据 {r['evidence']}" for r in payload.get('issue_dispositions',[])]
     return _save(ledger,work,Path('reports')/state['plan']['closure_task_id']/f"validation-{state['report']['event_id']}.md",'\n'.join(lines))

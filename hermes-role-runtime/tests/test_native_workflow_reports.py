@@ -139,6 +139,16 @@ class NativeWorkflowReports(unittest.TestCase):
         self.assertEqual('FAILED',result['generation']['state'])
         self.assertEqual('UNKNOWN_REPORT_ANALYSIS_FIELD',result['generation']['reason_code'])
 
+    def test_chinese_section_of_validation_failure_is_kept_in_receipt(self):
+        packet = self.build()
+        value = json.loads(self.output(packet))
+        value['sections']['当前工作'] = ['**事实：** 第一项独立结果。第二项独立结果。']
+        result = report_summary.complete_native_summary(packet['artifact'], json.dumps(value, ensure_ascii=False),
+            model_request_id='invalid-section', model='offline')
+        self.assertEqual('FAILED', result['generation']['state'])
+        self.assertEqual('PERSONAL_REPORT_ONE_FACT_PER_BULLET_REQUIRED', result['generation']['reason_code'])
+        self.assertEqual('当前工作', result['generation']['reason_section'])
+
     def test_oversized_legacy_frozen_input_is_preserved_and_reprojected(self):
         from workflow_reports import _hash
         packet=self.build()

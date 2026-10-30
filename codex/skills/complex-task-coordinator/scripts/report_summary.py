@@ -495,11 +495,18 @@ def complete_native_summary(input_artifact, output, *, model_request_id, model, 
             text = render_periodic(facts, analysis, generated_at=ledger.clock())
             generation.update(state='GENERATED', analysis_sha256=_hash(analysis))
         except Exception as exc:
-            text = failed_periodic_report(facts, generated_at=ledger.clock())
-            code = str(exc)
-            if not re.fullmatch(r'[A-Z_]+(?::[a-z_]+)?', code):
+            code, _, section = str(exc).partition(':')
+            if not re.fullmatch(r'[A-Z_]+', code):
                 code = 'REPORT_MODEL_OUTPUT_INVALID'
+            from workflow_reports import COORDINATOR_SECTIONS, PERSONAL_SECTIONS
+            if section in (*COORDINATOR_SECTIONS, *PERSONAL_SECTIONS):
+                generation['reason_section'] = section
             generation.update(error=type(exc).__name__, reason='本次总结未生成', reason_code=code)
+            reason = ('模型输出未能按约定的 JSON 解析。' if code == 'REPORT_MODEL_OUTPUT_INVALID'
+                      else '模型内容未通过报告字段、格式或证据校验。')
+            if generation.get('reason_section'):
+                reason = '模型内容在“'+section+'”分区未通过格式校验；本次只保留已采集事实。'
+            text = failed_periodic_report(facts, generated_at=ledger.clock(), failure_reason=reason)
         from time_accounting import iso
         generation['completed_at'] = iso(ledger.clock())
         generation['rendered_sha256'] = hashlib.sha256(text.encode()).hexdigest()
@@ -579,14 +586,14 @@ def build_summary_input(project, role, kind, *, at=None, home=None, pool_path=No
             prompt += ('须提供简体中文字符串accomplishments、issues、next_steps，分别说明成果、问题、下一步；'
                        '另提供sections对象，键精确为' + '、'.join(COORDINATOR_SECTIONS) +
                        '；每区分别最多2/5/7/8/8/8/8条，以换行分隔的简体中文短bullet，每条不超过240字，只表达一件事，'
-                       '并以Markdown粗体字段标签开头，格式为- **字段：** 内容。'
+                       '并以Markdown粗体字段标签开头，格式为- **字段：** 内容；同一事实的条件可用分号连接。'
                        '缺事实写- **字段：** 待核实。；不要合并多阶段、历史记录、诊断码或多个原因成长段。'
                        '工具失败只用一条简短说明错误来源和受影响范围，不重复内部实现、字节数或原始诊断。')
         else:
             from workflow_reports import PERSONAL_SECTIONS
             prompt += ('另须提供sections对象，键精确为' + '、'.join(PERSONAL_SECTIONS) +
                 '；每区分别最多2/3/5/8条简体中文短bullet字符串数组，每条不超过240字，只表达一件事，'
-                '并必须以Markdown粗体字段标签开头，格式为**字段：** 内容。'
+                '并必须以Markdown粗体字段标签开头，格式为**字段：** 内容；同一事实的条件可用分号连接。'
                 '标题后的四区必须各自完整保留；没有事实写**新增成果：** 无新增或**阻塞：** 无已核实阻塞，'
                 '不能删除分区。当前工作只报告本人；本次完成只写本人实际成果；阻塞与依赖列直接影响接续的条件、责任方和解除条件；'
                 '下一步计划列本人动作与真实前置条件。不要将观察来源、采集缺口、用量和多个独立事实拼成一个超长段落；'

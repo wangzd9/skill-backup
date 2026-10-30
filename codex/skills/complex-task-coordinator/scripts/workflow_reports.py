@@ -105,7 +105,10 @@ def build_facts(ledger, role, start, end, *, usage_index, project, pool_path=Non
         raise ValueError('EMPTY_REPORT_WINDOW')
     snapshot = ledger.snapshot()
     run_id = run_id or snapshot.get('current_run_id')
-    events = ledger.events(through=snapshot['event_high_water'], run_id=run_id, limit=10000)
+    # The snapshot already freezes the complete event stream and its high water.
+    # Taking the oldest 10,000 rows before filtering the window silently loses
+    # every recent result once a long-running run exceeds that many events.
+    events = [item for item in snapshot['events'] if item['run_id'] in (None, run_id)]
     window = [item for item in events if left <= item['created_at'] < right and
               (role == 'COORDINATOR' or item['role'] in (None, role))]
     from workflow_runtime import project_events
@@ -161,7 +164,8 @@ def build_facts(ledger, role, start, end, *, usage_index, project, pool_path=Non
                           if item['candidate_id'] in scoped_candidate_ids],
         'usage': _usage_packet(summarize(usage_index, role, left, right, project=project)),
         'timing': _timing_facts(usage_index, role, left, right, project, pool_path),
-        'event_coverage': {'limit': 10000, 'may_have_more': len(events) == 10000},
+        'event_coverage': {'basis': 'frozen_snapshot', 'may_have_more': False,
+                           'matched_events': len(window)},
         'history_policy': 'checkpoint/检查点及其叙述只证明当时记录；未经本轮核验，不得作为当前结论。当前状态使用本次账本时间和水位。',
         'permissions': '只读分析；不领工作、不确认业务输入、不调用shell、派单或审查'}
     from workflow_supplemental import summary
@@ -195,7 +199,7 @@ def _validated_section_bullets(text, heading, limit=8):
     for line in rows:
         if (len(line)>240 or not re.search(r'[\u3400-\u9fff]',line)
                 or not _BOLD_REPORT_FIELD.search(line)
-                or len(re.findall(r'[。！？；;]',line))>1):
+                or len(re.findall(r'[。！？]',line))>1):
             raise ValueError('BOLD_SHORT_SINGLE_FACT_BULLET_REQUIRED:' + heading)
     return rows
 
@@ -236,7 +240,7 @@ def _analysis(value, facts):
                         or not re.search(r'[\u3400-\u9fff]', item)
                         or not _BOLD_REPORT_FIELD.search(item)):
                     raise ValueError('BOLD_CHINESE_REPORT_BULLET_REQUIRED:' + key)
-                if len(re.findall(r'[。！？；;]', item)) > 1:
+                if len(re.findall(r'[。！？]', item)) > 1:
                     raise ValueError('PERSONAL_REPORT_ONE_FACT_PER_BULLET_REQUIRED:' + key)
     references = analysis.get('evidence_ids', [])
     if not isinstance(references, list) or any(ref not in facts['evidence_ids'] for ref in references):
@@ -282,7 +286,7 @@ def _analysis_bullets(text, label):
         raw = re.sub(r'^\s*(?:[-*+]\s+|\d+[.)]\s+)', '', raw).strip()
         if not raw:
             continue
-        parts = re.split(r'(?<=[。！？；;])\s*', raw)
+        parts = re.split(r'(?<=[。！？])\s*', raw)
         for part in parts:
             part = part.strip()
             if not part:
@@ -399,7 +403,7 @@ def render_periodic(facts, analysis, *, generated_at=None):
     return rendered
 
 
-def failed_periodic_report(facts, *, generated_at=None):
+def failed_periodic_report(facts, *, generated_at=None, failure_reason=None):
     """Keep the role's report contract when analysis fails; expose only collected facts."""
     generated = datetime.fromtimestamp(epoch(generated_at), ZONE) if generated_at is not None else datetime.now(ZONE)
     role = facts.get('role')
@@ -462,6 +466,9 @@ def failed_periodic_report(facts, *, generated_at=None):
                   _live_bullet('核验状态', '总结未生成不代表业务失败或通过；状态与门禁以账本回执为准。'),
                   '', '**下一步计划**',
                   _live_bullet('接续', '按本人现有派单和前置条件继续；需复核时使用当次只读进度。')]
+    if failure_reason:
+        position = lines.index('**风险**') if role == 'COORDINATOR' else lines.index('**阻塞与依赖**')
+        lines.insert(position + 1, _live_bullet('未生成原因', failure_reason))
     rendered = '\n'.join(lines)
     invalid = _periodic_render_format_error(rendered, role)
     if invalid:
@@ -496,7 +503,7 @@ def _periodic_render_format_error(text, role):
         chinese=len(re.findall(r'[\u3400-\u9fff]',body))
         english_words=len(re.findall(r'\b[A-Za-z]{3,}\b',body))
         if (len(line[2:])>240 or not chinese or english_words>max(10,chinese*2)
-                or len(re.findall(r'[。！？；;]',body))>4):
+                or len(re.findall(r'[。！？]',body))>4):
             return 'PERIODIC_REPORT_BULLET_INVALID'
     if '[SILENT]' in text or '[NO_REPLY]' in text:
         return 'PERIODIC_REPORT_SILENT_MIXED'
@@ -748,7 +755,7 @@ def _coordinator_progress_format_error(text):
             english_words = len(re.findall(r'\b[A-Za-z]{3,}\b', body))
             if (len(bullet) > 240 or (not chinese and english_words)
                     or english_words > max(10, chinese * 2)
-                    or len(re.findall(r'[。！？；;]', body)) > 4):
+                    or len(re.findall(r'[。！？]', body)) > 4):
                 return 'SIMPLIFIED_CHINESE_REPORT_REQUIRED'
     return None
 
@@ -786,7 +793,7 @@ def _progress_report_format_error(text, role):
             chinese = len(re.findall(r'[\u3400-\u9fff]', body))
             english_words = len(re.findall(r'\b[A-Za-z]{3,}\b', body))
             if (len(bullet) > 240 or not chinese or english_words > max(10, chinese * 2)
-                    or len(re.findall(r'[。！？；;]', body)) > 1):
+                    or len(re.findall(r'[。！？]', body)) > 1):
                 return 'PERSONAL_REPORT_BULLET_INVALID'
     return None
 
@@ -814,9 +821,35 @@ def _live_role_label(row, tasks):
 
 def _live_bullet(label, value, *, limit=205):
     text = re.sub(r'\s+', ' ', str(value or '')).strip()
+    text = text.replace('**', '').replace('`', '')
     if len(text) > limit:
         text = text[:limit - 1].rstrip() + '…'
     return '- **' + label + '：** ' + (text or '待核实')
+
+
+def _read_progress_context(packet):
+    """Verify report evidence against the exact query waterline before using it."""
+    def load(ref):
+        if not isinstance(ref, dict) or not ref.get('path'):
+            return {}
+        path = Path(ref['path'])
+        if path.stat().st_size > 262144:
+            raise ValueError('REPORT_CONTEXT_TOO_LARGE')
+        raw = path.read_bytes()
+        if len(raw) != ref.get('bytes') or hashlib.sha256(raw).hexdigest() != ref.get('sha256'):
+            raise ValueError('REPORT_CONTEXT_HASH_MISMATCH')
+        return json.loads(raw)
+    try:
+        refs = packet.get('artifacts') or {}
+        if refs.get('manifest'):
+            refs = load(refs['manifest'])
+        context = load(refs.get('report_context'))
+        if (context.get('run_id') != (packet.get('run') or {}).get('run_id')
+                or context.get('event_high_water') != packet.get('event_high_water')):
+            return {}
+        return context
+    except (OSError, ValueError, TypeError, KeyError):
+        return {}
 
 
 def render_live_progress_fallback(packet, role):
@@ -833,6 +866,18 @@ def render_live_progress_fallback(packet, role):
                   'C': '执行者 C', 'TESTER': '测试者'}
     tasks = packet.get('tasks') if isinstance(packet.get('tasks'), list) else []
     roles = {row.get('role'): row for row in packet.get('roles', []) if isinstance(row, dict)}
+    context = _read_progress_context(packet)
+    descriptions = context.get('tasks') or {}
+    histories = context.get('roles') or {}
+    completion = context.get('completion') or {}
+    def history_bullet(who, field='summary'):
+        saved = histories.get(who) or {}
+        text = saved.get(field)
+        if not text:
+            return []
+        date = str(saved.get('recorded_at') or '时间未知')
+        return [_live_bullet('历史检查点' if field == 'summary' else '已记录的接续计划',
+            f'{who} · {date} · event:{saved.get("event_id")}：{text}（仅反映保存时判断）')]
     title_role = role_names.get(role, '角色')
     if role == 'COORDINATOR':
         lines = [f'**{title_role}｜当前进展核验 · {time_text}**']
@@ -849,6 +894,8 @@ def render_live_progress_fallback(packet, role):
             'COMPLETED':'本地需求验收已收口'}
         if final:
             lines.append(_live_bullet('需求验收', final_labels.get(final.get('state'),final.get('state') or '待核实')+'；开发叶任务完成与需求验收分别记账。'))
+        if completion.get('head'):
+            lines.append(_live_bullet('固定验证版本', str(completion['head'])[:12]+'；结果及返修按本次账本快照核对。'))
         lines += ['', '**执行者进度**', '']
         for who in ('A', 'B', 'C'):
             assigned = [task for task in tasks if task.get('role') == who and task.get('phase') not in ('COMPLETED', 'CANCELLED')]
@@ -858,6 +905,12 @@ def render_live_progress_fallback(packet, role):
             if len(assigned) > 2:
                 detail += f'；另有 {len(assigned)-2} 项'
             lines.append(_live_bullet(f'{role_names[who]}（{state}）', detail or '当前没有未完成任务记录。'))
+            described = [t for t in tasks if t.get('role') == who and descriptions.get(t.get('task_id'), {}).get('description')]
+            if described:
+                task = (next((t for t in described if t in assigned), None) or described[-1])
+                lines.append(_live_bullet(who+' 交付说明', task['task_id']+'（开发者记录）：'+descriptions[task['task_id']]['description']))
+            else:
+                lines += history_bullet(who)
         lines += ['', '**测试者进度**', '']
         tester_tasks = [task for task in tasks if task.get('role') == 'TESTER' and task.get('phase') not in ('COMPLETED', 'CANCELLED')]
         tester_state = _live_role_label(roles.get('TESTER', {}), [task for task in tasks if task.get('role') == 'TESTER'])
@@ -873,23 +926,48 @@ def render_live_progress_fallback(packet, role):
                 f"{results.get(row.get('result'),row.get('result') or '结果待核实')}"
                 for row in verification_rows[:2])
         lines.append(_live_bullet(f'测试者（{tester_state}）', tester_detail or '当前没有未完成测试派单记录。'))
+        if completion.get('summary'):
+            lines.append(_live_bullet('最近最终验证回执',
+                f'event:{completion.get("event_id")} · {completion.get("result")}：{completion["summary"]}'))
+        lines += history_bullet('TESTER')
+        checks = completion.get('checks') or []
+        if checks:
+            results = {result: sum(c.get('result') == result for c in checks) for result in ('PASS', 'FAIL', 'UNVERIFIED')}
+            lines.append(_live_bullet('逐项验证', f"最近回执通过 {results['PASS']} 项、失败 {results['FAIL']} 项、未验证 {results['UNVERIFIED']} 项；问题及影响见风险区。"))
         serial = packet.get('ocr_serial_gate') or {}
         version = packet.get('ocr_version_gate') or {}
         lines += ['', '**OCR情况和后续计划**', '',
                   _live_bullet('OCR串行门', f"{'占用或状态未知' if serial.get('blocked') else '当前未见活动占用'}；在途计数 {serial.get('blocking_count', '未知')}。"),
                   _live_bullet('OCR版本门', f"状态 {version.get('state', '待核实')}；以当前安装版本准入记录为准。")]
+        own_actions = [action for action in (packet.get('external_actions') or [])
+                       if action.get('kind') == 'ocr' and action.get('run_id') == run.get('run_id')]
+        for action in own_actions[:3]:
+            label = '待处置审查' if action.get('state') == 'INCOMPLETE' else '当前审查'
+            lines.append(_live_bullet(label, f"{action.get('task_id')}：{action.get('state')}，动作 {action.get('action_id')}；结果落账后由协调者裁决。"))
+        for task in tasks:
+            missing = [name for name, values in (task.get('recorded_checks') or {}).items()
+                       if name == 'ocr' and 'PASS' not in values]
+            if missing:
+                lines.append(_live_bullet('待满足的候选检查', task['task_id']+' 的当前候选尚无 OCR PASS；仍按原门禁取得审查与裁决。'))
         review = packet.get('strong_review') or {}
         authorization = review.get('authorization') or review.get('state') or '待核实'
         active_reviews = review.get('active_calls')
         review_status = f'授权状态 {authorization}'
         review_status += '；在途调用 ' + (str(len(active_reviews)) if isinstance(active_reviews, list) else '待核实')
         review_status += '；审查结论需以已落账结果为准。'
+        if context and not review:
+            actions = context.get('strong_review_actions') or []
+            review_status = ('本需求账本未登记强审动作；是否需要仍按有效合同，不新增审查要求。' if not actions
+                else '本需求已登记 '+str(len(actions))+' 项审查动作；状态 '+ '、'.join(str(a['state']) for a in actions[-3:]))
         lines += ['', '**强审查情况**', '', _live_bullet('强审查', review_status)]
         gates = packet.get('open_gates') or []
         lines += ['', '**风险**', '']
         lines.append(_live_bullet('未关闭门禁', '当前门禁：'+'；'.join(str(gate.get('code') or gate) for gate in gates[:3])
             + (f'；另有 {len(gates)-3} 项' if len(gates) > 3 else '') if gates
             else '本次账本快照未列出打开门禁；验收结果仍以各项回执为准。'))
+        for issue in completion.get('issues', [])[:3]:
+            lines.append(_live_bullet('验收问题 '+str(issue.get('id')),
+                '最近回执 event:'+str(completion.get('event_id'))+' · '+str(issue.get('task_id'))+'：'+str(issue.get('summary'))))
         pending = [task for task in tasks if task.get('phase') not in ('COMPLETED', 'CANCELLED')]
         if not pending and final.get('state') not in (None,'NOT_PLANNED','COMPLETED'):
             pending=[{'task_id':final.get('validation_task_id') or '最终验收','phase':final_labels.get(final['state'],final['state'])}]
@@ -897,6 +975,17 @@ def render_live_progress_fallback(packet, role):
         lines.append(_live_bullet('接续', '；'.join(f"{task.get('task_id')}：{_LIVE_PHASE_LABELS.get(task.get('phase'), task.get('phase', '待核实'))}" for task in pending[:3])
             + (f'；另有 {len(pending)-3} 项' if len(pending) > 3 else '') if pending
             else '依据当前已接受计划核对收尾条件；没有未完成任务记录。'))
+        for task in pending[:3]:
+            if task.get('phase') == 'REVIEW':
+                names = {'independent_test': '独立测试', 'ocr': 'OCR', 'strong_review': '强审查'}
+                missing = [names.get(name, name) for name, values in (task.get('recorded_checks') or {}).items()
+                           if 'PASS' not in values]
+                next_step = '补齐'+ '、'.join(missing)+'结果后由协调者裁决' if missing else '由协调者核对验证证据并裁决'
+                lines.append(_live_bullet(str(task.get('role'))+' 接续条件', str(task.get('task_id'))+' 当前候选已交付，'+next_step+'。'))
+            else:
+                lines += history_bullet(task.get('role'), 'next')
+        if final.get('state') in ('REPAIR_REQUIRED', 'REPAIRING'):
+            lines.append(_live_bullet('验收接续', '原 owner 按问题返修后，仍需固定新版本的独立验证；满足收口条件后由协调者复核。'))
         return '\n'.join(lines)
 
     task_rows = [task for task in tasks if task.get('role') == role]

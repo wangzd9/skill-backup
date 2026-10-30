@@ -73,6 +73,38 @@ class WorkflowReportTests(unittest.TestCase):
         self.assertIn('- **状态：** 当前没有新增事实，待核实。', sent[0])
         self.assertNotIn('观察来源：', sent[0])
 
+    def test_window_after_ten_thousand_old_events_keeps_new_checkpoint_and_boundaries(self):
+        # Isolated synthetic history reproduces the long-running ledger boundary.
+        with self.ledger._connection() as db:
+            db.execute('BEGIN')
+            db.executemany('INSERT INTO events(kind,run_id,role,payload,created_at) VALUES(?,?,?,?,?)',
+                [('FIXTURE_HISTORY', self.run, 'A', '{}', self.at-3600)] * 10001)
+            import json
+            for role, at, text in [('A', self.at-60, '窗口起点成果'),
+                                   ('B', self.at-30, '其他角色成果'),
+                                   ('A', self.at, '下个窗口成果')]:
+                db.execute('INSERT INTO events(kind,run_id,role,payload,created_at) VALUES(?,?,?,?,?)',
+                    ('CHECKPOINT_SAVED', self.run, role,
+                     json.dumps({'checkpoint': {'summary': text}}), at))
+            db.commit()
+        facts = build_facts(self.ledger, 'A', self.at-60, self.at,
+            usage_index=self.index, project=self.root)
+        self.assertEqual(1, len(facts['work_checkpoint_events']))
+        self.assertEqual('窗口起点成果', facts['events'][0]['payload']['checkpoint']['summary'])
+        self.assertGreater(facts['events'][0]['event_id'], 10000)
+        self.assertFalse(facts['event_coverage']['may_have_more'])
+
+    def test_conditions_joined_with_semicolons_do_not_discard_valid_analysis(self):
+        def analyze(facts):
+            value = self.analyze(facts)
+            value['analysis']['sections']['当前工作'] = [
+                '**冻结基线：** 验证对象已固定；头提交与冻结回执一致；下一批待执行。']
+            return value
+        result = self.generate(analyze)
+        self.assertEqual('GENERATED', result['generation']['state'])
+        item = self.ledger.notification(result['notification_id'])
+        self.assertIn('头提交与冻结回执一致', item['payload']['text'])
+
     def test_personal_report_rejects_flat_wall_of_text_or_missing_bold_labels(self):
         def unstructured(facts):
             return {'model_request_id':'bad-summary','model':'offline','route':'local',

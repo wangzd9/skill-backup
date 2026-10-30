@@ -86,6 +86,11 @@ CONTROL_TARGET = {'oneOf': [
 
 
 def payload_schema(action):
+    if action=='environment_recovered':
+        return obj({'validation_event_id':{'type':'integer','minimum':1},'summary':TEXT,
+            'evidence':{'type':'array','minItems':1,'items':EVIDENCE}},['validation_event_id','summary','evidence'])
+    if action=='ack_events':
+        return obj({'through':{'type':'integer','minimum':0}},['through'])
     if action in ('verify_integration','deliver_integration','complete_requirement'):
         from workflow_completion_contracts import payload_schema as completion_schema
         return completion_schema(action)
@@ -166,6 +171,10 @@ def control_target_schema():
 
 def validate_payload(action, payload):
     from jsonschema import Draft202012Validator
+    if action in ('ack_events','environment_recovered'):
+        errors=list(Draft202012Validator(payload_schema(action)).iter_errors(payload))
+        if errors:raise ValueError('INVALID_ACK_PAYLOAD: through 必须是已发行的连续前缀水位')
+        return
     if action not in PAYLOADS and action not in ('extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','append_development_log','commit_documentation','verify_supplemental','resolve_user_decision','verify_integration','deliver_integration','complete_requirement'):
         raise ValueError('COMMAND_UNSUPPORTED')
     errors = sorted(Draft202012Validator(payload_schema(action)).iter_errors(payload),

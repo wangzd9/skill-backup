@@ -168,6 +168,34 @@ class CoordinatorNoticeTests(LedgerFixture):
         self.assertNotIn('QUERY_METADATA_EXCEEDS_BYTE_BUDGET',queued['payload']['text'])
         self.assertNotIn('99KB',queued['payload']['text'])
 
+    def test_fallback_reads_business_content_with_history_dates_and_verified_hashes(self):
+        from workflow_query import _artifact
+        from workflow_reports import render_live_progress_fallback, _coordinator_progress_format_error
+        context = {'run_id': 'run-one', 'event_high_water': 88,
+            'tasks': {'T1': {'description': '已交付节点分配事务与并发回归。'}},
+            'roles': {'A': {'recorded_at': '2026-10-30T13:00:00+08:00', 'event_id': 87,
+                'summary': '已定位分配并发问题。', 'next': '取得独立验证结果后交付候选。'}},
+            'completion': {'head': 'a'*40, 'event_id': 86, 'result': 'FAIL',
+                'summary': '专项回归已通过，容量并发存在待处理项。',
+                'issues': [{'id': 'CODE-01', 'task_id': 'T1', 'summary': '容量并发出现间歇死锁，需要原负责者返修。'}]}}
+        ref = _artifact(self.ledger, 'fixture-report-context', context)
+        manifest = _artifact(self.ledger, 'fixture-manifest', {'report_context': ref})
+        packet = {'checked_at': '2026-10-30T14:00:00+08:00', 'event_high_water': 88,
+            'run': {'run_id': 'run-one', 'requirement_id': 'isolated-fixture'},
+            'tasks': [{'task_id': 'T1', 'role': 'A', 'phase': 'DEVELOPING', 'attempt': 2}],
+            'roles': [], 'artifacts': {'manifest': manifest}, 'completion': {'state': 'REPAIRING'},
+            'external_actions': [{'kind':'ocr','run_id':'other-run','task_id':'FOREIGN-TASK',
+                                  'action_id':'foreign','state':'INCOMPLETE'}]}
+        text = render_live_progress_fallback(packet, 'COORDINATOR')
+        for expected in ('节点分配事务', 'CODE-01', '间歇死锁', '取得独立验证结果', '2026-10-30T13:00', 'event:86'):
+            self.assertIn(expected, text)
+        self.assertIsNone(_coordinator_progress_format_error(text))
+        self.assertNotIn('FOREIGN-TASK', text)
+        Path(ref['path']).write_text('{}')
+        damaged = render_live_progress_fallback(packet, 'COORDINATOR')
+        self.assertNotIn('间歇死锁', damaged)
+        self.assertNotIn('节点分配事务', damaged)
+
     def test_periodic_brief_keeps_original_outlet_and_requires_matching_content_receipt(self):
         scope={**self.scope,'kind':'report'}
         text='A：空闲\nB：等待\nC：阻塞\nTESTER：待核实'

@@ -32,6 +32,8 @@ def _manual_progress_instruction(role):
             '**强审查情况**、**风险**、**下一步计划**；不得只挑少数主题，不得改成关键路径/环境/待拍板等自选分区替代，也不得省略区块。'
             '整体区说明目标、已完成/已验收与剩余；执行者A/B/C各自一组，名字后列状态并说明工作、结果、阻塞和下一步；'
             '测试者单独说明范围、固定版本、已完成验证和缺项；OCR与强审查分别说明当前状态、覆盖/结论及接续条件。'
+            '不能只列任务编号与阶段充当汇报；从只读查询artifacts.manifest中的report_context核对已有交付说明、'
+            '带时间的个人检查点、最终验证结果与问题ID，再解释具体完成了什么、为何返修、谁来接续。'
             '每区用单层短bullet；每条正文都要把字段名、角色状态、结论、阻塞/风险、下一动作和关键字段使用Markdown粗体突出。'
             '即使没有新增事实或只读工具不可用，仍保留七区；只将受影响的事实标为“待核实”，写明可用证据来源，'
             '旧checkpoint须标明时间且不能冒充当前状态。工具异常仅用“当次进度核验未完成”概括，不复述错误码、预算、字节数、实现限制或原始日志；'
@@ -462,7 +464,8 @@ class RuntimePlugin:
         workflow.guard(scope,allow_drain=True)
         import hashlib
         ledger=workflow.open_ledger(self.pool_path)
-        high=ledger.snapshot()['event_high_water']
+        with ledger._connection() as db:
+            high=db.execute('SELECT COALESCE(MAX(event_id),0) FROM events').fetchone()[0]
         through=args.get('through',high)
         if 'history' in args and type(args['history']) is not bool:
             raise ValueError('INVALID_HISTORY_QUERY')
@@ -482,6 +485,8 @@ class RuntimePlugin:
         ledger=workflow.open_ledger(self.pool_path,readonly=False)
         page_args={key:value for key,value in args.items() if key!='history'}
         page_args['through']=through
+        if 'after' not in page_args:
+            page_args['after']=ledger.current_work(scope['role'])['processed_through']
         suffix=hashlib.sha256(json.dumps(page_args,sort_keys=True).encode()).hexdigest()
         page=ledger.work_inputs(workflow.identity_from_scope(scope),**page_args,
             command_id='tool-input:'+scope['execution_id']+':'+suffix)
@@ -1144,10 +1149,10 @@ def register(ctx):
              'target':control_target_schema()},
              'required':['action'],'additionalProperties':False}},plugin.control_tool,disclosure='direct')
     for name,toolset,actions in (
-            ('role_coordination_command','role_coordination',['publish_plan','decide','checkpoint','safe_release',
-                'service_submit','service_collect','service_decide','service_resume','service_reject','extend_task_scope','refresh_task_base','refresh_development_base','merge','complete','complete_requirement','append_development_log','commit_documentation','resolve_user_decision']),
-            ('role_development_command','role_development',['deliver','checkpoint','safe_release']),
-            ('role_test_command','role_testing',['verify','verify_supplemental','verify_integration','deliver_integration','close_verification','checkpoint','safe_release'])):
+            ('role_coordination_command','role_coordination',['publish_plan','decide','checkpoint','ack_events','safe_release',
+                'service_submit','service_collect','service_decide','service_resume','service_reject','extend_task_scope','refresh_task_base','refresh_development_base','merge','complete','complete_requirement','append_development_log','commit_documentation','resolve_user_decision','environment_recovered']),
+            ('role_development_command','role_development',['deliver','checkpoint','ack_events','safe_release']),
+            ('role_test_command','role_testing',['verify','verify_supplemental','verify_integration','deliver_integration','close_verification','checkpoint','ack_events','safe_release'])):
         from workflow_contracts import command_schema
         ctx.register_tool(name,toolset,{'name':name,
             'description':'向本次执行绑定的工作单提交本角色成果；身份由运行时注入，command_id重试须保持。',

@@ -2,9 +2,9 @@
 
 备份本机当前使用的 Hermes、Codex 技能和复杂任务协作配套资源。
 
-2026-10-30 机制源码快照见 [MECHANISM-SNAPSHOT.json](MECHANISM-SNAPSHOT.json)：运行时 `252232d`、Hermes core `c3901f5`，包括六个角色/显示 Skill、共享脚本和[用户指南](docs/ROLE-WORKFLOW-USER-GUIDE.md)。核心累计补丁已在隔离目录从记录的基线还原并逐文件核验。
+2026-10-30 机制源码快照见 [MECHANISM-SNAPSHOT.json](MECHANISM-SNAPSHOT.json)：运行时 `deafa31`、Hermes core `c3901f5`，包括六个角色/显示 Skill、共享脚本和[用户指南](docs/ROLE-WORKFLOW-USER-GUIDE.md)。核心累计补丁已在隔离目录从记录的基线还原并逐文件核验。
 
-长测试观察宽限期按受控任务期限加 180 秒计算；诊断异常和恢复各稳定 120 秒后通知，并保留错误原因。本次同步只记录源码，不代表常驻 Gateway 已加载修复。其他技能和配置模板保留原采样版本；恢复步骤见 [RESTORE.md](RESTORE.md)。
+长测试观察宽限期按受控任务期限加 180 秒计算；诊断异常和恢复各稳定 120 秒后通知。时段总结按完整冻结快照采样窗口，校验保留分号条件及具体错误分区；协调者七区包含同水位业务内容。0.13.1补齐审计F1～F8的阶段义务、覆盖矩阵、游标接续、输入页去重、问题处置、通知及监控生命周期；上线采用与剩余证据债见[实施记录](docs/analysis/coordinator-health-audit-20261030/IMPLEMENTATION.md)。本次同步只记录源码，不代表常驻 Gateway 已加载修复。其他技能和配置模板保留原采样版本；恢复步骤见 [RESTORE.md](RESTORE.md)。
 
 | 路径 | 内容 |
 |---|---|

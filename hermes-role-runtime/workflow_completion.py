@@ -10,13 +10,21 @@ import re
 import subprocess
 
 
+def _snapshot(ledger):
+    return ledger.snapshot(ledger.mode()['current_run_id'])
+
+
 def _events(snapshot, run_id, kind):
     return [e for e in snapshot['events'] if e['run_id']==run_id and e['kind']==kind]
 
 
 def plan(snapshot, run_id):
     rows=_events(snapshot,run_id,'COMPLETION_PLAN_PUBLISHED')
-    return rows[-1]['payload'] if rows else None
+    from workflow_acceptance_obligations import effective
+    if not rows:return None
+    frozen=[e for e in _events(snapshot,run_id,'COMPLETION_OBLIGATIONS_FROZEN')
+        if e['payload']['base_plan_event_id']==rows[-1]['event_id']]
+    return frozen[-1]['payload']['plan'] if frozen else effective(rows[-1]['payload'])
 
 
 def _accepted_sources(snapshot, run_id):
@@ -46,9 +54,27 @@ def _policy(snapshot, run_id, now):
 
 
 def ensure_plan(ledger):
-    snapshot=ledger.snapshot();run_id=snapshot['current_run_id']
-    if not run_id or plan(snapshot,run_id):
+    snapshot=_snapshot(ledger);run_id=snapshot['current_run_id']
+    if not run_id:
         return None
+    existing=plan(snapshot,run_id)
+    if existing:
+        published=_events(snapshot,run_id,'COMPLETION_PLAN_PUBLISHED')[-1]
+        if published['payload'].get('obligations') or _events(snapshot,run_id,'COMPLETION_OBLIGATIONS_FROZEN'):
+            return None
+        def freeze(db):
+            from business_ledger import _deny
+            authority=ledger._authority(db)
+            if (authority['current_run_id']!=run_id or authority['mode']!='ACTIVE' or not authority['admission_open']
+                    or ledger._one(db,'runs','run_id',run_id)['control']!='ACTIVE'):
+                _deny('COMPLETION_CURRENT_RUN_CHANGED')
+            ledger._authorization(db,existing['policy_id'],'development_policy')
+            event=ledger._event(db,'COMPLETION_OBLIGATIONS_FROZEN',{'base_plan_event_id':published['event_id'],
+                'plan':existing,'basis':'same_accepted_source_bytes','historical_results_unchanged':True},
+                run_id=run_id,role='COORDINATOR')
+            return {'event_id':event,'obligations_frozen':True,'business_result_changed':False}
+        return ledger._command('freeze_completion_obligations','completion-obligations:'+run_id+':'+str(published['event_id']),
+            [published['event_id'],existing],freeze)
     run=next(r for r in snapshot['runs'] if r['run_id']==run_id)
     if snapshot['mode']!='ACTIVE' or not snapshot['admission_open'] or run['control']!='ACTIVE':
         return None
@@ -73,6 +99,8 @@ def ensure_plan(ledger):
         'branch':policy['spec']['branch'],'scope':'accepted_local_development',
         'requires_isolated_mysql':any(re.search(r'隔离\s*MySQL',text,re.I) for text in acceptance),
         'production_permission':False,'push_permission':False,'planner_trigger':'manual'}
+    from workflow_acceptance_obligations import enrich
+    spec=enrich(spec,texts)
     def operation(db):
         from business_ledger import _deny
         current=ledger._authority(db)
@@ -136,7 +164,8 @@ def context(snapshot, work):
     rows=[e for e in _events(snapshot,work['run_id'],'INTEGRATION_VERIFICATION_QUEUED') if e['work_id']==work['work_id']]
     if len(rows)!=1:
         raise ValueError('INTEGRATION_CONTEXT_MISSING_OR_AMBIGUOUS')
-    return rows[0]['payload']
+    from workflow_acceptance_obligations import effective
+    return {**rows[0]['payload'],'plan':effective(rows[0]['payload']['plan'])}
 
 
 def facts(snapshot, run_id):
@@ -174,14 +203,14 @@ def target_current(ledger, snapshot, work):
 
 def reconcile(ledger):
     ensure_plan(ledger)
-    snapshot=ledger.snapshot();run_id=snapshot['current_run_id']
+    snapshot=_snapshot(ledger);run_id=snapshot['current_run_id']
     spec=plan(snapshot,run_id)
     run=next((r for r in snapshot['runs'] if r['run_id']==run_id),None)
     if not spec or snapshot['mode']!='ACTIVE' or not snapshot['admission_open'] or run['control']!='ACTIVE':
         return []
     from workflow_completion_repair import queue_repairs
     repairs=queue_repairs(ledger,snapshot,run_id)
-    snapshot=ledger.snapshot()
+    snapshot=_snapshot(ledger)
     state=facts(snapshot,run_id)
     try:
         target=frozen_target(ledger,snapshot,spec)
@@ -192,12 +221,17 @@ def reconcile(ledger):
         return repairs
     if state.get('target')==target:
         report=state.get('report')
-        if report and report['payload']['result'] in ('PASS','FAIL'):
+        legacy_coverage=bool(report and report['payload']['result']=='PASS' and spec.get('coverage_matrix_required')
+            and any(not c.get('coverage') for c in report['payload']['checks']))
+        if report and report['payload']['result'] in ('PASS','FAIL') and not legacy_coverage:
             return repairs
         # Environmental gaps do not reopen code tasks or spin forever. Keep
         # the evidence and retry a bounded number of times with backoff.
         same=[e for e in _events(snapshot,run_id,'INTEGRATION_VERIFICATION_QUEUED') if e['payload']['target']==target]
-        if len(same)>=3 or (report and ledger.clock()<report['created_at']+300):
+        recovered=_events(snapshot,run_id,'INTEGRATION_ENVIRONMENT_RECOVERED')
+        reset=next((e for e in reversed(recovered) if e['payload']['target']==target),None)
+        if reset:same=[e for e in same if e['event_id']>reset['event_id']]
+        if (len(same)>=3 and not legacy_coverage) or (report and ledger.clock()<report['created_at']+300):
             return repairs
     predecessor=state.get('work_id')
     fingerprint=hashlib.sha256(json.dumps([target,predecessor],sort_keys=True).encode()).hexdigest()
@@ -209,7 +243,7 @@ def reconcile(ledger):
         if ledger._one(db,'runs','run_id',run_id)['control']!='ACTIVE':
             _deny('COMPLETION_RUN_PAUSED')
         ledger._authorization(db,spec['policy_id'],'development_policy')
-        current=ledger.snapshot()
+        current=_snapshot(ledger)
         if facts(current,run_id).get('work_id')!=predecessor:
             _deny('COMPLETION_QUEUE_ALREADY_ADVANCED')
         if frozen_target(ledger,current,spec)!=target:
@@ -232,10 +266,10 @@ def record_test(ledger, identity, target, evidence, stats, *, command_id):
         work,_=ledger._identity(db,identity)
         if work['role']!='TESTER' or work['kind']!='integration_verification':
             _deny('INTEGRATION_TESTER_REQUIRED')
-        frozen=context(ledger.snapshot(),work)['target']
+        frozen=context(_snapshot(ledger),work)['target']
         if any(target.get(k)!=frozen.get(k) for k in ('head','repo','run_id','ac_version')):
             _deny('INTEGRATION_TEST_TARGET_MISMATCH')
-        if not target_current(ledger,ledger.snapshot(),work):
+        if not target_current(ledger,_snapshot(ledger),work):
             _deny('INTEGRATION_SNAPSHOT_CHANGED')
         event=ledger._event(db,'INTEGRATION_TEST_RECORDED',{'target':target,'evidence':evidence,'stats':stats},
             run_id=work['run_id'],role='TESTER',work_id=work['work_id'])
@@ -249,7 +283,7 @@ def deliver(ledger, identity, payload, *, command_id):
         work,execution=ledger._identity(db,identity)
         if work['role']!='TESTER' or work['kind']!='integration_verification':
             _deny('INTEGRATION_TESTER_REQUIRED')
-        snapshot=ledger.snapshot();ctx=context(snapshot,work)
+        snapshot=_snapshot(ledger);ctx=context(snapshot,work)
         if not target_current(ledger,snapshot,work):
             _deny('INTEGRATION_SNAPSHOT_CHANGED')
         checks=payload['checks'];issues=payload['issues']
@@ -257,10 +291,16 @@ def deliver(ledger, identity, payload, *, command_id):
             _deny('INTEGRATION_ALL_ACCEPTANCE_CHECKS_REQUIRED')
         runs={e['event_id']:e for e in _events(snapshot,work['run_id'],'INTEGRATION_TEST_RECORDED') if e['work_id']==work['work_id']}
         from delivery_evidence import check_candidate_test_evidence
+        from workflow_acceptance_obligations import validate_matrix
+        from workflow_issue_policy import validate as validate_issues,blocking,auto_repair
+        validate_issues(issues,checks,structured=ctx['plan'].get('coverage_matrix_required',False))
+        validate_matrix(ledger,ctx,checks,runs)
+        obligations={o['ac_id']:o for o in ctx['plan'].get('obligations',[]) if o['phase']=='local_validation'}
         for check in checks:
-            if check['result']=='PASS' and check['mode']=='not_executed':
+            report_index=obligations.get(check['id'],{}).get('evidence_type')=='report_index'
+            if check['result']=='PASS' and check['mode']=='not_executed' and not report_index:
                 _deny('INTEGRATION_UNEXECUTED_CHECK_CANNOT_PASS')
-            if check['result']=='PASS' and not check['test_event_ids']:
+            if check['result']=='PASS' and not check['test_event_ids'] and not report_index:
                 _deny('INTEGRATION_EXECUTED_EVIDENCE_REQUIRED')
             for event_id in check['test_event_ids']:
                 row=runs.get(event_id)
@@ -276,20 +316,25 @@ def deliver(ledger, identity, payload, *, command_id):
             _deny('INTEGRATION_UNIQUE_ISSUE_IDS_REQUIRED')
         for issue in issues:
             if issue.get('kind')=='environment':
+                for eid in issue['test_event_ids']:
+                    if eid not in runs:_deny('INTEGRATION_TEST_REFERENCE_INVALID')
+                    data=runs[eid]['payload']
+                    if not check_candidate_test_evidence(data['evidence'],data['target'])['valid']:
+                        _deny('INTEGRATION_ISSUE_EVIDENCE_CHANGED')
                 continue
             if (issue['task_id'] not in ctx['plan']['dependencies'] or not issue['test_event_ids']
                     or not set(issue['test_event_ids'])<=set(runs)
-                    or not any(runs[eid]['payload']['stats']['mechanical_result']=='FAIL' for eid in issue['test_event_ids'])):
+                    or issue.get('confidence','confirmed')=='confirmed' and not any(runs[eid]['payload']['stats']['mechanical_result']=='FAIL' for eid in issue['test_event_ids'])):
                 _deny('INTEGRATION_ISSUE_OUTSIDE_ACCEPTED_SCOPE')
             for eid in issue['test_event_ids']:
                 data=runs[eid]['payload']
                 if not check_candidate_test_evidence(data['evidence'],data['target'])['valid']:
                     _deny('INTEGRATION_ISSUE_EVIDENCE_CHANGED')
         failing=[c for c in checks if c['result']=='FAIL']
-        code_issues=[i for i in issues if i.get('kind')=='code']
+        code_issues=[i for i in issues if auto_repair(i)]
         if failing and (not code_issues or any(not set(c['test_event_ids']) & {eid for i in code_issues for eid in i['test_event_ids']} for c in failing)):
             _deny('INTEGRATION_CODE_FAILURE_REQUIRES_MAPPED_ISSUE')
-        result=('FAIL' if code_issues else 'PASS' if all(c['result']=='PASS' for c in checks) and not issues else 'UNVERIFIED')
+        result=('FAIL' if code_issues else 'PASS' if all(c['result']=='PASS' for c in checks) and not any(blocking(i) for i in issues) else 'UNVERIFIED')
         if result=='PASS' and ctx['plan']['requires_isolated_mysql']:
             used={eid for check in checks for eid in check['test_event_ids']}
             if not any(runs[eid]['payload']['evidence'].get('verification_profile')=='integration_mysql'
@@ -314,7 +359,7 @@ def complete(ledger, identity, payload, *, command_id):
         work,_=ledger._identity(db,identity)
         if work['role']!='COORDINATOR':
             _deny('COORDINATOR_REQUIRED')
-        snapshot=ledger.snapshot();state=facts(snapshot,work['run_id'])
+        snapshot=_snapshot(ledger);state=facts(snapshot,work['run_id'])
         if state['state']!='READY_FOR_CLOSURE':
             _deny('REQUIREMENT_FINAL_VERIFICATION_NOT_PASSED')
         validation=next(w for w in snapshot['works'] if w['work_id']==state['work_id'])
@@ -325,10 +370,17 @@ def complete(ledger, identity, payload, *, command_id):
         if any(w['run_id']==work['run_id'] and w['role']=='TESTER' and w['state']!='ENDED' for w in snapshot['works']):
             _deny('REQUIREMENT_VERIFICATION_WORK_PENDING')
         report=state['report']['payload']
+        from workflow_acceptance_obligations import closure_review
+        from workflow_issue_policy import review_dispositions
+        closure_review(ledger,state,payload)
+        review_dispositions(report,payload)
+        for row in payload.get('issue_dispositions',[]):
+            for ref in row['evidence']:ledger._evidence(ref)
         ledger._evidence(report['receipt'])
         # Revalidate raw test evidence at the final acceptance boundary as well.
         from delivery_evidence import check_candidate_test_evidence
         used={eid for check in report['checks'] for eid in check['test_event_ids']}
+        used.update(eid for check in report['checks'] for proof in check.get('coverage',[]) for eid in proof.get('event_ids',[]))
         records={e['event_id']:e for e in _events(snapshot,work['run_id'],'INTEGRATION_TEST_RECORDED')}
         for eid in used:
             data=records[eid]['payload']
@@ -354,7 +406,9 @@ def complete(ledger, identity, payload, *, command_id):
         event=ledger._event(db,'REQUIREMENT_COMPLETED',{'validation_work_id':state['work_id'],
             'validation_event_id':state['report']['event_id'],'target':state['target'],
             'summary':payload['summary'],'review':payload['review'],'receipt':receipt,
-            'historical_failures':dispositions,
+            'historical_failures':dispositions,'coverage_review':payload.get('coverage_review',[]),
+            'issue_dispositions':payload.get('issue_dispositions',[]),
+            'deferred_obligations':[o for o in state['plan'].get('obligations',[]) if not o['applicable']],
             'scope':'accepted_local_development','production_complete':False,'push_performed':False},
             run_id=work['run_id'],role='COORDINATOR',work_id=work['work_id'],notify=True)
         return {'event_id':event,'state':'COMPLETED','receipt':receipt}
@@ -378,6 +432,9 @@ def verify(ledger, identity, payload, *, command_id):
     from delivery_evidence import execute_candidate_tests
     kwargs={'command_id':command_id,'timeout_seconds':payload.get('timeout_seconds',300),
         'report_format':payload.get('report_format','pytest'),'evidence':payload.get('evidence',{})}
+    from delivery_evidence import preflight_test_request
+    invalid=preflight_test_request(payload['argv'],kwargs['timeout_seconds'],kwargs['evidence'],kwargs['report_format'])
+    if invalid:return invalid
     if payload.get('profile','local')=='mysql':
         from workflow_supplemental import mysql_session
         directory=ledger.path.parent/'mysql-sessions'/hashlib.sha256((work['work_id']+command_id).encode()).hexdigest()[:16]
@@ -389,7 +446,7 @@ def verify(ledger, identity, payload, *, command_id):
 
 
 def next_actions(packet, ledger):
-    snapshot=ledger.snapshot();work=packet.get('work') or {}
+    snapshot=_snapshot(ledger);work=packet.get('work') or {}
     run_id=(packet.get('run') or {}).get('run_id')
     state=facts(snapshot,run_id)
     if work.get('kind')=='integration_verification':
