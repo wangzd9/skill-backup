@@ -131,9 +131,9 @@ class RecoveryTests(unittest.TestCase):
             self.assertEqual('TimeoutExpired',result['preview_error']['error'])
 
     def test_followup_tracks_current_candidate_and_original_mysql_lineage(self):
-        item={'repair':{'task_id':'t','attempt':8},'disposition':{'run_id':'r'},'request_event_id':10}
+        item={'repair':{'task_id':'t','attempt':8},'disposition':{'run_id':'r'},'request_event_id':10,'observation_event_id':11}
         s={'tasks':[{'task_id':'t','run_id':'r','attempt':8,'phase':'REVIEW','role':'A'}],
-            'candidates':[{'task_id':'t','run_id':'r','attempt':8,'state':'CURRENT','candidate_id':'a8','head':'b'}],'events':[]}
+            'candidates':[{'task_id':'t','run_id':'r','attempt':8,'state':'CURRENT','candidate_id':'a8','head':'b'}],'events':[],'verifications':[]}
         before=copy.deepcopy(s)
         self.assertEqual(('a8','COORDINATOR','REPAIR_REVIEW_REQUIRED'),tuple(repair_followup(s,item)[k] for k in ('candidate_id','owner','code')))
         self.assertEqual(before,s)
@@ -141,6 +141,14 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual('SUPPLEMENTAL_REVALIDATION_RECONCILE_REQUIRED',repair_followup(s,item)['code'])
         s['events']=[{'kind':'SUPPLEMENTAL_REVALIDATION_QUEUED','work_id':'mysql','payload':{'candidate_id':'a8','original_request_event_id':10}}]
         self.assertEqual(('TESTER','mysql'),tuple(repair_followup(s,item)[k] for k in ('owner','work_id')))
+        s['verifications']=[{'candidate_id':'a8','verification_id':'mysql-pass','check_name':'supplemental_mysql','result':'PASS'}]
+        s['events'].append({'kind':'VERIFICATION_PUBLISHED','event_id':12,'work_id':'mysql','payload':{'verification_id':'mysql-pass'}})
+        row=repair_followup(s,item)
+        self.assertEqual(('COORDINATOR','VERIFICATION_EXCEPTION_CLOSE_REQUIRED'),tuple(row[k] for k in ('owner','code')))
+        self.assertFalse(row['gate_satisfied'])
+        self.assertEqual('mysql-pass',row['later_pass_options'][0]['verification_id'])
+        s['events'][0]['payload']['original_request_event_id']=99
+        self.assertEqual('SUPPLEMENTAL_REVALIDATION_RECONCILE_REQUIRED',repair_followup(s,item)['code'])
 
     def test_second_rework_requires_native_lineage_but_can_still_close_exception(self):
         from workflow_verification_exceptions import repair_descendant

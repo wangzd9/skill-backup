@@ -1,6 +1,6 @@
 # OCR 拒绝与异常返修接续修复
 
-日期：2026-10-30，Asia/Shanghai（+08:00）。当前运行时 **0.16.5**，提交 `e7269dc3e1fec2be8905d2fc834519fadba8b26d`；主要接续修复为0.16.2 / `ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa`。
+日期：2026-10-30，Asia/Shanghai（+08:00）。当前运行时 **0.16.6**，提交 `420be3c2a0b9d4e8aaf162418bc970739e6d7028`；主要接续修复为0.16.2 / `ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa`。
 
 **机制有缺陷，但不是“REJECTED 永久锁住 REVIEW”或“根本没有快照刷新”。** 本次先修复通用接续缺口，再由原生角色执行实际业务动作；不修改业务数据库状态来制造完成。
 
@@ -85,3 +85,11 @@
 **e14276 INTEGRATION_VERIFICATION_QUEUED**：原生重新冻结当前集成版本并排MN-07 attempt 3，work `work-05b4512fec3d4ebfad4afbac89029232`。当次状态已从SNAPSHOT_STALE变为 **VERIFICATION_QUEUED**，没有手工改快照、复用旧PASS或伪造测试。具体目标、原生派单与查询时刻见发布记录refreshed_business_status。
 
 当前剩余的是实际独立验证门禁：TESTER先完成同源MySQL补验，再执行排队的MN-07；MySQL真实PASS后协调者显式close e14173，最终集成真实PASS并完成逐项证据审核后才complete_requirement。当前尚无这些PASS/异常关闭/需求完成回执，不能宣称需求已经验收。派单、快照刷新及原角色自动领取均已实际发生，原来的无人推进链路已解除。
+
+## 真实MySQL补验PASS与关闭责任提示修复
+
+**e14279 VERIFICATION_PUBLISHED**：原TESTER通过verify_supplemental完成a8固定head的mysql_migration补验，真实 **supplemental_mysql PASS**，verification `verification-12d2914a995549089c552999b0f4b695`；原生验证valid=true，两轮稳定性退出码[0,0]、1/1测试通过、0 skip，明确supersedes原FAIL `verification-289eeed67f1543609a9b8ad89c3cedfe`。操作 `86af98356bb9110c3214c32cb4f46f23` 的JUnit、repeat和runner原件哈希保存在发布记录real_mysql_revalidation；没有拿普通独立测试替代MySQL补验。
+
+追加发现顶层next_actions已给resolve_verification_exception，但repair_followup仍把owner写为TESTER、要求等待复验。0.16.6复用同一原生closure_passes谱系索引，将责任切回 **COORDINATOR / VERIFICATION_EXCEPTION_CLOSE_REQUIRED**；不自动关闭、不伪造PASS，也不改变resolve的原件核验。10项接续回归及19项异常/补验链路回归通过（含真实Git/SQLite的一次、再次返修完整链）。22:04:22网关热加载68项源码哈希匹配，22:04:42生产关闭材料FOUND，明确列出上述同源PASS。
+
+此时仍缺协调者显式close e14173，以及TESTER接续MN-07固定新快照独立最终验证；没有相应回执前不称需求验收完成。

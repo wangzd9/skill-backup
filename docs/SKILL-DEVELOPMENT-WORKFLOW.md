@@ -8,7 +8,7 @@
 
 ![已上线的事务工作单模式及会话安全交接](skill-development-workflow/transaction-workflow.svg)
 
-> **文档版本：3.33｜核对日期：2026-10-30｜运行时区：Asia/Shanghai（+08:00）**\
+> **文档版本：3.34｜核对日期：2026-10-30｜运行时区：Asia/Shanghai（+08:00）**\
 > 本文是当前五角色协作流程的长期参考。依据现有 Skill、脚本、项目协议和 Hermes 配置整理；后续调整这些机制时同步更新本文。本文不保存实时任务状态，也不新增开发或生产授权。规则变化时以用户指令及适用的当前协议为依据核对差异，不把本指南当成额外验收门禁。
 
 **用户提出需求，规划者先确定需求归属和独立文档根，再做架构和初始拆分；协调者派单与接续，A/B/C 各自开发，测试者独立验证，协调者核对审查与证据后批准合入。** 强模型审查者只在有明确纠错需求时介入。角色通过文档交接；Hermes 负责实际唤醒与投递；脚本承担机械巡检、状态短报与统计采集，时段统计由短只读模型分析整理。
@@ -20,6 +20,8 @@
 0.16.4 补齐结果返回后的关联：异常返修提示通过原生 action_id 的 candidate_id 关联收集/裁决命令，防止只在提交阶段有下一动作链接；不同候选不互相关联。
 
 0.16.5 对历史覆盖拒绝的 excluded_files 元数据使用同一分类，保留原回执哈希，避免其他拒绝原因恢复后仍误报材料未核实。
+
+0.16.6 在同源MySQL复验PASS后，将异常子材料的当前责任切回协调者核证并显式close，消除“顶层要求关闭、子材料仍等待TESTER”的矛盾；不自动裁决或关闭。
 
 2026-10-30 只读进度入口修复：0.16.1 对观察健康分层中的嵌套明细实施有界引用，保留 UNKNOWN/UNVERIFIED、精确总数及完整原件哈希。旧投影超限从原件重新生成；不因摘要超限退回旧 checkpoint，也不把证据损坏伪装为成功。见[只读入口修复记录](analysis/coordinator-health-audit-20261030/LIVE-PROGRESS-OBSERVATION-BUDGET-REPAIR.md)。
 
@@ -912,3 +914,5 @@ Hermes主模型/provider、OCR及claude-mem记忆压缩均使用 `http://192.168
 | 3.32 | 2026-10-30 | 审查结果返回后继续按原生action归属关联异常返修裁决动作 | [实施与核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md) |
 
 | 3.33 | 2026-10-30 | 历史拒绝覆盖的排除文件路径使用同一元数据分类，保留原件哈希与证据校验 | [实施与核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md) |
+
+| 3.34 | 2026-10-30 | 同源MySQL复验PASS后将异常材料责任切回协调者显式关闭，保留原UNVERIFIED | [实施与核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md) |

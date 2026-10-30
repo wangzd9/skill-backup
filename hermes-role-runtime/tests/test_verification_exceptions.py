@@ -221,6 +221,10 @@ class VerificationExceptionTests(SupplementalVerificationTests):
         verification=checked['publication']['verification_id']
         options=closure_passes(self.ledger.snapshot(),facts(self.ledger.snapshot(),'mysql-run')[0])
         self.assertEqual([verification],[p['verification_id'] for p in options])
+        from workflow_verification_exceptions import repair_followup
+        followup=repair_followup(self.ledger.snapshot(),facts(self.ledger.snapshot(),'mysql-run')[0])
+        self.assertEqual(('COORDINATOR','VERIFICATION_EXCEPTION_CLOSE_REQUIRED'),tuple(followup[k] for k in ('owner','code')))
+        self.assertFalse(followup['gate_satisfied'])
         # Later current PASS options also apply to an older repair observation.
         historical={**item,'repair':{'task_id':'MN-01','attempt':0}}
         self.assertEqual(options,closure_passes(self.ledger.snapshot(),historical))

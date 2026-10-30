@@ -331,6 +331,11 @@ def repair_followup(snapshot, item):
         return {**result,'owner':'COORDINATOR' if task['phase']=='REVIEW' else task['role'],
             'code':'REPAIR_REVIEW_REQUIRED' if task['phase']=='REVIEW' else 'REPAIR_DEVELOPMENT_REQUIRED',
             'next':'先处理本返修候选的独立测试、OCR、批准及合入完成；不是重新处置旧候选，不重复创建返修。'}
+    passes=closure_passes(snapshot,item)
+    if passes:
+        return {**result,'owner':'COORDINATOR','code':'VERIFICATION_EXCEPTION_CLOSE_REQUIRED',
+            'later_pass_options':passes,
+            'next':'同源supplemental_mysql PASS已落账；协调者核原始补验证据后显式close，不再等待或重复派复验。异常保持未关闭，普通独立测试不能替代该证据。'}
     queued=[e for e in snapshot['events'] if e['kind']=='SUPPLEMENTAL_REVALIDATION_QUEUED'
         and candidate and e['payload'].get('candidate_id')==candidate['candidate_id']
         and e['payload'].get('original_request_event_id')==item['request_event_id']]
