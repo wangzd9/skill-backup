@@ -1,0 +1,919 @@
+{
+  "sampled_at": "2026-10-30T17:52:05.411826+08:00",
+  "frozen_primary_sample": "2026-10-30T17:46:36.528968+08:00",
+  "scope": "Read-only follow-up; separate cut-off from primary usage statistics. No narrative/model reasoning exported.",
+  "tool_observations": [
+    {
+      "session_id": "cron_14ae4556629a_20261030_174159",
+      "role": "COORDINATOR",
+      "message_id": 374634,
+      "at": 1793353646.9278579,
+      "direction": "call",
+      "tool": "role_work_input",
+      "tool_call_id": "chatcmpl-tool-8d751f098c605a1a",
+      "arguments": {
+        "after": 11343,
+        "events_only": true,
+        "limit": 100
+      }
+    },
+    {
+      "session_id": "cron_14ae4556629a_20261030_174159",
+      "role": "COORDINATOR",
+      "message_id": 374635,
+      "at": 1793353646.989988,
+      "direction": "reply",
+      "tool": "role_work_input",
+      "bytes": 47701,
+      "fields": {
+        "status": "COMMITTED",
+        "can_ack": true,
+        "processed_through": 11243,
+        "issued_through": 11430,
+        "through": 11430,
+        "frozen_through": 14183,
+        "next_after": 11430,
+        "has_more": true
+      }
+    },
+    {
+      "session_id": "cron_14ae4556629a_20261030_174159",
+      "role": "COORDINATOR",
+      "message_id": 374670,
+      "at": 1793353902.485438,
+      "direction": "call",
+      "tool": "role_decision_context",
+      "tool_call_id": "chatcmpl-tool-86bd32f1403f2923",
+      "arguments": {
+        "operation": "prepare",
+        "decision_id": "decision-584f6ef337154e01f166aa71"
+      }
+    },
+    {
+      "session_id": "cron_14ae4556629a_20261030_174159",
+      "role": "COORDINATOR",
+      "message_id": 374670,
+      "at": 1793353902.485438,
+      "direction": "call",
+      "tool": "role_work_input",
+      "tool_call_id": "chatcmpl-tool-80857bc14202471f",
+      "arguments": {
+        "after": 14080,
+        "events_only": true,
+        "limit": 100
+      }
+    },
+    {
+      "session_id": "cron_14ae4556629a_20261030_174159",
+      "role": "COORDINATOR",
+      "message_id": 374671,
+      "at": 1793353902.7805414,
+      "direction": "reply",
+      "tool": "role_decision_context",
+      "bytes": 16261,
+      "fields": {
+        "status": "FOUND",
+        "source_status": "FOUND",
+        "refresh_required": false,
+        "can_ack": false,
+        "decision_id": "decision-584f6ef337154e01f166aa71",
+        "material_fingerprint": "6e0e057524454d78fab85459ef60e7b87e2e0d64553d6248ce27dcdf4de3b588"
+      },
+      "material_present": true,
+      "material_inline": true
+    },
+    {
+      "session_id": "cron_14ae4556629a_20261030_174159",
+      "role": "COORDINATOR",
+      "message_id": 374674,
+      "at": 1793353902.8932261,
+      "direction": "reply",
+      "tool": "role_work_input",
+      "bytes": 4068,
+      "fields": {
+        "status": "REJECTED",
+        "code": "PAGE_AFTER_NOT_PREVIOUSLY_ISSUED",
+        "processed_through": 11243,
+        "issued_through": 11430
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374580,
+      "at": 1793353310.6289062,
+      "direction": "call",
+      "tool": "role_work_input",
+      "tool_call_id": "chatcmpl-tool-b40d6b5e3f45037b",
+      "arguments": {
+        "after": 1649,
+        "events_only": true
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374580,
+      "at": 1793353310.6289062,
+      "direction": "call",
+      "tool": "role_decision_context",
+      "tool_call_id": "chatcmpl-tool-b5715a9548124bf2",
+      "arguments": {
+        "operation": "directory"
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374582,
+      "at": 1793353310.7582562,
+      "direction": "reply",
+      "tool": "role_work_input",
+      "bytes": 29847,
+      "fields": {
+        "status": "COMMITTED",
+        "can_ack": true,
+        "processed_through": 1649,
+        "issued_through": 1789,
+        "through": 1789,
+        "frozen_through": 14180,
+        "next_after": 1789,
+        "has_more": true
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374583,
+      "at": 1793353311.156563,
+      "direction": "reply",
+      "tool": "role_decision_context",
+      "bytes": 3901,
+      "fields": {
+        "status": "FOUND",
+        "can_ack": false,
+        "items_total": 2
+      },
+      "material_present": false,
+      "material_inline": true
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374594,
+      "at": 1793353428.1634994,
+      "direction": "call",
+      "tool": "role_work_input",
+      "tool_call_id": "chatcmpl-tool-a20a056053efdef2",
+      "arguments": {
+        "after": 13900,
+        "events_only": true,
+        "limit": 100
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374594,
+      "at": 1793353428.1634994,
+      "direction": "call",
+      "tool": "role_decision_context",
+      "tool_call_id": "chatcmpl-tool-8415b761db6d868f",
+      "arguments": {
+        "operation": "contract",
+        "decision_id": "decision-1ba92ca6aa5647c330d683a0",
+        "action": "verify_integration",
+        "expected_fingerprint": "18534841bfe06200d1cb8e8e371b4c7092261e51776502a31719a0cf80878859"
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374595,
+      "at": 1793353428.2162654,
+      "direction": "reply",
+      "tool": "role_work_input",
+      "bytes": 4013,
+      "fields": {
+        "status": "REJECTED",
+        "code": "PAGE_AFTER_NOT_PREVIOUSLY_ISSUED",
+        "processed_through": 1649,
+        "issued_through": 1789
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374596,
+      "at": 1793353428.2429621,
+      "direction": "reply",
+      "tool": "role_decision_context",
+      "bytes": 232,
+      "fields": {
+        "status": "REJECTED",
+        "code": "INVALID_DECISION_QUERY",
+        "phase": "INVALID_NOT_STARTED",
+        "can_ack": false,
+        "side_effect_state": "NONE"
+      },
+      "material_present": false,
+      "material_inline": true
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374597,
+      "at": 1793353437.7091591,
+      "direction": "call",
+      "tool": "role_work_input",
+      "tool_call_id": "chatcmpl-tool-a7d1b05d4761eeca",
+      "arguments": {
+        "after": 1789,
+        "events_only": true,
+        "limit": 100
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374597,
+      "at": 1793353437.7091591,
+      "direction": "call",
+      "tool": "role_decision_context",
+      "tool_call_id": "chatcmpl-tool-aa54b0b7f3599be4",
+      "arguments": {
+        "action": "verify_integration",
+        "decision_id": "decision-1ba92ca6aa5647c330d683a0",
+        "expected_fingerprint": "75ced012f074b5c51076d5b16824db52dea5134771c57dc2b458fb679b7ab5cd",
+        "operation": "contract"
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374598,
+      "at": 1793353437.9946551,
+      "direction": "reply",
+      "tool": "role_work_input",
+      "bytes": 19430,
+      "fields": {
+        "status": "COMMITTED",
+        "can_ack": true,
+        "processed_through": 1649,
+        "issued_through": 1889,
+        "through": 1889,
+        "frozen_through": 14183,
+        "next_after": 1889,
+        "has_more": true
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374599,
+      "at": 1793353438.0205076,
+      "direction": "reply",
+      "tool": "role_decision_context",
+      "bytes": 232,
+      "fields": {
+        "status": "REJECTED",
+        "code": "INVALID_DECISION_QUERY",
+        "phase": "INVALID_NOT_STARTED",
+        "can_ack": false,
+        "side_effect_state": "NONE"
+      },
+      "material_present": false,
+      "material_inline": true
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374621,
+      "at": 1793353591.202718,
+      "direction": "call",
+      "tool": "role_decision_context",
+      "tool_call_id": "chatcmpl-tool-8238af03acf223b7",
+      "arguments": {
+        "action": "verify_integration",
+        "decision_id": "decision-1ba92ca6aa5647c330d683a0",
+        "expected_fingerprint": "75ced012f074b5c51076d5b16824db52dea5134771c57dc2b458fb679b7ab5cd",
+        "operation": "prepare"
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374623,
+      "at": 1793353591.2740457,
+      "direction": "reply",
+      "tool": "role_decision_context",
+      "bytes": 232,
+      "fields": {
+        "status": "REJECTED",
+        "code": "INVALID_DECISION_QUERY",
+        "phase": "INVALID_NOT_STARTED",
+        "can_ack": false,
+        "side_effect_state": "NONE"
+      },
+      "material_present": false,
+      "material_inline": true
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374642,
+      "at": 1793353682.5537481,
+      "direction": "call",
+      "tool": "role_work_input",
+      "tool_call_id": "chatcmpl-tool-8b9222073e1b66a8",
+      "arguments": {
+        "after": 1889,
+        "events_only": true,
+        "limit": 100
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374642,
+      "at": 1793353682.5537481,
+      "direction": "call",
+      "tool": "role_decision_context",
+      "tool_call_id": "chatcmpl-tool-89eb56e9eadd5ec4",
+      "arguments": {
+        "decision_id": "decision-1ba92ca6aa5647c330d683a0",
+        "expected_fingerprint": "75ced012f074b5c51076d5b16824db52dea5134771c57dc2b458fb679b7ab5cd",
+        "operation": "prepare"
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374643,
+      "at": 1793353682.622562,
+      "direction": "reply",
+      "tool": "role_work_input",
+      "bytes": 16805,
+      "fields": {
+        "status": "COMMITTED",
+        "can_ack": true,
+        "processed_through": 1889,
+        "issued_through": 1989,
+        "through": 1989,
+        "frozen_through": 14183,
+        "next_after": 1989,
+        "has_more": true
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374644,
+      "at": 1793353682.9293325,
+      "direction": "reply",
+      "tool": "role_decision_context",
+      "bytes": 1036,
+      "fields": {
+        "status": "FOUND",
+        "source_status": "FOUND",
+        "refresh_required": false,
+        "can_ack": false,
+        "decision_id": "decision-1ba92ca6aa5647c330d683a0",
+        "material_fingerprint": "75ced012f074b5c51076d5b16824db52dea5134771c57dc2b458fb679b7ab5cd"
+      },
+      "material_present": true,
+      "material_inline": false
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374668,
+      "at": 1793353867.365294,
+      "direction": "call",
+      "tool": "role_work_input",
+      "tool_call_id": "chatcmpl-tool-8a3ab56e811196ac",
+      "arguments": {
+        "after": 1989,
+        "events_only": true,
+        "limit": 100
+      }
+    },
+    {
+      "session_id": "cron_167580c0500b_20261030_173901",
+      "role": "TESTER",
+      "message_id": 374669,
+      "at": 1793353867.444216,
+      "direction": "reply",
+      "tool": "role_work_input",
+      "bytes": 28730,
+      "fields": {
+        "status": "COMMITTED",
+        "can_ack": true,
+        "processed_through": 1889,
+        "issued_through": 2089,
+        "through": 2089,
+        "frozen_through": 14183,
+        "next_after": 2089,
+        "has_more": true
+      }
+    }
+  ],
+  "authority": {
+    "mode": "ACTIVE",
+    "generation": 1,
+    "current_run_id": "prepared-rosbag-catalog-a100-multi-node",
+    "admission_open": 1
+  },
+  "tasks": [
+    {
+      "task_id": "MN-01",
+      "role": "A",
+      "phase": "COMPLETED",
+      "attempt": 7
+    },
+    {
+      "task_id": "MN-02",
+      "role": "B",
+      "phase": "COMPLETED",
+      "attempt": 3
+    },
+    {
+      "task_id": "MN-03",
+      "role": "C",
+      "phase": "COMPLETED",
+      "attempt": 9
+    },
+    {
+      "task_id": "MN-04",
+      "role": "A",
+      "phase": "COMPLETED",
+      "attempt": 7
+    },
+    {
+      "task_id": "MN-05",
+      "role": "B",
+      "phase": "COMPLETED",
+      "attempt": 3
+    },
+    {
+      "task_id": "MN-06",
+      "role": "C",
+      "phase": "COMPLETED",
+      "attempt": 2
+    }
+  ],
+  "open_works": [
+    {
+      "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+      "task_id": null,
+      "attempt": null,
+      "role": "COORDINATOR",
+      "kind": "coordination",
+      "state": "RUNNING",
+      "processed_through": 11243,
+      "issued_through": 11430,
+      "active_execution_id": "d555cbe123814b84861f4db3ac9e0b94"
+    },
+    {
+      "work_id": "work-0109bcdb04ed4f639e98b338118a88cb",
+      "task_id": "MN-07",
+      "attempt": 2,
+      "role": "TESTER",
+      "kind": "integration_verification",
+      "state": "RUNNING",
+      "processed_through": 1889,
+      "issued_through": 2089,
+      "active_execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7"
+    }
+  ],
+  "event_high_water": 14183,
+  "events_since_semantic_activation": [
+    {
+      "event_id": 14173,
+      "kind": "VERIFICATION_EXCEPTION_RECORDED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-2c31ed88a98f4a5d95400816e43769e2",
+      "role": "COORDINATOR",
+      "created_at": 1793352600.869273,
+      "facts": {
+        "task_id": "MN-04",
+        "attempt": 7,
+        "candidate_id": "candidate-81b2729f35604ded872853d641f9048f",
+        "result": "UNVERIFIED"
+      }
+    },
+    {
+      "event_id": 14174,
+      "kind": "VERIFICATION_RETIREMENT_REQUESTED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-2c31ed88a98f4a5d95400816e43769e2",
+      "role": "TESTER",
+      "created_at": 1793352600.8694093,
+      "facts": {
+        "candidate_id": "candidate-81b2729f35604ded872853d641f9048f"
+      }
+    },
+    {
+      "event_id": 14175,
+      "kind": "WORK_RELEASED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-2c31ed88a98f4a5d95400816e43769e2",
+      "role": "TESTER",
+      "created_at": 1793353093.3999379,
+      "facts": {}
+    },
+    {
+      "event_id": 14176,
+      "kind": "EXECUTION_ENDED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-2c31ed88a98f4a5d95400816e43769e2",
+      "role": "TESTER",
+      "created_at": 1793353134.0054147,
+      "facts": {
+        "execution_id": "0bfbe54397b349369be18327d0c9f64b"
+      }
+    },
+    {
+      "event_id": 14177,
+      "kind": "VERIFICATION_RETIRED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-2c31ed88a98f4a5d95400816e43769e2",
+      "role": "TESTER",
+      "created_at": 1793353137.8150945,
+      "facts": {
+        "candidate_id": "candidate-81b2729f35604ded872853d641f9048f"
+      }
+    },
+    {
+      "event_id": 14178,
+      "kind": "EXECUTION_OUTCOME_OBSERVED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-2c31ed88a98f4a5d95400816e43769e2",
+      "role": "TESTER",
+      "created_at": 1793353139.447567,
+      "facts": {
+        "execution_id": "0bfbe54397b349369be18327d0c9f64b",
+        "native_outcome": "COMPLETED"
+      }
+    },
+    {
+      "event_id": 14179,
+      "kind": "EXECUTION_BOUND",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-0109bcdb04ed4f639e98b338118a88cb",
+      "role": "TESTER",
+      "created_at": 1793353142.4139078,
+      "facts": {
+        "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7"
+      }
+    },
+    {
+      "event_id": 14180,
+      "kind": "CHECKPOINT_SAVED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+      "role": "COORDINATOR",
+      "created_at": 1793353227.062572,
+      "facts": {
+        "processed_through": 11243,
+        "previous_processed_through": 11243,
+        "acknowledged": false
+      }
+    },
+    {
+      "event_id": 14181,
+      "kind": "EXECUTION_ENDED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+      "role": "COORDINATOR",
+      "created_at": 1793353313.755987,
+      "facts": {
+        "execution_id": "a023056122bf4c208e825a3687aea6a7"
+      }
+    },
+    {
+      "event_id": 14182,
+      "kind": "EXECUTION_OUTCOME_OBSERVED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+      "role": "COORDINATOR",
+      "created_at": 1793353316.396459,
+      "facts": {
+        "execution_id": "a023056122bf4c208e825a3687aea6a7",
+        "native_outcome": "COMPLETED"
+      }
+    },
+    {
+      "event_id": 14183,
+      "kind": "EXECUTION_BOUND",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+      "role": "COORDINATOR",
+      "created_at": 1793353319.6359184,
+      "facts": {
+        "execution_id": "d555cbe123814b84861f4db3ac9e0b94"
+      }
+    }
+  ],
+  "pending_notifications": [
+    {
+      "kind": "PERIODIC_SUMMARY",
+      "state": "UNKNOWN",
+      "count": 12,
+      "oldest": 1792738877.744879
+    }
+  ],
+  "review_action_bindings": [
+    {
+      "action_id": "mn03-a4-ocr-suppl-001",
+      "kind": "ocr",
+      "state": "INCOMPLETE",
+      "candidate_id": "candidate-96ba11ea31654388a985eb0a5f4b35ac",
+      "task_id": "MN-03",
+      "attempt": 4,
+      "candidate_state": "SUPERSEDED",
+      "current_attempt": 9,
+      "current_task_phase": "COMPLETED"
+    },
+    {
+      "action_id": "mn03-c1-ocr-001",
+      "kind": "ocr",
+      "state": "INCOMPLETE",
+      "candidate_id": "candidate-88737b762a4b4f689aaeaec4079a33f1",
+      "task_id": "MN-03",
+      "attempt": 1,
+      "candidate_state": "SUPERSEDED",
+      "current_attempt": 9,
+      "current_task_phase": "COMPLETED"
+    },
+    {
+      "action_id": "mn04-a2-ocr-001",
+      "kind": "ocr",
+      "state": "INCOMPLETE",
+      "candidate_id": "candidate-3a2de1e3b8d842769ba12b43e44b1a51",
+      "task_id": "MN-04",
+      "attempt": 2,
+      "candidate_state": "SUPERSEDED",
+      "current_attempt": 7,
+      "current_task_phase": "COMPLETED"
+    },
+    {
+      "action_id": "mn04-a2-ocr-suppl-001",
+      "kind": "ocr",
+      "state": "INCOMPLETE",
+      "candidate_id": "candidate-3a2de1e3b8d842769ba12b43e44b1a51",
+      "task_id": "MN-04",
+      "attempt": 2,
+      "candidate_state": "SUPERSEDED",
+      "current_attempt": 7,
+      "current_task_phase": "COMPLETED"
+    },
+    {
+      "action_id": "mn04-a3-ocr-001",
+      "kind": "ocr",
+      "state": "INCOMPLETE",
+      "candidate_id": "candidate-c78066174123447d9dd4933b7c73a7d5",
+      "task_id": "MN-04",
+      "attempt": 3,
+      "candidate_state": "SUPERSEDED",
+      "current_attempt": 7,
+      "current_task_phase": "COMPLETED"
+    }
+  ],
+  "health": {
+    "at": 1793353913.357342,
+    "health": "unverified",
+    "event_high_water": 14183,
+    "health_layers": {
+      "current_run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "collector_fault_count": 7,
+      "business_authority": {
+        "mode": "ACTIVE",
+        "admission_open": 1,
+        "event_high_water": 14183
+      },
+      "current_writer_count": 2,
+      "unverified_writer_scope_count": 0,
+      "current_inflight_service_count": 0,
+      "historical_evidence_debt_count": 1387,
+      "historical_debt_archived": false,
+      "classification": "Age separates display only; no unknown writer is released.",
+      "terminal_services_verified": 40,
+      "terminal_result_incomplete": 7,
+      "activity_policy": {
+        "state": "CONFIGURED",
+        "source": "/home/wang/.hermes/role-pool.runtime/observation-policy.json",
+        "no_activity_seconds": 1800,
+        "adoption": "READ_FROM_SOURCE",
+        "meaning": "观察阈值，不是任务超时或接管权限；登记中的合法操作按任务期限观察。"
+      },
+      "business_progress": [
+        {
+          "role": "COORDINATOR",
+          "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+          "state": "RUNNING",
+          "processed_through": 11243,
+          "issued_through": 11430,
+          "last_checkpoint_at": 1793353227.062572,
+          "checkpoint_is_not_proof_of_progress": true
+        },
+        {
+          "role": "TESTER",
+          "work_id": "work-0109bcdb04ed4f639e98b338118a88cb",
+          "state": "RUNNING",
+          "processed_through": 1889,
+          "issued_through": 2089,
+          "last_checkpoint_at": null,
+          "checkpoint_is_not_proof_of_progress": true
+        }
+      ],
+      "capacity": {
+        "database_bytes": 3134615552,
+        "warning_bytes": 2147483648,
+        "state": "CAPACITY_WARNING",
+        "new_input_page_limit_bytes": 65536,
+        "historical_compaction_performed": false,
+        "retention": "保留命令、原始事件及不可变页；归档须一并保存哈希引用，不在线删库或VACUUM。"
+      },
+      "notification_health": []
+    },
+    "snapshot_at": "2026-10-30T17:51:53.357342+08:00",
+    "age_seconds": 12.054,
+    "anomaly_types": {
+      "write_authority_unverified": 169,
+      "observer_terminal_service_evidence_unverified": 7,
+      "observer_service_identity_unverified": 3,
+      "observer_frozen_execution_unverified": 1382,
+      "observer_active_execution_without_lease": 2,
+      "observer_active_execution_scope_missing": 3,
+      "observer_untracked_writer_scope": 1
+    },
+    "fault_types": {
+      "observer_terminal_service_evidence_unverified": 7
+    }
+  },
+  "decision_metrics_files": {
+    "executions": 2,
+    "requests": 4,
+    "works": 2
+  },
+  "request_linkage": [
+    {
+      "physical_attempt_id": "172b25c4012849238e0164fc3313dbcb",
+      "decision_ids": [
+        "decision-584f6ef337154e01f166aa71"
+      ],
+      "attribution": "shared_context_no_cost_split",
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "open",
+      "usage_present": 0
+    },
+    {
+      "physical_attempt_id": "50d69a19494c4b2a99350e3b05c627f0",
+      "decision_ids": [
+        "decision-1ba92ca6aa5647c330d683a0"
+      ],
+      "attribution": "shared_context_no_cost_split",
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "abbeadfd2a35425e9ca7eeb15d333c5f",
+      "decision_ids": [
+        "decision-1ba92ca6aa5647c330d683a0"
+      ],
+      "attribution": "shared_context_no_cost_split",
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "cfc87541d34248af8b72230972ed980c",
+      "decision_ids": [
+        "decision-1ba92ca6aa5647c330d683a0"
+      ],
+      "attribution": "shared_context_no_cost_split",
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "open",
+      "usage_present": 0
+    }
+  ],
+  "code_evidence": [
+    {
+      "path": "/home/wang/work/hermes-role-runtime/__init__.py",
+      "bytes": 84207,
+      "sha256": "08bdfe7739e02c5bfeda1d85936292d387a84a16c15b32cbd2588c07982e2f3d"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/business_ledger.py",
+      "bytes": 158304,
+      "sha256": "c9a5899a909b2d31d807a95a3eb0ea5f3a8893c246f6cec13572719f642e74ef"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_runtime.py",
+      "bytes": 62714,
+      "sha256": "64fbf5a9c95440ad94ec72d493ea7b2383c34b05fab0230fba73c3df4abc066e"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_progression.py",
+      "bytes": 19675,
+      "sha256": "b03496dcfbb1eda7eedd2132aeb7c6611ba685ca3cbcd73bb781c7358135fbad"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_model_input.py",
+      "bytes": 3992,
+      "sha256": "917685f333921a1b2f5e94877bdbd53b034af8c3b8f04bd225dd77effed75ce0"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_toolsets.py",
+      "bytes": 1545,
+      "sha256": "a1c3d34bb270d3efde0945d63a2a94c228fd35266ab2c68f04562eac6fa22d13"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_resumption.py",
+      "bytes": 2408,
+      "sha256": "4c5f4d605cc26a93b35e7c3049ff2052046656b1d80b10e7b36959ad0e97c5e1"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_decision_context.py",
+      "bytes": 20671,
+      "sha256": "000f28e70db4988dfd8365a5e337a91fb3ad7e6db1325cea349a9ff680b2c13b"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_decision_metrics.py",
+      "bytes": 3077,
+      "sha256": "df551f36289655af468df3355921c5c07721ab8d2dd9fc48d273a257f69ee0bf"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_work_memory.py",
+      "bytes": 6897,
+      "sha256": "dc45c7553a2963ee44ded2b264ca838d284cd1fb409447aab667bc620099f89a"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_verification_exceptions.py",
+      "bytes": 23452,
+      "sha256": "8777e23e31606f47c94da5a3d059992d3cae598d722601cafb8a0246b7900947"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_completion.py",
+      "bytes": 29461,
+      "sha256": "d9be4e8faff6fe03b4135ba5270cc2a22fff62dcb92b9ed93426ba7aa0215985"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_recovery.py",
+      "bytes": 1634,
+      "sha256": "ea5c13e36ec8f7c54356c4a27a0c814fb17bf4b6cdc4f1a14d04ed3471dbc826"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_query.py",
+      "bytes": 33139,
+      "sha256": "d476dafbd1d5ddf7edf7450b470e0e1e46268f8114d1c52aa79878d7f92f84ba"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_reports.py",
+      "bytes": 74100,
+      "sha256": "7e4730d1120f5085d668ccb9823ff1507406eefd36e52e6e0127ca43295f74d8"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_notification_registry.py",
+      "bytes": 2548,
+      "sha256": "133437a5ab5715a04ad0512bcf1ad34d49729d95c148957035cc6ca05839e918"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/workflow_terminal_observation.py",
+      "bytes": 3360,
+      "sha256": "f92cbb5bf73759393a4bb7100293e4483362a961ff122dc3ff166bb59ae4608c"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/tests/test_semantic_decision.py",
+      "bytes": 20725,
+      "sha256": "60e96a79c3d30ea242226dccae15ac7c0001baccd6f82ab478a816fa72f32814"
+    },
+    {
+      "path": "/home/wang/work/hermes-role-runtime/tests/test_verification_exceptions.py",
+      "bytes": 16003,
+      "sha256": "c69f6127e9ad1a64c3be0f49479f476ee366ef005843c1ae29fc4980673e5928"
+    }
+  ],
+  "release_test_evidence": [
+    {
+      "path": "/home/wang/work/.local/token-optimization-20261030/tests-final.log",
+      "sha256": "d634e99a2d0556728298d209dadca176eb1d5eda23c502b7390fd5b248f16db6",
+      "result": [
+        "Ran 152 tests in 141.921s\n\nOK"
+      ]
+    },
+    {
+      "path": "/home/wang/work/.local/semantic-decision-20261030/release-tests.log",
+      "sha256": "f1f91f9034a4bcabe58d596afe2b896f523d8e73a60a98c93df8519aba48b745",
+      "result": [
+        "Ran 212 tests in 192.626s\n\nOK"
+      ]
+    }
+  ]
+}

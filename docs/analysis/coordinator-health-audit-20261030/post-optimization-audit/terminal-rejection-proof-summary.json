@@ -1,0 +1,99 @@
+{
+  "sampled_at": "2026-10-30T18:12:44+08:00",
+  "health_sample_at": 1793355113.3572237,
+  "scope": "Read-only existing rejection_proof on already-REJECTED metadata. Ledger/observer/files are separate samples. No command, verdict or dispatch.",
+  "proof_code_sha256": "01abb62b4bd9bf6e018bf3528d4f06326641b440b24827dc0f06d30480741192",
+  "rows": [
+    {
+      "action_id": "coordinator-ocr-rccd03-c-attempt1-resub1",
+      "state": "REJECTED",
+      "run_id": "raw-collection-cutover-20261021",
+      "task_id": "TASK-RCCD03-C",
+      "attempt": 1,
+      "candidate_state": "SUPERSEDED",
+      "has_terminal_evidence": false,
+      "sidecar_identity_matches": true,
+      "zero_dispatch_proof_currently_valid": false,
+      "source_sha256": "7084b8c88fb9687f8fe29ff8b216123ea5318a9a7e019d4e5e75ecbbcfdefea2",
+      "source_unchanged": true
+    },
+    {
+      "action_id": "mn01-a1-ocr-001",
+      "state": "REJECTED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "task_id": "MN-01",
+      "attempt": 1,
+      "candidate_state": "SUPERSEDED",
+      "has_terminal_evidence": false,
+      "sidecar_identity_matches": true,
+      "zero_dispatch_proof_currently_valid": true,
+      "source_sha256": "b2202328cab5d99f362e686517fcda7dd6db238967b7be900595d4a8e65fc955",
+      "source_unchanged": true
+    },
+    {
+      "action_id": "mn03-a2-ocr-001",
+      "state": "REJECTED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "task_id": "MN-03",
+      "attempt": 2,
+      "candidate_state": "SUPERSEDED",
+      "has_terminal_evidence": false,
+      "sidecar_identity_matches": true,
+      "zero_dispatch_proof_currently_valid": true,
+      "source_sha256": "2d2c4e279d9578e4641f18879b75e9bb04fd04e81d8250581906cd5b7aab8b23",
+      "source_unchanged": true
+    },
+    {
+      "action_id": "mn03-a2-ocr-002",
+      "state": "REJECTED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "task_id": "MN-03",
+      "attempt": 2,
+      "candidate_state": "SUPERSEDED",
+      "has_terminal_evidence": false,
+      "sidecar_identity_matches": true,
+      "zero_dispatch_proof_currently_valid": true,
+      "source_sha256": "b4956fe026d5dd9b6fd597c3898e2f9d66ab3d2fe9bb8e86ef9e2aa98aa32a55",
+      "source_unchanged": true
+    },
+    {
+      "action_id": "mn04-a2-ocr-001-resume1",
+      "state": "REJECTED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "task_id": "MN-04",
+      "attempt": 2,
+      "candidate_state": "SUPERSEDED",
+      "has_terminal_evidence": false,
+      "sidecar_identity_matches": true,
+      "zero_dispatch_proof_currently_valid": true,
+      "source_sha256": "f18ad0934a43df882675641eb49a742ecaa85f2d2c7d2dde66ad4f87c00eb67f",
+      "source_unchanged": true
+    },
+    {
+      "action_id": "mn04-a2-ocr-suppl-001-resume1",
+      "state": "REJECTED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "task_id": "MN-04",
+      "attempt": 2,
+      "candidate_state": "SUPERSEDED",
+      "has_terminal_evidence": false,
+      "sidecar_identity_matches": true,
+      "zero_dispatch_proof_currently_valid": true,
+      "source_sha256": "01d4ad5e6c4cd631d93cc65d0e686407aec8afe3f7b5d71a0cc259f64a1f69cd",
+      "source_unchanged": true
+    },
+    {
+      "action_id": "mn06-a2-ocr-001",
+      "state": "REJECTED",
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "task_id": "MN-06",
+      "attempt": 2,
+      "candidate_state": "CURRENT",
+      "has_terminal_evidence": false,
+      "sidecar_identity_matches": true,
+      "zero_dispatch_proof_currently_valid": true,
+      "source_sha256": "8c09f3f90fd8873ce3d786dae1a45adb06cec0e9ff74c15e3d412145988aa186",
+      "source_unchanged": true
+    }
+  ]
+}

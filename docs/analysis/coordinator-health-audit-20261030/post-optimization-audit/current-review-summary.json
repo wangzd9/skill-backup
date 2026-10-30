@@ -1,0 +1,899 @@
+{
+  "sampled_at": "2026-10-30T18:12:43+08:00",
+  "message_cutoff": 1793355163.973638,
+  "sampling": "Ledger, messages and cached observer sampled separately; each SQLite connection is query_only/read-only. Not a cross-database atomic snapshot.",
+  "source_head": "9d8c3a67adfb00d6aadf408346c1a9e435c94d31",
+  "authority": {
+    "mode": "ACTIVE",
+    "generation": 1,
+    "current_run_id": "prepared-rosbag-catalog-a100-multi-node",
+    "admission_open": 1
+  },
+  "event_high_water": 14224,
+  "tasks": [
+    {
+      "task_id": "MN-01",
+      "role": "A",
+      "phase": "COMPLETED",
+      "attempt": 7
+    },
+    {
+      "task_id": "MN-02",
+      "role": "B",
+      "phase": "COMPLETED",
+      "attempt": 3
+    },
+    {
+      "task_id": "MN-03",
+      "role": "C",
+      "phase": "COMPLETED",
+      "attempt": 9
+    },
+    {
+      "task_id": "MN-04",
+      "role": "A",
+      "phase": "REVIEW",
+      "attempt": 8
+    },
+    {
+      "task_id": "MN-05",
+      "role": "B",
+      "phase": "COMPLETED",
+      "attempt": 3
+    },
+    {
+      "task_id": "MN-06",
+      "role": "C",
+      "phase": "COMPLETED",
+      "attempt": 2
+    }
+  ],
+  "open_works": [
+    {
+      "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+      "task_id": null,
+      "attempt": null,
+      "role": "COORDINATOR",
+      "kind": "coordination",
+      "state": "RUNNING",
+      "processed_through": 11704,
+      "issued_through": 11768,
+      "active_execution_id": "db826f41425d45bc96856f77ae0adc7d",
+      "work_memory_present": false,
+      "unprocessed_raw_events": 2520,
+      "unprocessed_nonmechanical_events": 113,
+      "unprocessed_top_kinds": [
+        [
+          "TOOL_EXECUTION_REGISTERED",
+          728
+        ],
+        [
+          "EXECUTION_BOUND",
+          448
+        ],
+        [
+          "EXECUTION_ENDED",
+          446
+        ],
+        [
+          "EXECUTION_OUTCOME_OBSERVED",
+          446
+        ],
+        [
+          "CHECKPOINT_SAVED",
+          332
+        ],
+        [
+          "DEVELOPMENT_LOG_APPENDED",
+          19
+        ]
+      ]
+    },
+    {
+      "work_id": "work-0109bcdb04ed4f639e98b338118a88cb",
+      "task_id": "MN-07",
+      "attempt": 2,
+      "role": "TESTER",
+      "kind": "integration_verification",
+      "state": "RUNNING",
+      "processed_through": 2089,
+      "issued_through": 2189,
+      "active_execution_id": "2dabc51821eb495e89139d89029cc8f1",
+      "work_memory_present": false,
+      "unprocessed_raw_events": 12135,
+      "unprocessed_nonmechanical_events": 413,
+      "unprocessed_top_kinds": [
+        [
+          "EXECUTION_ENDED",
+          2560
+        ],
+        [
+          "EXECUTION_OUTCOME_OBSERVED",
+          2560
+        ],
+        [
+          "EXECUTION_BOUND",
+          2559
+        ],
+        [
+          "TOOL_EXECUTION_REGISTERED",
+          2164
+        ],
+        [
+          "CHECKPOINT_SAVED",
+          1850
+        ],
+        [
+          "CANDIDATE_DECIDED",
+          111
+        ]
+      ]
+    }
+  ],
+  "exception_and_completion_events": [
+    {
+      "event_id": 14173,
+      "kind": "VERIFICATION_EXCEPTION_RECORDED",
+      "role": "COORDINATOR",
+      "created_at": 1793352600.869273,
+      "facts": {
+        "task_id": "MN-04",
+        "attempt": 7,
+        "result": "UNVERIFIED"
+      }
+    },
+    {
+      "event_id": 14177,
+      "kind": "VERIFICATION_RETIRED",
+      "role": "TESTER",
+      "created_at": 1793353137.8150945,
+      "facts": {}
+    },
+    {
+      "event_id": 14184,
+      "kind": "VERIFICATION_EXCEPTION_DISPOSITION_RECORDED",
+      "role": "COORDINATOR",
+      "created_at": 1793354084.7961395,
+      "facts": {
+        "task_id": "MN-04",
+        "disposition": "repair",
+        "owner": "A",
+        "observation_event_id": 14173
+      }
+    },
+    {
+      "event_id": 14185,
+      "kind": "VERIFICATION_EXCEPTION_REPAIR_QUEUED",
+      "role": "A",
+      "created_at": 1793354098.1063068,
+      "facts": {
+        "task_id": "MN-04",
+        "attempt": 8,
+        "owner": "A",
+        "observation_event_id": 14173
+      }
+    }
+  ],
+  "pending_notifications": [
+    {
+      "kind": "PERIODIC_SUMMARY",
+      "state": "UNKNOWN",
+      "count": 12,
+      "oldest": 1792738877.744879
+    }
+  ],
+  "review_action_bindings": [
+    {
+      "action_id": "mn03-c1-ocr-001",
+      "kind": "ocr",
+      "state": "INCOMPLETE",
+      "task_id": "MN-03",
+      "attempt": 1,
+      "candidate_state": "SUPERSEDED",
+      "current_attempt": 9,
+      "current_task_phase": "COMPLETED"
+    },
+    {
+      "action_id": "mn03-a4-ocr-suppl-001",
+      "kind": "ocr",
+      "state": "INCOMPLETE",
+      "task_id": "MN-03",
+      "attempt": 4,
+      "candidate_state": "SUPERSEDED",
+      "current_attempt": 9,
+      "current_task_phase": "COMPLETED"
+    },
+    {
+      "action_id": "mn04-a2-ocr-001",
+      "kind": "ocr",
+      "state": "INCOMPLETE",
+      "task_id": "MN-04",
+      "attempt": 2,
+      "candidate_state": "SUPERSEDED",
+      "current_attempt": 8,
+      "current_task_phase": "REVIEW"
+    },
+    {
+      "action_id": "mn04-a2-ocr-suppl-001",
+      "kind": "ocr",
+      "state": "INCOMPLETE",
+      "task_id": "MN-04",
+      "attempt": 2,
+      "candidate_state": "SUPERSEDED",
+      "current_attempt": 8,
+      "current_task_phase": "REVIEW"
+    },
+    {
+      "action_id": "mn04-a3-ocr-001",
+      "kind": "ocr",
+      "state": "INCOMPLETE",
+      "task_id": "MN-04",
+      "attempt": 3,
+      "candidate_state": "SUPERSEDED",
+      "current_attempt": 8,
+      "current_task_phase": "REVIEW"
+    }
+  ],
+  "works_with_work_memory": 0,
+  "executions_since_semantic_activation": [
+    {
+      "execution_id": "2dabc51821eb495e89139d89029cc8f1",
+      "role": "TESTER",
+      "work_id": "work-0109bcdb04ed4f639e98b338118a88cb",
+      "state": "ACTIVE",
+      "bound_at": 1793355059.46449,
+      "ended_at": null,
+      "runtime_version_digest": "99601a0fbf7f9badc046bec1a0ff40414238309539820e19209454e0c6c9c4db",
+      "session_budget": {
+        "observed_at": 1793355066.1401732,
+        "requests": 2,
+        "approx_input_tokens": 59191,
+        "policy": {
+          "checkpoint_input_tokens": 128000,
+          "checkpoint_requests": 48,
+          "request_limit": 64
+        },
+        "checkpoint_required": false
+      },
+      "tool_counts": {},
+      "error_codes": {},
+      "command_action_counts": {},
+      "work_input_modes": {},
+      "decision_argument_shapes": {},
+      "work_memory_checkpoint_calls": 0,
+      "tool_failures": [],
+      "integration_verification_calls": []
+    },
+    {
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "role": "TESTER",
+      "work_id": "work-0109bcdb04ed4f639e98b338118a88cb",
+      "state": "ENDED",
+      "bound_at": 1793353142.4137611,
+      "ended_at": 1793355053.888982,
+      "runtime_version_digest": "0b6d088583f6e7332596463e7cb2233dbbfba8d47281e8fc6384d5d18baae148",
+      "session_budget": {
+        "observed_at": 1793354979.6921785,
+        "requests": 22,
+        "approx_input_tokens": 133089,
+        "policy": {
+          "checkpoint_input_tokens": 128000,
+          "checkpoint_requests": 48,
+          "request_limit": 64
+        },
+        "checkpoint_required": true
+      },
+      "tool_counts": {
+        "role_test_command": 6,
+        "role_work_input": 5,
+        "role_decision_context": 7,
+        "read_file": 8,
+        "search_files": 10,
+        "skill_view": 1
+      },
+      "error_codes": {
+        "PAGE_AFTER_NOT_PREVIOUSLY_ISSUED": 1,
+        "INVALID_DECISION_QUERY": 3,
+        "JUNIT_PLACEHOLDER_REQUIRED": 1,
+        "OTHER_ERROR": 1
+      },
+      "command_action_counts": {
+        "ack_events": 3,
+        "verify_integration": 2,
+        "checkpoint": 1
+      },
+      "work_input_modes": {
+        "events_only": 5
+      },
+      "decision_argument_shapes": {
+        "('directory', ('operation',))": 1,
+        "('contract', ('action', 'decision_id', 'expected_fingerprint', 'operation'))": 2,
+        "('prepare', ('action', 'decision_id', 'expected_fingerprint', 'operation'))": 1,
+        "('prepare', ('decision_id', 'expected_fingerprint', 'operation'))": 1,
+        "('evidence', ('operation', 'requests'))": 1,
+        "('contract', ('action', 'operation'))": 1
+      },
+      "work_memory_checkpoint_calls": 0,
+      "tool_failures": [
+        {
+          "message_id": 374595,
+          "at": 1793353428.2162654,
+          "tool": "role_work_input",
+          "code": "PAGE_AFTER_NOT_PREVIOUSLY_ISSUED",
+          "phase": null,
+          "side_effect_state": null,
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374596,
+          "at": 1793353428.2429621,
+          "tool": "role_decision_context",
+          "code": "INVALID_DECISION_QUERY",
+          "phase": "INVALID_NOT_STARTED",
+          "side_effect_state": "NONE",
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374599,
+          "at": 1793353438.0205076,
+          "tool": "role_decision_context",
+          "code": "INVALID_DECISION_QUERY",
+          "phase": "INVALID_NOT_STARTED",
+          "side_effect_state": "NONE",
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374623,
+          "at": 1793353591.2740457,
+          "tool": "role_decision_context",
+          "code": "INVALID_DECISION_QUERY",
+          "phase": "INVALID_NOT_STARTED",
+          "side_effect_state": "NONE",
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374771,
+          "at": 1793354709.0055444,
+          "tool": "role_test_command",
+          "code": "JUNIT_PLACEHOLDER_REQUIRED",
+          "phase": "INVALID_NOT_STARTED",
+          "side_effect_state": "NONE",
+          "invocation_started": false,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374799,
+          "at": 1793354790.2504022,
+          "tool": "role_test_command",
+          "code": null,
+          "phase": null,
+          "side_effect_state": null,
+          "invocation_started": null,
+          "session_checkpoint_guard_text": true
+        }
+      ],
+      "integration_verification_calls": [
+        {
+          "message_id": 374769,
+          "at": 1793354708.8936825,
+          "report_format": "junit",
+          "junit_placeholder_present": false
+        },
+        {
+          "message_id": 374798,
+          "at": 1793354790.2341025,
+          "report_format": "junit",
+          "junit_placeholder_present": true
+        }
+      ]
+    },
+    {
+      "execution_id": "db826f41425d45bc96856f77ae0adc7d",
+      "role": "COORDINATOR",
+      "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+      "state": "ACTIVE",
+      "bound_at": 1793355122.8259127,
+      "ended_at": null,
+      "runtime_version_digest": "99601a0fbf7f9badc046bec1a0ff40414238309539820e19209454e0c6c9c4db",
+      "session_budget": {
+        "observed_at": 1793355129.0095367,
+        "requests": 2,
+        "approx_input_tokens": 85174,
+        "policy": {
+          "checkpoint_input_tokens": 128000,
+          "checkpoint_requests": 48,
+          "request_limit": 64
+        },
+        "checkpoint_required": false
+      },
+      "tool_counts": {},
+      "error_codes": {},
+      "command_action_counts": {},
+      "work_input_modes": {},
+      "decision_argument_shapes": {},
+      "work_memory_checkpoint_calls": 0,
+      "tool_failures": [],
+      "integration_verification_calls": []
+    },
+    {
+      "execution_id": "d555cbe123814b84861f4db3ac9e0b94",
+      "role": "COORDINATOR",
+      "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+      "state": "ENDED",
+      "bound_at": 1793353319.6357954,
+      "ended_at": 1793354273.9996402,
+      "runtime_version_digest": "0b6d088583f6e7332596463e7cb2233dbbfba8d47281e8fc6384d5d18baae148",
+      "session_budget": {
+        "observed_at": 1793354237.658859,
+        "requests": 11,
+        "approx_input_tokens": 127860,
+        "policy": {
+          "checkpoint_input_tokens": 128000,
+          "checkpoint_requests": 48,
+          "request_limit": 64
+        },
+        "checkpoint_required": false
+      },
+      "tool_counts": {
+        "read_file": 6,
+        "role_work_input": 3,
+        "search_files": 1,
+        "role_decision_context": 1,
+        "role_coordination_command": 4
+      },
+      "error_codes": {
+        "PAGE_AFTER_NOT_PREVIOUSLY_ISSUED": 1,
+        "EVENT_PREFIX_NOT_ISSUED": 1,
+        "COMMAND_ID_CONFLICT": 1
+      },
+      "command_action_counts": {
+        "resolve_verification_exception": 1,
+        "checkpoint": 3
+      },
+      "work_input_modes": {
+        "events_only": 3
+      },
+      "decision_argument_shapes": {
+        "('prepare', ('decision_id', 'operation'))": 1
+      },
+      "work_memory_checkpoint_calls": 0,
+      "tool_failures": [
+        {
+          "message_id": 374674,
+          "at": 1793353902.8932261,
+          "tool": "role_work_input",
+          "code": "PAGE_AFTER_NOT_PREVIOUSLY_ISSUED",
+          "phase": null,
+          "side_effect_state": null,
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374701,
+          "at": 1793354153.9494462,
+          "tool": "role_coordination_command",
+          "code": "EVENT_PREFIX_NOT_ISSUED",
+          "phase": null,
+          "side_effect_state": null,
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374704,
+          "at": 1793354208.9514952,
+          "tool": "role_coordination_command",
+          "code": "COMMAND_ID_CONFLICT",
+          "phase": null,
+          "side_effect_state": null,
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        }
+      ],
+      "integration_verification_calls": []
+    },
+    {
+      "execution_id": "f6434f09a97a4e2bbbbae99a71071227",
+      "role": "COORDINATOR",
+      "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+      "state": "ENDED",
+      "bound_at": 1793354282.5711172,
+      "ended_at": 1793355116.7371874,
+      "runtime_version_digest": "99601a0fbf7f9badc046bec1a0ff40414238309539820e19209454e0c6c9c4db",
+      "session_budget": {
+        "observed_at": 1793355093.200775,
+        "requests": 5,
+        "approx_input_tokens": 98551,
+        "policy": {
+          "checkpoint_input_tokens": 128000,
+          "checkpoint_requests": 48,
+          "request_limit": 64
+        },
+        "checkpoint_required": false
+      },
+      "tool_counts": {
+        "read_file": 1,
+        "role_work_input": 1,
+        "role_coordination_command": 1
+      },
+      "error_codes": {},
+      "command_action_counts": {
+        "checkpoint": 1
+      },
+      "work_input_modes": {
+        "events_only": 1
+      },
+      "decision_argument_shapes": {},
+      "work_memory_checkpoint_calls": 0,
+      "tool_failures": [],
+      "integration_verification_calls": []
+    },
+    {
+      "execution_id": "4cfee61614c441fa97c1c593c853eec3",
+      "role": "A",
+      "work_id": "work-ba0cca903bd447c98062df4d31106af2",
+      "state": "DRAINING",
+      "bound_at": 1793354102.9004984,
+      "ended_at": null,
+      "runtime_version_digest": "aece6135639cfa31637e57cc7e77c517d33e813a043c74925566b4428598e76b",
+      "session_budget": {
+        "observed_at": 1793355131.377766,
+        "requests": 32,
+        "approx_input_tokens": 87740,
+        "policy": {
+          "checkpoint_input_tokens": 128000,
+          "checkpoint_requests": 48,
+          "request_limit": 64
+        },
+        "checkpoint_required": false
+      },
+      "tool_counts": {
+        "terminal": 20,
+        "read_file": 3,
+        "write_file": 2,
+        "patch": 4,
+        "role_development_command": 5,
+        "role_decision_context": 1
+      },
+      "error_codes": {
+        "OTHER_ERROR": 3,
+        "CANDIDATE_WORKTREE_CHANGED_OR_DIRTY": 1,
+        "EVIDENCE_UNREADABLE": 2
+      },
+      "command_action_counts": {
+        "deliver": 4,
+        "checkpoint": 1
+      },
+      "work_input_modes": {},
+      "decision_argument_shapes": {
+        "('contract', ('action', 'operation'))": 1
+      },
+      "work_memory_checkpoint_calls": 0,
+      "tool_failures": [
+        {
+          "message_id": 374741,
+          "at": 1793354460.0290263,
+          "tool": "write_file",
+          "code": null,
+          "phase": null,
+          "side_effect_state": null,
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374750,
+          "at": 1793354482.2916505,
+          "tool": "write_file",
+          "code": null,
+          "phase": null,
+          "side_effect_state": null,
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374835,
+          "at": 1793354908.5580873,
+          "tool": "role_development_command",
+          "code": "CANDIDATE_WORKTREE_CHANGED_OR_DIRTY",
+          "phase": null,
+          "side_effect_state": null,
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374846,
+          "at": 1793354978.6959913,
+          "tool": "role_development_command",
+          "code": "EVIDENCE_UNREADABLE",
+          "phase": null,
+          "side_effect_state": null,
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374853,
+          "at": 1793355047.921176,
+          "tool": "role_development_command",
+          "code": "EVIDENCE_UNREADABLE",
+          "phase": null,
+          "side_effect_state": null,
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        },
+        {
+          "message_id": 374868,
+          "at": 1793355131.2453663,
+          "tool": "role_development_command",
+          "code": null,
+          "phase": null,
+          "side_effect_state": null,
+          "invocation_started": null,
+          "session_checkpoint_guard_text": false
+        }
+      ],
+      "integration_verification_calls": []
+    }
+  ],
+  "health": {
+    "at": 1793355113.3572237,
+    "health": "unverified",
+    "event_high_water": 14220,
+    "notification_health": [],
+    "capacity": {
+      "database_bytes": 3134615552,
+      "warning_bytes": 2147483648,
+      "state": "CAPACITY_WARNING",
+      "new_input_page_limit_bytes": 65536,
+      "historical_compaction_performed": false,
+      "retention": "保留命令、原始事件及不可变页；归档须一并保存哈希引用，不在线删库或VACUUM。"
+    },
+    "health_layers": {
+      "current_run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "collector_fault_count": 8,
+      "business_authority": {
+        "mode": "ACTIVE",
+        "admission_open": 1,
+        "event_high_water": 14220
+      },
+      "current_writer_count": 2,
+      "unverified_writer_scope_count": 0,
+      "current_inflight_service_count": 0,
+      "historical_evidence_debt_count": 1387,
+      "historical_debt_archived": false,
+      "terminal_services_verified": 40,
+      "terminal_result_incomplete": 7
+    },
+    "age_seconds": 50.616,
+    "fault_types": {
+      "observer_business_writer_exited": 1,
+      "observer_terminal_service_evidence_unverified": 7
+    },
+    "anomaly_types": {
+      "write_authority_unverified": 170,
+      "observer_business_writer_exited": 1,
+      "observer_terminal_service_evidence_unverified": 7,
+      "observer_service_identity_unverified": 3,
+      "observer_frozen_execution_unverified": 1382,
+      "observer_active_execution_without_lease": 2,
+      "observer_active_execution_scope_missing": 3,
+      "observer_untracked_writer_scope": 1
+    }
+  },
+  "recorded_gateway_0151": {
+    "checked_at": "2026-10-30T17:56:25+08:00",
+    "gateway_pid": 3612975,
+    "activation_pid": 3612975,
+    "activation_state": "ACTIVATED",
+    "mode": "future_calls_only",
+    "source_files": 61,
+    "source_mismatches": []
+  },
+  "decision_request_linkage": [
+    {
+      "physical_attempt_id": "d91b02880b6c4b299e6d2b5d0f32534b",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "adc60c8c390c456c9ca038184b0dbc47",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "b2fa72da82854fa7b13f6f0a19bff7e3",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "9c11084dd66e40e99ee7fb557a592cca",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "172b25c4012849238e0164fc3313dbcb",
+      "execution_id": "d555cbe123814b84861f4db3ac9e0b94",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "916fffda7f4d4732a38d85fc4fc2236d",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "9dcf0604b56940d08526df4d73c02aaa",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "50d69a19494c4b2a99350e3b05c627f0",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "4a7358ab3f0041858a471664078c5230",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "f317d9d056524719805dd112168745c4",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "c1ce0d1ad5a44c2584f1af18b958ee53",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "d9ae1df651654ef2a1c7d7152f97a83a",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "7e9bdcec176540a98f961dffee81abf1",
+      "execution_id": "d555cbe123814b84861f4db3ac9e0b94",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "cfc87541d34248af8b72230972ed980c",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "75049bab4e324c549286e7f70aa998a7",
+      "execution_id": "d555cbe123814b84861f4db3ac9e0b94",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "c5b060eb6ef84d35bd35f8df4014729d",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "1a0179c19b7c43498e7d6ca7d3e7982d",
+      "execution_id": "d555cbe123814b84861f4db3ac9e0b94",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "1df85b151f8f45bea7e5d7c81815b7ba",
+      "execution_id": "d555cbe123814b84861f4db3ac9e0b94",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "f801485968cd43538b987218085513d9",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "1243229cfbb34d26910f756dfc6dc4a9",
+      "execution_id": "d555cbe123814b84861f4db3ac9e0b94",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "795a1a6b0f24427ba03c567066bcc592",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    },
+    {
+      "physical_attempt_id": "abbeadfd2a35425e9ca7eeb15d333c5f",
+      "execution_id": "7bedf4d4198b46ac8f08b940b7c3c9c7",
+      "decision_ids_count": 1,
+      "usage_row_found": true,
+      "execution_matches": true,
+      "usage_status": "completed",
+      "usage_present": 1
+    }
+  ],
+  "storage": {
+    "database_bytes": 3134615552,
+    "wal_bytes": 0
+  },
+  "side_effects": "Only this audit JSON written; no ACK, business command, reload, restart, service, model, test or notification."
+}

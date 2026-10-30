@@ -1,12 +1,12 @@
 {
-  "snapshot_at": "2026-10-30T17:59:37+08:00",
+  "snapshot_at": "2026-10-30T18:15:51+08:00",
   "timezone": "Asia/Shanghai",
   "files": [
     {
       "path": "MECHANISM-SNAPSHOT.json",
       "source": "/home/wang/work/skill-backup/MECHANISM-SNAPSHOT.json",
-      "bytes": 164196,
-      "sha256": "97cf29320ae30464cfc8d593d492d48f019f907c02d53f727ae1cfe2760fcf7b",
+      "bytes": 167439,
+      "sha256": "6b004378ca4a3ff721b8b37a0a103fe666b5a23d62ccd42970c5870f46c265a3",
       "static_backup_metadata": true
     },
     {
@@ -27,7 +27,7 @@
       "path": "SOURCE-REVISIONS.json",
       "source": "/home/wang/work/hermes-role-runtime",
       "bytes": 496,
-      "sha256": "a1f848c44461d4a8729da268310d5558ef0796c4e896637540ca7eeaf2312c7d"
+      "sha256": "5670ba3a6caea3897d825870554628425620a31e7ff1dbf11f43ef532ab477e0"
     },
     {
       "path": "codex/plugins/agent-skills/LICENSE",
@@ -1737,6 +1737,12 @@
       "sha256": "1d9577ff9be598d84a15c2fa0dd85c8b4582384e86fefea6fc3bf2495bff7bfb"
     },
     {
+      "path": "docs/analysis/coordinator-health-audit-20261030/POST-OPTIMIZATION-EFFECTIVENESS-REVIEW.md",
+      "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/POST-OPTIMIZATION-EFFECTIVENESS-REVIEW.md",
+      "bytes": 30454,
+      "sha256": "977983a122f3960075766591975a1402cfd1b12a1f755321213f3da1a8ea507d"
+    },
+    {
       "path": "docs/analysis/coordinator-health-audit-20261030/REPORT.md",
       "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/REPORT.md",
       "bytes": 22326,
@@ -1765,6 +1771,54 @@
       "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/TOKEN-OPTIMIZATION-IMPLEMENTATION.md",
       "bytes": 8024,
       "sha256": "a1ade2d6c47546105c0735b49f392942af9fabc2b005bad1339f94ccd08573f3"
+    },
+    {
+      "path": "docs/analysis/coordinator-health-audit-20261030/post-optimization-audit/analyze_effects.py",
+      "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/post-optimization-audit/analyze_effects.py",
+      "bytes": 17298,
+      "sha256": "e8f979b08dcc22dbcb88eef291f8b9d77b1a0606ce802b7b27920eb999543d96"
+    },
+    {
+      "path": "docs/analysis/coordinator-health-audit-20261030/post-optimization-audit/current-review-summary.json",
+      "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/post-optimization-audit/current-review-summary.json",
+      "bytes": 26822,
+      "sha256": "ff4b7674d79e23af9c3e2973255a7f77d6f72d295e37489a43bebf72add662dd"
+    },
+    {
+      "path": "docs/analysis/coordinator-health-audit-20261030/post-optimization-audit/effects-summary.json",
+      "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/post-optimization-audit/effects-summary.json",
+      "bytes": 283582,
+      "sha256": "115ab8711cb858e36518c4831b73fbf0469c642d84ff8b4774fe952e4bb3908d"
+    },
+    {
+      "path": "docs/analysis/coordinator-health-audit-20261030/post-optimization-audit/followup-summary.json",
+      "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/post-optimization-audit/followup-summary.json",
+      "bytes": 27913,
+      "sha256": "cd081be8eebc3242053f1b554829376c9834975307c9020a73d1d8ae709f4c8c"
+    },
+    {
+      "path": "docs/analysis/coordinator-health-audit-20261030/post-optimization-audit/inspect_followup.py",
+      "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/post-optimization-audit/inspect_followup.py",
+      "bytes": 8871,
+      "sha256": "98054b94114810ea9a5e06a57d1438414ac939d860a65c51ae6ce275b37f0b46"
+    },
+    {
+      "path": "docs/analysis/coordinator-health-audit-20261030/post-optimization-audit/review_current.py",
+      "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/post-optimization-audit/review_current.py",
+      "bytes": 12321,
+      "sha256": "da4db46dda8f97ade64df7dbac75c7a783046b262c0d67f1c52b865e692a088f"
+    },
+    {
+      "path": "docs/analysis/coordinator-health-audit-20261030/post-optimization-audit/review_terminal_rejections.py",
+      "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/post-optimization-audit/review_terminal_rejections.py",
+      "bytes": 3144,
+      "sha256": "67208733be4bf36fc6286a9d1cab081443aad82201a6a8f812bc654a6f1ee159"
+    },
+    {
+      "path": "docs/analysis/coordinator-health-audit-20261030/post-optimization-audit/terminal-rejection-proof-summary.json",
+      "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/post-optimization-audit/terminal-rejection-proof-summary.json",
+      "bytes": 3709,
+      "sha256": "965f83b9b7fae8e808d5aff46e8d9c49020b240cd98d5fa5ea074f4d463e971d"
     },
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/review-progress-rollout.json",
@@ -1884,7 +1938,7 @@
       "path": "hermes-core/SNAPSHOT.json",
       "source": "/home/wang/.hermes/hermes-agent",
       "bytes": 2885,
-      "sha256": "82d3c75de3852a7836f4f5b87a40a733c6d66effad239ac8465d5174295c6e6f"
+      "sha256": "7e4b8dd3cbc5404c4c6503c4401590c96c9aed0eafbc485f8eabeaf8fdbb1e6d"
     },
     {
       "path": "hermes-core/files/agent/agent_runtime_helpers.py",
@@ -7166,7 +7220,7 @@
       "reason": "cache, runtime lock, local metadata, credentials or temporary dataset"
     }
   ],
-  "note": "Snapshot only; no credentials, machine config, sessions database or cron bindings exported. Absolute local paths in source documents are retained. Static file snapshot: source bytes were checked during copying. Later concurrent edits are outside this snapshot. Includes core cumulative patch, credential-free configuration templates and SOURCE-REVISIONS.json. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling.",
+  "note": "Snapshot only; no credentials, machine config, sessions database or cron bindings exported. Absolute local paths in source documents are retained. Static file snapshot: source bytes were checked during copying. Later concurrent edits are outside this snapshot. Includes core cumulative patch, credential-free configuration templates and SOURCE-REVISIONS.json. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling. Current mechanism paths refreshed on 2026-10-30; other entries retain their original sampling.",
   "original_snapshot_at": "2026-10-15T17:59:43+08:00",
   "current_mechanism_snapshot": "MECHANISM-SNAPSHOT.json"
 }
