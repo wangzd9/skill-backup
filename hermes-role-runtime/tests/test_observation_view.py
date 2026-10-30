@@ -66,6 +66,57 @@ class ObservationViewTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'AUDIT_EVENT_VIEW_HASH_MISMATCH'):
             health_view(result, self.home/'other-views')
 
+    def test_nested_notification_health_keeps_counts_and_resolvable_unknown_samples(self):
+        notifications = {'counts_by_state': {'UNKNOWN': 15, 'SENT': 265},
+            'unresolved_count': 15, 'samples_omitted': 0,
+            'samples': [{'notification_id': str(i), 'state': 'UNKNOWN',
+                         'reason': 'DELIVERY_UNKNOWN_NO_AUTOMATIC_REPLAY' * 20} for i in range(15)],
+            'unknown_policy': 'Never replay UNKNOWN'}
+        layers = {'collector_fault_count': 1, 'notification_health': notifications,
+                  'future~/field': list(range(3000))}
+        original = self.snapshot(health_layers=layers)
+        result = saved_health(self.home, self.pool, now=1000)
+        self.assertLess(len(json.dumps(result, ensure_ascii=False).encode()), 8192)
+        self.assertEqual('UNVERIFIED', result['state'])
+        summary = result['health_layers']['notification_health']
+        self.assertEqual(notifications['counts_by_state'], summary['counts_by_state'])
+        self.assertEqual(15, summary['unresolved_count'])
+        self.assertEqual(0, summary['samples_omitted'])
+        raw = Path(result['full_observation']['path']).read_bytes()
+        self.assertEqual(result['full_observation']['sha256'], hashlib.sha256(raw).hexdigest())
+        full = json.loads(raw)
+        for reference in (summary['samples'], result['health_layers']['future~/field']):
+            value = full
+            for part in reference['json_pointer'].split('/')[1:]:
+                value = value[part.replace('~1', '/').replace('~0', '~')]
+            self.assertEqual(len(value), reference['item_count'])
+            self.assertEqual('full_observation', reference['detail_source'])
+        self.assertEqual(original['health_layers'], full['health_layers'])
+        self.assertEqual(result, health_view(result, self.home/'other-views'))
+
+    def test_large_policy_and_provenance_are_references_without_changing_input(self):
+        observation = {'state': 'UNVERIFIED', 'source': 'synthetic/' * 3000,
+            'error': 'synthetic diagnostic ' * 2000, 'anomalies': [],
+            'health_layers': {'unverified_writer_scope_count': 5},
+            'activity_policy': {'unknown': '未知' * 5000}}
+        before = json.dumps(observation)
+        result = health_view(observation, self.home/'views')
+        self.assertLess(len(json.dumps(result, ensure_ascii=False).encode()), 8192)
+        self.assertEqual('UNVERIFIED', result['state'])
+        self.assertEqual(5, result['health_layers']['unverified_writer_scope_count'])
+        self.assertEqual(before, json.dumps(observation))
+        self.assertEqual(observation, json.loads(Path(result['full_observation']['path']).read_text()))
+
+    def test_oversized_existing_projection_uses_original_counts(self):
+        self.snapshot(health_layers={'notification_health': {'counts_by_state': {'UNKNOWN': 15}}})
+        result = saved_health(self.home, self.pool, now=1000)
+        result['reason_codes'] = ['oversized legacy metadata' * 1000]
+        repaired = health_view(result, self.home/'views')
+        self.assertEqual(500, repaired['anomaly_count'])
+        self.assertEqual(1, repaired['source_count'])
+        self.assertEqual({'UNKNOWN': 15}, repaired['health_layers']['notification_health']['counts_by_state'])
+        self.assertLess(len(json.dumps(repaired, ensure_ascii=False).encode()), 8192)
+
     def test_legacy_progress_consumer_gets_same_bound_without_active_wrapper(self):
         from progress_query import collect_live
         self.snapshot()

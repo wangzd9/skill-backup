@@ -1,5 +1,7 @@
 # Hermes 角色运行优化
 
+2026-10-30 **0.16.1**：修复嵌套观察元数据超出预算导致 `role_live_progress` 与报告回退同时失败。健康分层中的通知明细、活动策略及长诊断按完整证据哈希和 JSON Pointer 引用，保留精确计数及 UNKNOWN/UNVERIFIED；旧投影超限从原证据重新生成，不将摘要当原文重计为零。8 KiB 限制和证据损坏拒绝保持。
+
 2026-10-30 **0.16.0**：修正分操作工具合同和 JUnit 条件；当前动作优先，机械段完整发行且显式 ACK，业务转换另计。工作区外证据目录及绝对路径预检；新验证同前提失败/未知不盲重跑，稳定性复跑保留。test-only OCR 精确纳入默认排除测试源码并保留原规则。健康区分零派发拒绝、UNKNOWN 通知总量与历史债；材料关联有失效边界，容量覆盖 SQLite/WAL/持久附件。上线和业务采用见[实施记录](/home/wang/work/doc/analysis/coordinator-health-audit-20261030/EFFECTIVENESS-STALL-REPAIR-IMPLEMENTATION.md)。
 
 2026-10-30 **0.15.1**：当前审查按候选版本投影，历史 INCOMPLETE 保留原记录而不误列当前待办；RESULT_READY 与未完成结果分别显示。补验异常进入风险和下一步，前一工作单 checkpoint 只留历史引用；全局在途/未知 OCR 围栏和业务门禁保留。

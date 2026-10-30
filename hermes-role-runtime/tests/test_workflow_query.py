@@ -239,6 +239,46 @@ class WorkflowQueryTests(LedgerFixture):
         with self.assertRaisesRegex(ValueError, '未绑定'):
             plugin.repo_tool({}, session_id='unbound', turn_id='turn')
 
+    def test_native_progress_and_report_consumers_survive_large_nested_health(self):
+        import time
+        from workflow_observation import digest
+        from workflow_reports import (_observation_facts, render_live_progress_fallback,
+                                      _coordinator_progress_format_error)
+        path = self.root/'cache/role-lease-monitor'/digest(str(self.pool.resolve()))/'snapshot.json'
+        path.parent.mkdir(parents=True)
+        snapshot = {'at': time.time(), 'health': 'unverified',
+            'source_states': {'native': {'state': 'UNKNOWN'}},
+            'anomalies': [{'type': 'UNKNOWN_DELIVERY', 'reason_codes': ['DELIVERY_UNVERIFIED']}],
+            'health_layers': {'collector_fault_count': 1, 'notification_health': {
+                'counts_by_state': {'UNKNOWN': 15}, 'unresolved_count': 15,
+                'samples': [{'state': 'UNKNOWN', 'reason': 'unverified ' * 150} for _ in range(15)]}}}
+        path.write_text(json.dumps(snapshot))
+        before = self.ledger.snapshot()
+        root = Path(__file__).resolve().parents[1]
+        spec = importlib.util.spec_from_file_location('nested_health_query_test', root/'__init__.py')
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        self.addCleanup(sys.modules.pop, spec.name, None)
+        spec.loader.exec_module(module)
+        registry = self.root/'registry.json'
+        registry.write_text('{"projects":[]}')
+        plugin = module.RuntimePlugin(registry=registry, metrics_url='unused', home=self.root, pool_path=self.pool)
+        plugin.manual_turns[('group', 'turn')] = {'role': 'COORDINATOR', 'project': str(self.root),
+                                                'session_kind': 'group_chat'}
+        packet = json.loads(plugin.live_tool({}, session_id='group', turn_id='turn'))
+        self.assertLess(len(json.dumps(packet, ensure_ascii=False).encode()), 8192)
+        self.assertEqual(len(self.plan), len(packet['tasks']))
+        observation_ref = self.artifact_map(packet)['observation']
+        observation = json.loads(Path(observation_ref['path']).read_text())
+        self.assertLess(len(json.dumps(observation, ensure_ascii=False).encode()), 8192)
+        self.assertEqual('UNVERIFIED', observation['state'])
+        self.assertEqual({'UNKNOWN': 15}, observation['health_layers']['notification_health']['counts_by_state'])
+        self.assertEqual(observation, _observation_facts(self.ledger, observation))
+        report = render_live_progress_fallback(packet, 'COORDINATOR')
+        self.assertIsNone(_coordinator_progress_format_error(report))
+        self.assertEqual(before, self.ledger.snapshot())
+        self.assertEqual(snapshot, json.loads(path.read_text()))
+
     def test_current_input_labels_checkpoint_and_cancelled_candidates_have_no_next_action(self):
         worker, identity = self.bind('A')
         cid = self.candidate(identity)[0]
