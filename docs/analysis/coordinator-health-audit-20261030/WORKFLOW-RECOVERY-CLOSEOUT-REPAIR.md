@@ -4,6 +4,8 @@
 
 **机制有缺陷，但不是“REJECTED 永久锁住 REVIEW”或“根本没有快照刷新”。** 本次先修复通用接续缺口，再由原生角色执行实际业务动作；不修改业务数据库状态来制造完成。
 
+**最新已核验结果：开发6/6完成；a8真实OCR PASS→APPROVE→本地合入→COMPLETE；同源MySQL稳定性双轮PASS；MN-07已自动刷新并由原TESTER领取，状态VERIFYING。e14173仍等待协调者依据真实同源PASS显式关闭，需求尚未最终验收。精确采样时间及水位见发布记录final_readonly_status，不能将本文历史采样冒充之后的当前状态。**
+
 ## 当次核验与原因
 
 维护开始后的只读 `current_input`/`live_progress` 均成功。20:29 的账本水位仍为 14249：MN-04 a8 为 REVIEW，固定 head `e82af00254ddd4dc67a823b142f0f7c6c4d5d596`，18:38:22 的独立测试 PASS 是最后的实质业务推进。`mn04-a8-ocr-001` 于18:36:44被 `NO_REVIEWABLE_FILES_OR_DUPLICATES` 拒绝；现场回执证明 prepare 阶段零派发。e14173 保持 REPAIR_QUEUED，MN-07 为 SNAPSHOT_STALE。
@@ -93,3 +95,9 @@
 追加发现顶层next_actions已给resolve_verification_exception，但repair_followup仍把owner写为TESTER、要求等待复验。0.16.6复用同一原生closure_passes谱系索引，将责任切回 **COORDINATOR / VERIFICATION_EXCEPTION_CLOSE_REQUIRED**；不自动关闭、不伪造PASS，也不改变resolve的原件核验。10项接续回归及19项异常/补验链路回归通过（含真实Git/SQLite的一次、再次返修完整链）。22:04:22网关热加载68项源码哈希匹配，22:04:42生产关闭材料FOUND，明确列出上述同源PASS。
 
 此时仍缺协调者显式close e14173，以及TESTER接续MN-07固定新快照独立最终验证；没有相应回执前不称需求验收完成。
+
+## 当前真实等待与交接
+
+**e14280/e14281**：MySQL补验的原TESTER执行已安全核退，writer已清除；**e14282**：原生自动领取MN-07新work，当前状态VERIFYING。**e14283**：协调者在安全交接阈值保存真实yield检查点，原work保留，进入DRAINING等待原生核退，不强清writer。
+
+这次维护已实质打通拒绝恢复、真实OCR裁决、批准/合入/完成、同源MySQL补验、旧writer核退和MN-07快照刷新/新领取。仍待原角色的语义动作及最终独立验证：协调者显式close e14173；TESTER按新固定快照完成MN-07逐AC验证；真实PASS后协调者复核证据并complete_requirement。未取得这些回执前保持未完成，不以worker存活、旧checkpoint或单项PASS冒充需求通过。最新采样和当前责任见发布记录final_readonly_status。

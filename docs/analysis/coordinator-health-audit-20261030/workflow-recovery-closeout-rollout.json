@@ -353,7 +353,7 @@
   },
   "business_actions_by_maintenance": false,
   "business_rows_directly_edited": false,
-  "business_status": "Six development tasks complete. Original same-source MySQL migration revalidation PASS e14279 (two runs, exit codes [0,0], no skip, supersedes original failure). MN-07 snapshot refreshed and queued e14276. Waiting for explicit coordinator close of e14173 and independent final integration validation, not user reauthorization.",
+  "business_status": "Development 6/6 complete; OCR PASS/approval/merge/complete verified; same-source MySQL two-run PASS verified; MN-07 snapshot refreshed and native TESTER claimed it (VERIFYING). Original exception still requires explicit coordinator close. Final requirement acceptance not yet recorded.",
   "native_resumption": {
     "checked_at": "2026-10-30T20:49:14+08:00",
     "event_high_water": 14252,
@@ -1795,5 +1795,177 @@
       "verification_id": "verification-12d2914a995549089c552999b0f4b695",
       "event_id": 14279
     }
+  },
+  "final_readonly_status": {
+    "checked_at": "2026-10-30T22:08:56.577976+08:00",
+    "event_high_water": 14284,
+    "tasks": [
+      {
+        "task_id": "MN-01",
+        "role": "A",
+        "phase": "COMPLETED",
+        "attempt": 7,
+        "candidate_id": "candidate-c75efadfe17d406ea42062f2ad8732dc",
+        "head": "daf3f9b23b62c7c67b5b297dd57ff3e0277209d0"
+      },
+      {
+        "task_id": "MN-02",
+        "role": "B",
+        "phase": "COMPLETED",
+        "attempt": 3,
+        "candidate_id": "candidate-mn02-attempt3-b0",
+        "head": "5714b291443b6b812b9d0fc73d5154e767dcde15"
+      },
+      {
+        "task_id": "MN-03",
+        "role": "C",
+        "phase": "COMPLETED",
+        "attempt": 9,
+        "candidate_id": "candidate-1dcf5941311049e8bd281059e7d25863",
+        "head": "56778fad2750c3b13aad5c814219777e600624c0"
+      },
+      {
+        "task_id": "MN-04",
+        "role": "A",
+        "phase": "COMPLETED",
+        "attempt": 8,
+        "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+        "head": "e82af00254ddd4dc67a823b142f0f7c6c4d5d596"
+      },
+      {
+        "task_id": "MN-05",
+        "role": "B",
+        "phase": "COMPLETED",
+        "attempt": 3,
+        "candidate_id": "candidate-26cc19d187f691a2274c1b403923ea74",
+        "head": "26cc19d187f691a2274c1b403923ea7443536925"
+      },
+      {
+        "task_id": "MN-06",
+        "role": "C",
+        "phase": "COMPLETED",
+        "attempt": 2,
+        "candidate_id": "candidate-ec625d3c843c4c21b1d364a363745c9d",
+        "head": "0225b72274986eaee1305ecb57c8b67f8e34f7bc"
+      }
+    ],
+    "completion": {
+      "state": "VERIFYING",
+      "work_id": "work-05b4512fec3d4ebfad4afbac89029232",
+      "completion_event_id": null,
+      "validation_task_id": "MN-07",
+      "closure_task_id": "MN-08",
+      "scope": "accepted_local_development"
+    },
+    "roles": [
+      {
+        "role": "COORDINATOR",
+        "control": "ACTIVE",
+        "current_work_id": "work-6d508d9edd0743179b165eab1b12fdaa"
+      },
+      {
+        "role": "A",
+        "control": "ACTIVE"
+      },
+      {
+        "role": "B",
+        "control": "ACTIVE"
+      },
+      {
+        "role": "C",
+        "control": "ACTIVE"
+      },
+      {
+        "role": "TESTER",
+        "control": "ACTIVE",
+        "current_work_id": "work-05b4512fec3d4ebfad4afbac89029232",
+        "writer_execution_id": "7fe513861a6f4cdcafbb68865fb6f3ab"
+      }
+    ],
+    "open_gates": [
+      {
+        "code": "VERIFICATION_EXCEPTION_REPAIR_PENDING",
+        "observation_event_id": 14173,
+        "owner": "COORDINATOR",
+        "state": "REPAIR_QUEUED",
+        "work_id": "work-2c31ed88a98f4a5d95400816e43769e2"
+      }
+    ],
+    "current_coordinator_actions": [
+      {
+        "action": "resolve_verification_exception",
+        "observation_event_id": 14173,
+        "later_pass_options": [
+          {
+            "verification_id": "verification-12d2914a995549089c552999b0f4b695",
+            "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+            "published_event_id": 14279
+          }
+        ],
+        "repair_followup": {
+          "task_id": "MN-04",
+          "repair_attempt": 8,
+          "current_attempt": 8,
+          "phase": "COMPLETED",
+          "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+          "head": "e82af00254ddd4dc67a823b142f0f7c6c4d5d596",
+          "gate_satisfied": false,
+          "owner": "COORDINATOR",
+          "code": "VERIFICATION_EXCEPTION_CLOSE_REQUIRED",
+          "later_pass_options": [
+            {
+              "verification_id": "verification-12d2914a995549089c552999b0f4b695",
+              "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+              "published_event_id": 14279
+            }
+          ],
+          "next": "同源supplemental_mysql PASS已落账；协调者核原始补验证据后显式close，不再等待或重复派复验。异常保持未关闭，普通独立测试不能替代该证据。"
+        }
+      }
+    ],
+    "recent_lifecycle": [
+      {
+        "event_id": 14280,
+        "kind": "EXECUTION_ENDED",
+        "role": "TESTER",
+        "created_at": 1793369156.5459232
+      },
+      {
+        "event_id": 14281,
+        "kind": "EXECUTION_OUTCOME_OBSERVED",
+        "role": "TESTER",
+        "created_at": 1793369158.7639403
+      },
+      {
+        "event_id": 14282,
+        "kind": "EXECUTION_BOUND",
+        "role": "TESTER",
+        "created_at": 1793369161.6768336
+      },
+      {
+        "event_id": 14283,
+        "kind": "CHECKPOINT_SAVED",
+        "role": "COORDINATOR",
+        "created_at": 1793369217.4815004
+      },
+      {
+        "event_id": 14284,
+        "kind": "EXECUTION_ENDED",
+        "role": "COORDINATOR",
+        "created_at": 1793369333.9941702
+      }
+    ],
+    "execution_states": [
+      {
+        "execution_id": "7fe513861a6f4cdcafbb68865fb6f3ab",
+        "role": "TESTER",
+        "work_id": "work-05b4512fec3d4ebfad4afbac89029232",
+        "state": "ACTIVE",
+        "pid": 950468,
+        "writer_cleared": false
+      }
+    ],
+    "authority": "fresh readonly production entry and native ledger; checkpoint not projected as current",
+    "requirement_complete": false
   }
 }

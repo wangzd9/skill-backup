@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "snapshot_at": "2026-10-30T22:05:11+08:00",
+  "snapshot_at": "2026-10-30T22:09:12+08:00",
   "plugin_commit": "420be3c2a0b9d4e8aaf162418bc970739e6d7028",
   "core_commit": "c3901f5f8606b6449abd5442d866e28c5015f295",
   "core_base_commit": "5f47c35d37a40fb651e4a00571d03e12b23d11f9",
@@ -27,7 +27,7 @@
       "path": "SOURCE-REVISIONS.json",
       "source": "/home/wang/work/hermes-role-runtime",
       "bytes": 496,
-      "sha256": "03edd808d7002cffbe7e36d272029df13bef3017f25553d9597e06d5ad73f50a"
+      "sha256": "9253b256bfdcf2834a1c2dc9aae7853d0c2ec35c44d15ec29d0982c3390e4fe0"
     },
     {
       "path": "codex/skills/complex-task-coordinator/SKILL.md",
@@ -1228,8 +1228,8 @@
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md",
       "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md",
-      "bytes": 15517,
-      "sha256": "231b9695638382263d8231aeb430ca9eb3fdc50d6e0f56d309091aae6e625f9b"
+      "bytes": 16778,
+      "sha256": "f318d23962058eca07fc3f69f28120ec2994d13705c2e6848f0cbbd4c6a05944"
     },
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/effectiveness-stall-rollout.json",
@@ -1348,8 +1348,8 @@
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/workflow-recovery-closeout-rollout.json",
       "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/workflow-recovery-closeout-rollout.json",
-      "bytes": 93125,
-      "sha256": "d954559cfeb0532412bb580ae5c89d9e79dc180a8cae29b04c388cbf85bdc52b"
+      "bytes": 98309,
+      "sha256": "9a7aeefb695167f3aa8b1ea2a0532c03c2d8c0670375a9f335470b6695c11917"
     },
     {
       "path": "docs/prd/WORKFLOW-REGISTRY.md",
@@ -1415,7 +1415,7 @@
       "path": "hermes-core/SNAPSHOT.json",
       "source": "/home/wang/.hermes/hermes-agent",
       "bytes": 2885,
-      "sha256": "8d7b085791fcfa7599929df72b3eb08304ba6780d8f500b41353ad25abf390c9"
+      "sha256": "e8909d10c0bf1c676045b58018c6ad31bfdb47e628bf2ba6ef058769a2a82fd4"
     },
     {
       "path": "hermes-core/files/agent/agent_runtime_helpers.py",
