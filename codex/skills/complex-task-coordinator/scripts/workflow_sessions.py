@@ -52,9 +52,11 @@ def tool_decision(home,scope,tool_name,args):
     value=read_json(path) if path.is_file() else {}
     if not value.get('checkpoint_required'):
         return None
-    from workflow_runtime import COMMAND_TOOLS, READ_TOOLS
-    if tool_name in READ_TOOLS:
-        return None
+    from workflow_runtime import COMMAND_TOOLS
+    # A read-only history loop can consume the entire native request budget
+    # without ever reaching a write that would request a checkpoint. At this
+    # boundary the owner already has its issued prefix and durable work; no
+    # additional read is required to yield without ACKing unread events.
     if tool_name==COMMAND_TOOLS.get(scope['role']) and isinstance(args,dict):
         if args.get('action')=='safe_release':
             return None
@@ -65,7 +67,7 @@ def tool_decision(home,scope,tool_name,args):
         'invocation_started':False,'owner':scope['role'],'work_retained':True}
     save_json(path,value)
     return {'action':'block','message':
-            '本技术会话已到安全交接阈值。停止发起新业务动作；用本角色 checkpoint 工具保存真实进展、'
+            '本技术会话已到安全交接阈值。停止继续翻历史或发起新业务动作；用本角色 checkpoint 工具保存真实进展、'
             '未决事项和下一步，payload.yield_execution=true，仅确认实际读过的事件前缀，然后结束本回合。'
             '原 work/attempt 和全部门禁保留，下一原生回合以新会话接续；不要宣称任务完成。',
             'reason':'SESSION_CHECKPOINT_REQUIRED'}

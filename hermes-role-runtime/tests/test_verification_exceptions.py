@@ -163,6 +163,12 @@ class VerificationExceptionTests(SupplementalVerificationTests):
         self.assertEqual(1,next(t for t in self.ledger.snapshot()['tasks'] if t['task_id']=='MN-01')['attempt'])
 
     def test_real_repair_revalidated_and_explicitly_closed_retaining_original_unknown(self):
+        self.repair_closeout_loop()
+
+    def test_second_native_rework_keeps_original_mysql_exception_and_real_closure(self):
+        self.repair_closeout_loop(extra_rework=True)
+
+    def repair_closeout_loop(self, *, extra_rework=False):
         # Include the fixed profile test in this original accepted test fixture's
         # scope, before invoking repair; no production scope is changed.
         from business_ledger import _json
@@ -183,6 +189,19 @@ class VerificationExceptionTests(SupplementalVerificationTests):
             'head':self.git('rev-parse','HEAD',cwd=clone),'ac_version':'ac-sha256-frozen-v1',
             'evidence':[{'path':str(proof)}]},'fixture repair',command_id='deliver-repair'))['candidate_id']
         self.close(dp,dev)
+        if extra_rework:
+            self.assertCommitted(self.ledger.decide(self.coord,candidate,'REWORK',
+                evidence={'reason':'isolated additional repair in original scope'},command_id='repair-again'))
+            dp,dev=self.bind('A');next_clone=self.path.parent/'workspaces'/dev['work_id']
+            subprocess.run(['git','clone','-q','--no-hardlinks',str(clone),str(next_clone)],check=True)
+            self.git('remote','set-url','origin',str(self.repo),cwd=next_clone)
+            self.git('config','user.name','Repair',cwd=next_clone);self.git('config','user.email','test@example.invalid',cwd=next_clone)
+            (next_clone/path).write_text('# repaired fixture with second native review correction\n')
+            self.git('add',path,cwd=next_clone);self.git('commit','-qm','second fixture correction',cwd=next_clone)
+            candidate=self.assertCommitted(self.ledger.deliver(dev,{'repo':str(next_clone),'base':self.git('rev-parse','HEAD'),
+                'head':self.git('rev-parse','HEAD',cwd=next_clone),'ac_version':'ac-sha256-frozen-v1',
+                'evidence':[{'path':str(proof)}]},'second fixture repair',command_id='deliver-second-repair'))['candidate_id']
+            self.close(dp,dev)
         tp,tester=self.bind('TESTER')
         self.assertCommitted(execute_candidate_tests(self.ledger,tester,candidate,[sys.executable,'-c',CHECK,'{junit_xml}','1'],
             command_id='repair-independent',report_format='junit'))

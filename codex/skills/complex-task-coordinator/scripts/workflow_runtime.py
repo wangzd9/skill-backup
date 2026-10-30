@@ -535,6 +535,9 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None, snap
     from workflow_completion import facts as completion_facts, context as completion_context, historical_failures
     from workflow_completion_repair import task_issues
     packet['completion']=completion_facts(snapshot,run_id)
+    if role=='COORDINATOR' and packet['completion'].get('state') in ('SNAPSHOT_STALE','REPAIRING','WAITING_DEVELOPMENT'):
+        from workflow_completion import refresh_status
+        packet['completion']['refresh_readiness']=refresh_status(ledger,snapshot,packet['completion'].get('plan'))
     packet['final_acceptance_issues']=task_issues(snapshot,run_id,task)
     packet['historical_failures']=historical_failures(snapshot,run_id) if role=='COORDINATOR' else []
     if (work or {}).get('kind')=='integration_verification':

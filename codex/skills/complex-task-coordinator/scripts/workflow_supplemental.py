@@ -77,7 +77,9 @@ def _context_from_event(db, work):
                     and e['work_id']==w['work_id'] and e['payload'].get('origin_work_id')==payload.get('origin_work_id') for e in exception_events)}
             exception_valid=bool(candidate and isinstance(exception_ids,list) and len(exception_ids)<=32
                 and all(type(e) is int for e in exception_ids) and len(set(exception_ids))==len(exception_ids)
-                and set(exception_ids)<=set(revalidation_ids({'events':exception_events},previous_ids,candidate)))
+                and set(exception_ids)<=set(revalidation_ids({'events':exception_events,
+                    'attempts':[_row(r) for r in db.execute('SELECT * FROM attempts WHERE run_id=?',(work['run_id'],))],
+                    'candidates':[_row(r) for r in db.execute('SELECT * FROM candidates WHERE run_id=?',(work['run_id'],))]},previous_ids,candidate)))
         source_payload=origin_events[0]['payload'] if len(origin_events)==1 else {}
         source_provenance=source_payload.get('provenance') or {}
         if (not origin or len(origin_events)!=1 or event['run_id']!=work.get('run_id')

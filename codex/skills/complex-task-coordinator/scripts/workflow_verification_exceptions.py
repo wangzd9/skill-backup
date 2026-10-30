@@ -292,8 +292,52 @@ def reconcile(ledger):
 
 def revalidation_ids(snapshot, previous_work_ids, candidate):
     return [item['observation_event_id'] for item in facts(snapshot,candidate['run_id'])
-        if item['repair'] and item['work_id'] in previous_work_ids
-        and item['repair']['task_id']==candidate['task_id'] and item['repair']['attempt']==candidate['attempt']]
+        if item['blocking'] and item['repair'] and item['work_id'] in previous_work_ids
+        and repair_descendant(snapshot,item,candidate)]
+
+
+def repair_descendant(snapshot, item, candidate):
+    """Follow native attempt links; an additional repair must not orphan UNVERIFIED."""
+    repair=item.get('repair') or {}
+    if repair.get('task_id')!=candidate['task_id']:return False
+    attempts={a['attempt']:a for a in snapshot.get('attempts',[]) if a['run_id']==candidate['run_id']
+        and a['task_id']==candidate['task_id']}
+    candidates={c['candidate_id']:c for c in snapshot.get('candidates',[]) if c['run_id']==candidate['run_id']
+        and c['task_id']==candidate['task_id']}
+    current=candidate
+    while current['attempt']>repair['attempt']:
+        link=attempts.get(current['attempt'],{}).get('previous_candidate_id')
+        parent=candidates.get(link)
+        if not parent or parent['attempt']>=current['attempt']:return False
+        current=parent
+    return current['attempt']==repair['attempt']
+
+
+def repair_followup(snapshot, item):
+    """Name the actual repair/supplemental owner rather than the old candidate."""
+    repair=item.get('repair')
+    if not repair:return None
+    task=next((t for t in snapshot.get('tasks',[]) if t['run_id']==item['disposition']['run_id']
+        and t['task_id']==repair['task_id']),None)
+    candidate=next((c for c in snapshot.get('candidates',[]) if task and c['run_id']==task['run_id']
+        and c['task_id']==task['task_id'] and c['attempt']==task['attempt'] and c['state']=='CURRENT'),None)
+    result={'task_id':repair['task_id'],'repair_attempt':repair['attempt'],
+        'current_attempt':task['attempt'] if task else None,'phase':task['phase'] if task else 'MISSING',
+        'candidate_id':candidate['candidate_id'] if candidate else None,
+        'head':candidate['head'] if candidate else None,'gate_satisfied':False}
+    if not task:
+        return {**result,'owner':'COORDINATOR','code':'REPAIR_TASK_MISSING','next':'核返修派单与当前计划，保持异常未关闭。'}
+    if task['phase']!='COMPLETED':
+        return {**result,'owner':'COORDINATOR' if task['phase']=='REVIEW' else task['role'],
+            'code':'REPAIR_REVIEW_REQUIRED' if task['phase']=='REVIEW' else 'REPAIR_DEVELOPMENT_REQUIRED',
+            'next':'先处理本返修候选的独立测试、OCR、批准及合入完成；不是重新处置旧候选，不重复创建返修。'}
+    queued=[e for e in snapshot['events'] if e['kind']=='SUPPLEMENTAL_REVALIDATION_QUEUED'
+        and candidate and e['payload'].get('candidate_id')==candidate['candidate_id']
+        and e['payload'].get('original_request_event_id')==item['request_event_id']]
+    return {**result,'owner':'TESTER' if queued else 'COORDINATOR',
+        'code':'SUPPLEMENTAL_REVALIDATION_QUEUED' if queued else 'SUPPLEMENTAL_REVALIDATION_RECONCILE_REQUIRED',
+        'work_id':queued[-1]['work_id'] if queued else None,
+        'next':'等待原请求谱系的真实supplemental_mysql复验；普通独立测试PASS不能关闭异常。复验PASS后协调者显式close。'}
 
 
 def closure_passes(snapshot, item):

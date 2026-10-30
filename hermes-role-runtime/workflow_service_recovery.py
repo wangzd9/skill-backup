@@ -83,25 +83,71 @@ def error_receipt(exc):
             'next_action':'核对该 action 的原生状态和冻结证据；未知副作用不能重投'}
 
 
-def coverage_blocker(ledger, candidate, actions):
-    """A proven empty preview needs adaptation, not repeated paid submissions."""
+def coverage_recovery(ledger, candidate, actions):
+    """Re-evaluate a proven selection refusal with the current zero-model adapter.
+
+    No prepare/start, authorization consumption or verdict. Unknown dispatch
+    and damaged source proofs never become permission to submit again.
+    """
+    import subprocess
     for action in reversed(actions):
         if action['kind']!='ocr' or action['state']!='REJECTED':continue
         folder=ledger.path.parent/'services'/hashlib.sha256(action['action_id'].encode()).hexdigest()
         try:
             path=folder/'invocation.json';raw=path.read_bytes();value=json.loads(raw)
             receipt=value.get('preflight_rejection') or {}
-            if receipt.get('code')!='OCR_REVIEW_COVERAGE_UNAVAILABLE':continue
+            if receipt.get('code') not in ('OCR_REVIEW_COVERAGE_UNAVAILABLE','NO_REVIEWABLE_FILES_OR_DUPLICATES',
+                    'OCR_TEST_SELECTION_NOT_COVERED'):continue
             if (value.get('action_id')!=action['action_id'] or value.get('candidate_id')!=candidate['candidate_id']
                     or (value.get('frozen') or {}).get('candidate',{}).get('head')!=candidate['head']
-                    or not rejection_proof(value,folder) or path.read_bytes()!=raw):continue
-            return {'code':'OCR_REVIEW_COVERAGE_UNAVAILABLE','owner':'COORDINATOR',
+                    or not rejection_proof(value,folder) or path.read_bytes()!=raw):
+                return {'status':'UNVERIFIED','code':'OCR_REJECTION_PROOF_UNVERIFIED',
+                    'owner':'COORDINATOR','action_id':action['action_id'],'gate_satisfied':False,
+                    'next':'拒绝证明或固定身份未核实；先核原生派发及证据，不提交新审查。'}
+            recovery={'code':receipt['code'],'owner':'COORDINATOR',
                 'action_id':action['action_id'],'candidate_id':candidate['candidate_id'],
-                'coverage':receipt.get('coverage'),'gate_satisfied':False,
+                'coverage':receipt.get('coverage'),'gate_satisfied':False,'dispatch_performed':False,
+                'zero_dispatch_proven':True,'status':'UNVERIFIED',
                 'source':{'path':str(path),'sha256':hashlib.sha256(raw).hexdigest()},
                 'next':'核原合同及排除依据，先修复审查适配并提供新预览；不因test-only自动豁免，不对空覆盖判PASS。'}
+            try:
+                import tempfile
+                import ocr_runtime
+                import workflow_ocr_selection
+                request=value.get('request') or {}
+                background=folder/'background.md' if 'background_text' in request else Path(request['background_file'])
+                if background.is_symlink() or not background.is_file():raise ValueError('OCR_RECOVERY_BACKGROUND_MISSING')
+                before=background.read_bytes()
+                if 'background_text' in request and before!=request['background_text'].encode():
+                    raise ValueError('OCR_RECOVERY_BACKGROUND_CHANGED')
+                initial=ocr_runtime.preview(candidate['repo'],candidate['base'],candidate['head'],background=background)
+                with tempfile.TemporaryDirectory(prefix='ocr-recovery-preview-') as temp:
+                    selection=workflow_ocr_selection.freeze(candidate['repo'],initial,Path(temp))
+                    current=ocr_runtime.preview(candidate['repo'],candidate['base'],candidate['head'],
+                        background=background,selection_rule=selection) if selection else initial
+                selected=ocr_runtime.selected(current)
+                covered=not selection or set(selection['test_files'])<=set(selected)
+                if background.read_bytes()!=before or path.read_bytes()!=raw:
+                    raise ValueError('OCR_RECOVERY_SOURCE_CHANGED')
+                recovery.update(status='READY' if selected and len(selected)==len(set(selected)) and covered else 'BLOCKED',
+                    current_preview={'base':candidate['base'],'head':candidate['head'],
+                        'files':current['files'],'selected_files':selected,
+                        'selection':{k:v for k,v in selection.items() if k!='path'} if selection else None,
+                        'background_sha256':hashlib.sha256(before).hexdigest(),
+                        'adapter_sha256':hashlib.sha256(Path(workflow_ocr_selection.__file__).read_bytes()).hexdigest(),
+                        'runtime_sha256':hashlib.sha256(Path(ocr_runtime.__file__).read_bytes()).hexdigest()})
+                if recovery['status']=='READY':
+                    recovery['next']='当前零模型预览已有完整、无重复入选。核背景与差异后使用service_submit及新action_id；原拒绝ID不得重放，入口仍重核授权、覆盖和串行门。'
+            except (OSError,ValueError,KeyError,TypeError,RuntimeError,subprocess.SubprocessError) as exc:
+                recovery['preview_error']=error_receipt(exc)
+            return recovery
         except (OSError,ValueError,TypeError):continue
     return None
+
+
+def coverage_blocker(ledger, candidate, actions):
+    recovery=coverage_recovery(ledger,candidate,actions)
+    return recovery if recovery and recovery['status']!='READY' else None
 
 
 def rejection_proof(value, directory):

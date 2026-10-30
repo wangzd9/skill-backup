@@ -125,7 +125,14 @@ def directory(packet, snapshot):
         seen.add(decision_id)
         items.append({'decision_id':decision_id,'action':action['action'],
             'target':target,'reason':action.get('reason'),
+            'execution_kind':'command' if _is_command(packet['role'],action['action']) else 'guidance',
             'material_fingerprint':digest(_basis(packet,snapshot,action))})
+    for item in items:
+        action=next(a for a in packet['next_actions'] if a['action']==item['action'] and _target(a)==item['target'])
+        followup=action.get('repair_followup') or {}
+        if followup.get('candidate_id'):
+            item['related_decision_ids']=[i['decision_id'] for i in items if i is not item
+                and i['target'].get('candidate_id')==followup['candidate_id']]
     from workflow_user_decisions import pending
     # The directory lists all obligations, even if next_actions intentionally
     # prioritizes final closure or safe retirement. No pending user answer is lost.
@@ -148,6 +155,7 @@ def directory(packet, snapshot):
         'verification_exceptions':packet.get('verification_exceptions',[]),
         'mechanism_blockers':packet.get('mechanism_blockers',[])}
     blockers['verification_retry_blocks']=packet.get('verification_retry_blocks',[])
+    blockers['completion_refresh']=(packet.get('completion') or {}).get('refresh_readiness')
     return {'version':1,'items':items,'blocker_index':blockers,
         'fingerprint':digest([items,blockers]),'authority':'preparation only; no verdict or permission',
         'sampling':sampling(snapshot,packet)}
@@ -189,19 +197,37 @@ def _bounded(ledger, value, *, limit=32768):
 def _contract(role, action):
     from workflow_runtime import COMMANDS
     from workflow_contracts import payload_schema
+    guidance={'COORDINATOR':{
+        'follow_verification_repair':['service_submit','service_decide','decide','merge','complete','resolve_verification_exception'],
+        'wait_for_verification_exit':['checkpoint'],
+        'investigate_test_prerequisites':['checkpoint'],
+        'investigate_completion_prerequisites':['checkpoint'],
+        'review_coverage_required':['service_submit'],
+        'review_documentation':['commit_documentation'],
+        'authorization_required':['checkpoint'],
+        'wait_for_dependency':['checkpoint']}}
+    if action in guidance.get(role,{}):
+        return {'action':action,'executable':False,'kind':'read_only_guidance',
+            'command_alternatives':guidance[role][action],
+            'notice':'这是状态/责任提示，不是command。按prepare中的当前任务、前置条件及关联目录项执行真实命令；不得把提示名提交为动作。'}
     extra={'COORDINATOR':{'service_resume','service_reject','extend_task_scope','refresh_task_base',
         'refresh_development_base','complete','complete_requirement','append_development_log',
         'commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception'},
         'TESTER':{'verify_supplemental','verify_integration','deliver_integration'}}
     if action not in COMMANDS[role] | extra.get(role,set()) | {'ack_events'}:
         raise ValueError('COMMAND_NOT_ALLOWED_FOR_ROLE')
-    result={'action':action,'payload_schema':payload_schema(action),
+    result={'action':action,'executable':True,'payload_schema':payload_schema(action),
         'command_id_policy':'同一逻辑动作重试沿用；INVALID_NOT_STARTED可修正同ID；已冻结/启动不得改参重放。',
         'semantic_policy':'result/decision/reason/summary及supersedes均由角色阅读原证据后确认，不自动填PASS。'}
     if action in ('verify','verify_integration'):
         from workflow_contracts import test_execution_rules
         result['execution_rules']=test_execution_rules()
     return result
+
+
+def _is_command(role, action):
+    try:return _contract(role,action).get('executable',False)
+    except ValueError:return False
 
 
 def _objects(packet, snapshot):
@@ -298,6 +324,9 @@ def prepare(packet, snapshot, item):
         facts['verification_exception']=next((i for i in packet.get('verification_exceptions',[])
             if i['observation_event_id']==item['target']['observation_event_id']),None)
         facts['later_pass_options']=action.get('later_pass_options',[])
+        if action.get('repair_followup'):facts['repair_followup']=action['repair_followup']
+    if action.get('rejection_recovery'):facts['rejection_recovery']=action['rejection_recovery']
+    if action.get('completion_readiness'):facts['completion_readiness']=action['completion_readiness']
     if action['action'] in ('complete_requirement','environment_recovered','verify_integration','deliver_integration'):
         facts['completion']=packet.get('completion');facts['historical_failures']=packet.get('historical_failures')
     draft={k:v for k,v in (action.get('payload') or {}).items() if k not in ('result','decision','summary','supersedes','coverage_review','issue_dispositions')}

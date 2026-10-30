@@ -67,3 +67,5 @@ INCOMPLETE 不自动推荐再次 resume。先 service_collect 核原生状态及
 测试pytest模式由运行时管理JUnit输出，junit模式argv必须含字面{junit_xml}。新操作的同候选/命令/真实环境失败或未知记录必须先处置；换ID、重建同版MySQL不算修复。原ID仅恢复既有执行，稳定性两次子运行和原证据保留。开发自测用delivery_evidence.directory中的绝对路径，不在Git工作区堆证据、不以忽略dirty交付。test-only OCR无入选时，原生适配只精确纳入默认排除测试源码，保留原显式过滤与规则；空覆盖仍阻断，不免审、不自动PASS。
 
 ACK、checkpoint、worker退出分别不代表业务完成。核最近真实状态转换、首次有效动作、session_handoff及异常下一责任人；旧INCOMPLETE单列历史，旧/跨需求UNKNOWN写者继续围栏。零派发拒绝不是业务通过；UNKNOWN通知不盲重发，健康总量与有界样本分别说明。完整实施与采用限制见工作区效果停滞修复记录。
+
+2026-10-30 / 0.16.2：决策目录的execution_kind=guidance不是命令；follow_verification_repair材料指向当前返修候选及related_decision_ids，先处理真实OCR/裁决/合入，不重开旧处置。OCR已证明零派发的拒绝重新核当前零模型预览，READY才可按有效预算新action_id提交；BLOCKED/UNVERIFIED保持覆盖门禁。异常在后续attempt沿原生previous_candidate_id谱系接续，真实同源MySQL补验PASS后显式close。SNAPSHOT_STALE看refresh_readiness，提供方齐备及旧writer核退后原生刷新，不手工改快照。后台会话超过原交接阈值后，继续只读翻历史也被要求checkpoint(yield_execution=true)并结束；不ACK未读前缀，保留原work与全部门禁。

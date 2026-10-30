@@ -1,0 +1,407 @@
+{
+  "runtime_version": "0.16.2",
+  "runtime_commit": "ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa",
+  "tests": {
+    "distinct_cases_verified": 124,
+    "failures_remaining": 0,
+    "release_main_passed": 123,
+    "initial_harness_error": "one cross-process cursor case ran outside the repository and could not import business_ledger",
+    "corrected_cwd_case_passed": true,
+    "second_rework_mysql_closeout_real_git_sqlite": true,
+    "logs": {
+      "release-regression.log": "6a4ad4e2391673eaeef39d4b18181cdb6a89bde999f31518dd7d34f43a031a86",
+      "cwd-regression.log": "b6743c3529121efa71e570a3fbaee8fbddd4ce448359f626b02af484abb5b254",
+      "lineage-closeout-regression.log": "ca8d2577306277e4b36b64215dd0ee7193c9818dcbba97f1fea7232e22d05c36",
+      "timeout-regression.log": "6154c6d6894732f92c0d2e3671383a232a62995da106c3a693f26542e595bf20"
+    }
+  },
+  "publication": {
+    "runtime_commit": "ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa",
+    "base_commit": "cc880b738bfdef712f0e9c0e6dc88b451435fe30",
+    "changed_files": [
+      "tests/test_recovery_closeout.py",
+      "FIXES-20261030.md",
+      "mechanism_activation.py",
+      "plugin.yaml",
+      "tests/test_verification_exceptions.py",
+      "workflow_completion.py",
+      "workflow_decision_context.py",
+      "workflow_progression.py",
+      "workflow_runtime.py",
+      "workflow_service_recovery.py",
+      "workflow_sessions.py",
+      "workflow_supplemental.py",
+      "workflow_verification_exceptions.py"
+    ],
+    "source_hashes": {
+      "tests/test_recovery_closeout.py": "77ed4150bf30841a3be807466ca28f27c7090b3deaf17afacaccfa310a62a93f",
+      "FIXES-20261030.md": "2a81d9a1b46fc9a43fb5840e47207834237d9a739e30c42947deabe9ca2ad2b1",
+      "mechanism_activation.py": "85cc7c37f1e9a5e7446c5339a068e4098eaf60441bcf307ab5f2dae9d48eb439",
+      "plugin.yaml": "4fe2fe14a74833451b1efeecffb086221cdab72723ef4edf928981f091475905",
+      "tests/test_verification_exceptions.py": "0a46f1413372708443bf0784c086b0dc4d03aee383ba5ce4efb1b47895784ef3",
+      "workflow_completion.py": "323c9e302ccd675992315ed6117edc9c97752caee5a53153b93643ece16b33ea",
+      "workflow_decision_context.py": "5e11a434cfd9652f1523f4bf4697566242abf91ce66adc123999b0f39b08a743",
+      "workflow_progression.py": "15776ef8edd98bd19a562a83a888665ef454ddc5cbefb35840a05b62321d30db",
+      "workflow_runtime.py": "96e1cb473939253f41359f424cd6355f963bd5b56fc89d895309705e697245e7",
+      "workflow_service_recovery.py": "d532600584a7f426b337c3e7e45744e3e75856cf85fb6b1ce456dc26ebf6c76c",
+      "workflow_sessions.py": "65ffa1c44c93b9607fdb98caca6fd46819b6959baaa833d736675dfaf3ebbae5",
+      "workflow_supplemental.py": "35813401584b4f2c4b4b2a9683e6139ae3400ce08f5db60e007d383686e78e1f",
+      "workflow_verification_exceptions.py": "cebc1fa967354b4cbc2b0420e51ca1c8ad22ce8aed4b56ed9e6a5734c4f2dfa7"
+    },
+    "atomic_file_publish": true,
+    "business_rows_modified": false
+  },
+  "gateway_activation": {
+    "checked_at": "2026-10-30T20:38:16+08:00",
+    "gateway_pid": 3612975,
+    "gateway_state": "running",
+    "platforms": {
+      "feishu": "connected"
+    },
+    "activation_pid": 3612975,
+    "activation_state": "ACTIVATED",
+    "mode": "future_calls_only",
+    "verified_source_files": 68,
+    "source_mismatches": [],
+    "source_sha256": {
+      "__init__.py": "1f1942480597f4bf5fd9f915b048c5851a7cc09c53ddf657a7f177d1e6765ac9",
+      "workflow_sandbox.py": "1ffac3acb514182b13e37d74872f930ec2ad9c20aa519cbdeb5c7574d6e04d7b",
+      "requirement_runtime.py": "aaa31709e03de63b5d2889abb3245ec91647b9dfd62612858c250ee6f79e4ede",
+      "workflow_registration.py": "5ef0a59d579b616a88509e7972d894ed68fdcca2932b590383f574f2f269db85",
+      "business_ledger.py": "c0a471f9261d7fd721458d14ba2737e2a2363a44f9017c195bd90aff4511d3e2",
+      "workflow_runtime.py": "96e1cb473939253f41359f424cd6355f963bd5b56fc89d895309705e697245e7",
+      "workflow_reports.py": "eb78eb34259dfe562bf7a1bf06add398b54ed4f0a3d4a68504137d1e4eef176d",
+      "report_summary.py": "7a59aaeb98851bc7ab1e5d2bb2da8fd2a7b00ec835e157dc6df44bfdae4f0965",
+      "workflow_notifications.py": "c89681d7d30a62fe0ef3150076d415104250012b9e892cec9c3315c43022eb64",
+      "workflow_views.py": "faf90613de990f6d372f2538acc5875707726a8cdc2e0293fae7a45759377f66",
+      "workflow_model_input.py": "917685f333921a1b2f5e94877bdbd53b034af8c3b8f04bd225dd77effed75ce0",
+      "workflow_toolsets.py": "a1c3d34bb270d3efde0945d63a2a94c228fd35266ab2c68f04562eac6fa22d13",
+      "workflow_coordination_log.py": "ec2f26893b47c853464b3354b4c569d9d6dfca4547990fa51094dce0498b077c",
+      "workflow_decision_context.py": "5e11a434cfd9652f1523f4bf4697566242abf91ce66adc123999b0f39b08a743",
+      "workflow_decision_metrics.py": "c9f23adcd5b15b43f5bda618ea5acb33107fec09c90f6788918abe3c2b98b39e",
+      "workflow_delivery.py": "a2b21b5b4bda170b303b96dd545564466d19c4d97bc1c1b41c1154894d4a8205",
+      "workflow_business_progress.py": "67829d1624c1714cedb7ddb7b5959a8f4776e4f18ae5e1f35481d301449772f1",
+      "workflow_ocr_selection.py": "bebbb18c9bb1d366eb913626a92981a81182da307e15797348ca29bce011fc77",
+      "workflow_sessions.py": "65ffa1c44c93b9607fdb98caca6fd46819b6959baaa833d736675dfaf3ebbae5",
+      "workflow_capacity.py": "10ad751a2fa0d341496f0de9886c47d512e030d1de1183b8d2c85e5fbfc77474",
+      "workflow_verification_retry.py": "2714f6b40d8cd79ce9c9a37610a25204700b1987a918914b71a1f9c9b9640a89",
+      "workflow_work_memory.py": "dc45c7553a2963ee44ded2b264ca838d284cd1fb409447aab667bc620099f89a",
+      "workflow_recovery.py": "ea5c13e36ec8f7c54356c4a27a0c814fb17bf4b6cdc4f1a14d04ed3471dbc826",
+      "workflow_verification_exceptions.py": "cebc1fa967354b4cbc2b0420e51ca1c8ad22ce8aed4b56ed9e6a5734c4f2dfa7",
+      "prefix_audit.py": "0d5c575bae4ada1dd03707ab201db49a32c32f9faf5a97086f4a0c888795a087",
+      "workflow_service_recovery.py": "d532600584a7f426b337c3e7e45744e3e75856cf85fb6b1ce456dc26ebf6c76c",
+      "workflow_observation.py": "b10bbc0a849e25976fadd11ba315896be414b57d23010bee76c127f4aed78031",
+      "observation_view.py": "7dc5c3e9a41f7d7c5397495201e7fb7193827dbec198c4f69872be8018cff23d",
+      "activity_signals.py": "42a255bc5f9725675a015c3553afe2e1ab1097d52dec3e1a7ccf76cc445d7fef",
+      "workflow_activity.py": "b9f7883659aba8b5e687774b587b7a345358ca0fa236edebfd3b084ee560827f",
+      "workflow_diagnostics.py": "00d4eed40f274d571a1591755680dc5b87b08ff74718dd664c8058231f3ce133",
+      "report_contract.py": "2808bbb1c81008a6b6cb65dc2c024772df4bb527a50b53874bb4ea21c7fd3954",
+      "manual_access.py": "342ddf3da86a2776611d058670f3e69b08d29a21537054d967eba118efac791d",
+      "workflow_query.py": "1f659f5fdede0fc3a9caf2e8b8e5716759a7b96d435c695563359a3db295a2ed",
+      "delivery_evidence.py": "6b7780cabdde388b32b1313faefc42bad5c35453221673701e4e7033014a505c",
+      "workflow_dispatch.py": "a0ebe8b27517285424672fa0e9872d53e95fd23203ad7e160884b6198df71688",
+      "ocr_runtime.py": "7f2f77b17f446b978316dae3a9ca0232e4d8ecbf577a9c898704aad7d4376b7a",
+      "workflow_services.py": "6ae338ebb2926b0a1be8e0e453cbd1ca7026188092a0298a624fff04d1472d42",
+      "workflow_contracts.py": "d92ee14316a6819eb9f7a2f6c9c3fcfdf450c7892d0444af7c9e4b5c0f5c10b7",
+      "workflow_progression.py": "15776ef8edd98bd19a562a83a888665ef454ddc5cbefb35840a05b62321d30db",
+      "workflow_merge_policy.py": "2aeeb236790003543b48af20ad4ee14e1fd53728c9b991b07fe5badfbb6de01a",
+      "workflow_task_merge_policy.py": "40b09f2257266bdbd744accae02fadb42cbcf12b3074c60e0bf4f55c8e60147f",
+      "workflow_autonomy.py": "70773d4e842d4578b961d1a68b57a4ca5e553469f041083567b5f1db26d992a9",
+      "workflow_input_pages.py": "cf318bd201be5ac5b3b99db7f98d8d805b2a3ebbd73485723e1cf9dc070a15ca",
+      "workflow_resumption.py": "4c5f4d605cc26a93b35e7c3049ff2052046656b1d80b10e7b36959ad0e97c5e1",
+      "workflow_notification_registry.py": "a7a6f33b131024095211d92d7bee6593bf07210a61b1e19fd7f520fa6f3bfeec",
+      "workflow_terminal_observation.py": "cf8dfc53e210096974024a9c3aed5def5341ccf8a23bb266f12768f74796db45",
+      "workflow_acceptance_obligations.py": "378b0fcfbff5d6d623d72c7e04925fd290874802471fcbe969dd749d2c48a10e",
+      "workflow_issue_policy.py": "b83bd16b2687888ef3c40919445daf13cedecb45fc72e7b4092743e9c431d84b",
+      "workflow_completion.py": "323c9e302ccd675992315ed6117edc9c97752caee5a53153b93643ece16b33ea",
+      "workflow_completion_repair.py": "8eceb73b69d58dde0f3bde71c6e55e51fe073b200206e89e4b2766c76f4c2160",
+      "workflow_completion_contracts.py": "7e049c0e6dd0006980829c3497bdc5609bc72a5c7f669b3ddfe3f52d26082839",
+      "workflow_completion_reports.py": "db50de56256d303fde7ff51222a9cb259cd939e7c9fb6b882b42f47f38e390ac",
+      "workflow_verification_lifecycle.py": "54d162b7d123fbee52a94da92f595dcf513f6ecd44198fe2db69ba71669d8019",
+      "workflow_development_policy.py": "525085c6a6ff74330ff4f564a7fe396ef100e9af1c201346d182a45d40c463ef",
+      "workflow_integration_workspace.py": "8d06d8423e0eb3f362e3504211d0ce9c8b5980077db622e255bbb216545ce148",
+      "workflow_intake.py": "af49c2f33a35b4dba1943180d214248acb1a740bd8b3890c257236bfccd58f17",
+      "workflow_user_decisions.py": "41f94ecc6e84633158cc1e281ad6290f3dd33b4a901a408c6addb46507803d46",
+      "workflow_supplemental.py": "35813401584b4f2c4b4b2a9683e6139ae3400ce08f5db60e007d383686e78e1f",
+      "workflow_merge.py": "f3c207feac1c551c22913747d0b72c04d1ac5d2dddfc57cd213aa45f6793bdb8",
+      "workflow_integration_recovery.py": "e97c4b3a606d9c77984d619f0303acbee7dc1bc80a334fc3254a894884692384",
+      "workflow_tool_bridge.py": "8a5f656694a4666efc3e15f135b52b7e2f4378178b596b5a756f82d25a8c7662",
+      "workflow_wait.py": "53d26fd9cf94952db5dab96005f91b72aef53adc584f4a2685b2cc5ae5974fef",
+      "workflow_documentation.py": "a729cd3271170d9a61c119d6f51ed23f222912fd8ccd70d7557074cb8472adfd",
+      "monitor_queue.py": "ca22e6fd96b866a7f37fa9c18358c6421f51cc5d007f00b9454e6726669ffa47",
+      "monitor_notifications.py": "8432ce3acb1632fef1dd60c7829b218d75ef3074a4da085bae04c130625815cd",
+      "role_observer.py": "4d7ea035b5e5be7f5be457920d9b58e7742e2d728171eb4de1453321984ece2e",
+      "scheduler_observation.py": "e1bc0c1f07afc721bd44ae22eee264bb81892215f8053972597f1f30a2b3bde5"
+    },
+    "file_backend_pid": 3612975,
+    "file_backend_state": "ACTIVATED",
+    "scheduler_hook_pid": 3612975,
+    "scheduler_hook_state": "COLLECTED",
+    "restart_performed": false,
+    "business_verdicts_written_by_maintenance": false
+  },
+  "production_readonly_entry": {
+    "checked_at": "2026-10-30T20:40:44.470088+08:00",
+    "event_high_water": 14251,
+    "invocation": "maintenance invocation of production role_live_progress handler and readonly decision preparation; no outbound message",
+    "packet_bytes": 7717,
+    "query_seconds": 1.1543,
+    "task_count": 6,
+    "tasks": [
+      {
+        "task_id": "MN-01",
+        "role": "A",
+        "phase": "COMPLETED",
+        "attempt": 7,
+        "candidate_id": "candidate-c75efadfe17d406ea42062f2ad8732dc",
+        "head": "daf3f9b23b62c7c67b5b297dd57ff3e0277209d0"
+      },
+      {
+        "task_id": "MN-02",
+        "role": "B",
+        "phase": "COMPLETED",
+        "attempt": 3,
+        "candidate_id": "candidate-mn02-attempt3-b0",
+        "head": "5714b291443b6b812b9d0fc73d5154e767dcde15"
+      },
+      {
+        "task_id": "MN-03",
+        "role": "C",
+        "phase": "COMPLETED",
+        "attempt": 9,
+        "candidate_id": "candidate-1dcf5941311049e8bd281059e7d25863",
+        "head": "56778fad2750c3b13aad5c814219777e600624c0"
+      },
+      {
+        "task_id": "MN-04",
+        "role": "A",
+        "phase": "REVIEW",
+        "attempt": 8,
+        "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+        "head": "e82af00254ddd4dc67a823b142f0f7c6c4d5d596",
+        "recorded_checks": {
+          "independent_test": [
+            "PASS"
+          ],
+          "ocr": []
+        },
+        "dependency_ready": true
+      },
+      {
+        "task_id": "MN-05",
+        "role": "B",
+        "phase": "COMPLETED",
+        "attempt": 3,
+        "candidate_id": "candidate-26cc19d187f691a2274c1b403923ea74",
+        "head": "26cc19d187f691a2274c1b403923ea7443536925",
+        "dependency_details": {
+          "development_start": {
+            "missing": [
+              "MN-04"
+            ],
+            "contract_mismatches": []
+          },
+          "integration": {
+            "missing": [
+              "MN-04"
+            ],
+            "contract_mismatches": []
+          },
+          "acceptance": {
+            "missing": [
+              "MN-04"
+            ],
+            "contract_mismatches": []
+          }
+        }
+      },
+      {
+        "task_id": "MN-06",
+        "role": "C",
+        "phase": "COMPLETED",
+        "attempt": 2,
+        "candidate_id": "candidate-ec625d3c843c4c21b1d364a363745c9d",
+        "head": "0225b72274986eaee1305ecb57c8b67f8e34f7bc"
+      }
+    ],
+    "decision_items": [
+      {
+        "decision_id": "decision-f1e784b02c666b462e0f14fb",
+        "action": "follow_verification_repair",
+        "target": {
+          "candidate_id": "candidate-81b2729f35604ded872853d641f9048f",
+          "observation_event_id": 14173
+        },
+        "reason": "核UNVERIFIED原始证据后显式选择repair/investigate/close。repair仅原范围已完成任务，落实真实新attempt；已有处置则先核落账派单/安全核退/真实复验，不等待MN-07失败、不扩范围、不重复同因提交。",
+        "execution_kind": "guidance",
+        "material_fingerprint": "6c30cda20fe2a0834bc563c52c184d65269ced3e9354f2f6602a6f5c84009dc8",
+        "related_decision_ids": [
+          "decision-ef4fedb572f0ef11431cfc11"
+        ]
+      },
+      {
+        "decision_id": "decision-ef4fedb572f0ef11431cfc11",
+        "action": "service_submit",
+        "target": {
+          "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+          "kind": "ocr"
+        },
+        "reason": "使用已接受范围的剩余预算，无需逐候选再问用户",
+        "execution_kind": "command",
+        "material_fingerprint": "2d0d808c039c28b4802cac8b15c9256a294ebd737bde045631deb267fc087666"
+      }
+    ],
+    "guidance_executable": [
+      false
+    ],
+    "ocr_recovery": [
+      {
+        "code": "NO_REVIEWABLE_FILES_OR_DUPLICATES",
+        "owner": "COORDINATOR",
+        "action_id": "mn04-a8-ocr-001",
+        "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+        "coverage": null,
+        "gate_satisfied": false,
+        "dispatch_performed": false,
+        "zero_dispatch_proven": true,
+        "status": "READY",
+        "source": {
+          "path": "/home/wang/.hermes/role-pool.runtime/services/e978272436a7cffe35dcf4d062865e415ca85853541258a6497c004232f159c4/invocation.json",
+          "sha256": "e7699ab5d8bb8820a14901bd4d05ca6bc71278721722d7d99c8caa8228170d3b"
+        },
+        "next": "当前零模型预览已有完整、无重复入选。核背景与差异后使用service_submit及新action_id；原拒绝ID不得重放，入口仍重核授权、覆盖和串行门。",
+        "current_preview": {
+          "base": "c59c0f7390d5b0d28f1d5a065e3791cdf0c5eeb1",
+          "head": "e82af00254ddd4dc67a823b142f0f7c6c4d5d596",
+          "files": [
+            {
+              "path": "tests/test_mn01_migration.py",
+              "status": "modified",
+              "insertions": 37,
+              "deletions": 0,
+              "will_review": true
+            }
+          ],
+          "selected_files": [
+            "tests/test_mn01_migration.py"
+          ],
+          "selection": {
+            "sha256": "7b509c45716ee934c02eebdcddcd0471303ec39869c44dd0ec2ea91783acfaca",
+            "test_files": [
+              "tests/test_mn01_migration.py"
+            ],
+            "filter_sources": [],
+            "rule_policy": "仅精确纳入默认排除的测试源码；保留原显式过滤、项目/全局规则与系统语言规则。"
+          },
+          "background_sha256": "6e4e34f9dd50ab885839c025daa78c830aadcb7aeee8f46a556d68db9e2caa7e",
+          "adapter_sha256": "bebbb18c9bb1d366eb913626a92981a81182da307e15797348ca29bce011fc77",
+          "runtime_sha256": "7f2f77b17f446b978316dae3a9ca0232e4d8ecbf577a9c898704aad7d4376b7a"
+        }
+      }
+    ],
+    "completion_refresh": {
+      "ready": false,
+      "code": "COMPLETION_DEVELOPMENT_NOT_COMPLETE",
+      "error_type": "ValueError",
+      "owner": "COORDINATOR",
+      "unfinished_suppliers": [
+        {
+          "task_id": "MN-04",
+          "attempt": 8,
+          "phase": "REVIEW",
+          "owner": "COORDINATOR"
+        }
+      ],
+      "next": "先完成列出的当前提供方及其全部门禁；提供方齐备仍失败时核该错误码的合同、授权或合入证据。旧快照不能当新版本复验。"
+    },
+    "active_executions": [],
+    "business_actions_performed": false,
+    "outbound_messages_sent": false
+  },
+  "technical_worker_restart": {
+    "checked_at": "2026-10-30T20:38:53+08:00",
+    "reason": "adopt reviewed recovery repair in obsolete independent coordinator worker",
+    "user_authorization": "existing explicit authorization for necessary Hermes restarts",
+    "execution_id": "0b8fc554fb37408298e1003015731298",
+    "expected_pid": 317363,
+    "expected_start": "129440642",
+    "work_preserved": true,
+    "business_verdict_written": false,
+    "checkpoint_fabricated": false,
+    "signal": "SIGTERM",
+    "sigkill_used": false,
+    "event_high_water": 14249,
+    "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+    "no_inflight_business_tools": true,
+    "no_inflight_external_actions": true,
+    "scope_pids_before": [
+      317363,
+      317781,
+      317789,
+      317794
+    ],
+    "scope_empty": true,
+    "original_pid_gone": true,
+    "state": "WAITING_NATIVE_EXIT_RECONCILIATION"
+  },
+  "durable_wakeup": {
+    "state": "PENDING_GATEWAY",
+    "reason": "EXTERNAL_WORKER_REQUIRES_GATEWAY_DISPATCH",
+    "event_preserved": true,
+    "request_id": "dd66450e4bca4c24bc9df23f902dd04f",
+    "recovery": "existing_gateway_event_tick"
+  },
+  "business_actions_by_maintenance": false,
+  "business_rows_directly_edited": false,
+  "business_status": "Native coordinator has reclaimed its original work and adopted current sources; first model request remains in flight. No new OCR submission or business transition verified yet.",
+  "native_resumption": {
+    "checked_at": "2026-10-30T20:49:14+08:00",
+    "event_high_water": 14252,
+    "old_execution": {
+      "execution_id": "0b8fc554fb37408298e1003015731298",
+      "state": "ENDED",
+      "native_outcome": "UNKNOWN",
+      "writer_cleared": true
+    },
+    "replacement_execution": {
+      "execution_id": "97a455b39f3f4e3db7cd9726b1fc9786",
+      "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+      "state": "ACTIVE",
+      "pid": 648166,
+      "bound_at": 1793364234.2653058
+    },
+    "replacement_file_backend": {
+      "state": "ACTIVATED",
+      "all_source_hashes_match": true
+    },
+    "model_sources": [
+      {
+        "check_status": "VERIFIED",
+        "complete": true,
+        "reason_codes": []
+      }
+    ],
+    "model_lifecycles": [
+      {
+        "kind": "main_request",
+        "started_at": 1793364499.35142,
+        "ended_at": null,
+        "outcome": null
+      },
+      {
+        "kind": "main_request",
+        "started_at": 1793364241.308506,
+        "ended_at": 1793364498.3363395,
+        "outcome": "SUCCESS"
+      }
+    ],
+    "a8_actions": [
+      {
+        "action_id": "mn04-a8-ocr-001",
+        "state": "REJECTED",
+        "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa"
+      }
+    ],
+    "business_transition_since_replacement": false
+  }
+}

@@ -1,0 +1,41 @@
+# OCR 拒绝与异常返修接续修复
+
+日期：2026-10-30，Asia/Shanghai（+08:00）。运行时 **0.16.2**，提交 `ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa`。
+
+**机制有缺陷，但不是“REJECTED 永久锁住 REVIEW”或“根本没有快照刷新”。** 本次先修复通用接续缺口，再由原生角色执行实际业务动作；不修改业务数据库状态来制造完成。
+
+## 当次核验与原因
+
+维护开始后的只读 `current_input`/`live_progress` 均成功。20:29 的账本水位仍为 14249：MN-04 a8 为 REVIEW，固定 head `e82af00254ddd4dc67a823b142f0f7c6c4d5d596`，18:38:22 的独立测试 PASS 是最后的实质业务推进。`mn04-a8-ocr-001` 于18:36:44被 `NO_REVIEWABLE_FILES_OR_DUPLICATES` 拒绝；现场回执证明 prepare 阶段零派发。e14173 保持 REPAIR_QUEUED，MN-07 为 SNAPSHOT_STALE。
+
+1. **会话超限仍可无限只读。** `workflow_sessions.tool_decision` 在达到交接阈值后提前放行 READ_TOOLS，只阻止写操作。该协调执行在无新增业务状态转换时持续读历史、旧审查材料和不存在的 spillover；预算记录已为 checkpoint_required=true。轮询频率增加无法替它产生有效动作，Gateway 热加载也不会更新独立 worker 已加载的代码。这是实际空转路径，不以“PID 活着”或 checkpoint 内容证明业务正在推进。
+2. **决策目录混淆责任提示与可执行命令。** `follow_verification_repair` 指向旧异常候选，只附泛化描述；目录没有可执行类别，也未关联当前 a8 的 OCR。现场该会话确实查询了它的 contract，收到 COMMAND_NOT_ALLOWED_FOR_ROLE。一次参数拒绝不能单独证明全部停滞原因，但这里存在可复现的接口误导。
+3. **OCR 适配修好后缺少新鲜的接续证明。** 当前账本其实已提供 service_submit 和有效预算，所以不能称 REJECTED 一定永久锁死；旧请求发生时测试文件未入选。0.16.0 已补精确测试源码选择，本次生产零模型预览确认 `tests/test_mn01_migration.py` 完整入选。另一方面，`coverage_blocker` 对新式 OCR_REVIEW_COVERAGE_UNAVAILABLE 只看旧拒绝，不重新检查已修好的适配，确实可能永久提示覆盖缺失。
+4. **异常不是没有登记 owner，而是跟进材料没有反映真实阶段。** e14173 已由 COORDINATOR 处置并创建 a8；普通 independent_test PASS 不足以关闭原 MySQL UNVERIFIED。另发现 `revalidation_ids` 只接受最初返修 attempt，后续再次返修可能丢失原异常复验关联。
+5. **SNAPSHOT_STALE 已有自动刷新。** `workflow_completion.reconcile` 等全部提供方完成、真实合入、有效合同/策略及旧验证和 writer 退出后自动排队。当前等 a8 完成是合法门禁。缺陷是 frozen_target 失败被静默返回，不公开当前失败码和责任人，异常环境中难以区分正常等待与冻结故障。
+
+## 代码修复
+
+- 超限后台会话只允许本角色 `checkpoint(yield_execution=true)` 或 `safe_release`，不再继续翻历史。未读不 ACK，原 work、attempt、证据及门禁保留；人工查询和报告会话不受此后台阈值约束。
+- 目录增加 `execution_kind`，guidance 的 contract 明确 `executable=false`；异常材料列出真实返修任务、当前候选、责任人及 `related_decision_ids`，不扩大任何命令权限。
+- 对固定身份匹配、已证明零派发的旧/新 OCR 选择拒绝，运行当前零模型 preview 和既有测试文件适配。完整无重复覆盖为 READY，可沿原有效授权新 action_id 提交；空覆盖、损坏证明、改变背景或预览失败保持 BLOCKED/UNVERIFIED。预览超时只形成诊断，不打坏整个当前输入入口；不启动模型、审查服务或自动裁决。
+- 补验异常关联沿原生 `attempts.previous_candidate_id` 检查同 run/task 的连续谱系，再次返修也能自动排队同源 MySQL 复验。缺链、跨任务、跨 run 不关联；真实 PASS 后仍需显式 close，保留原 UNVERIFIED。
+- `refresh_status` 与 reconcile 共用冻结目标守卫；当前输入及目录公开冻结失败码、未完成提供方和责任人，不能拿旧快照当当前目标。REVIEW 阶段责任明确为协调者。
+
+涉及 `workflow_sessions.py`、`workflow_decision_context.py`、`workflow_service_recovery.py`、`workflow_progression.py`、`workflow_verification_exceptions.py`、`workflow_supplemental.py`、`workflow_completion.py`、`workflow_runtime.py` 及热加载清单。
+
+## 验证与上线
+
+- **124 个相关测试均完成通过验证。** 最后主回归123项通过，1项跨进程游标测试首次因维护命令运行目录错误而未能导入运行时；回到隔离仓根单独重跑通过。测试失败没有被改成业务 PASS。
+- 新增真实隔离 Git/SQLite 的“UNVERIFIED → 原角色退休 → 原范围返修 → 再次返修 → 独立测试 → 批准/合入/完成 → 原请求 MySQL 补验 → 显式关闭”链路；实际执行，不只验证文本提示。既有最终集成刷新、限额环境重试、权限/未知副作用围栏及报告查询回归保留。
+- 生产只读回放确认 a8 新预览有且仅有迁移测试文件，e14173 的责任提示关联实际 OCR 决策，MN-07 的当前冻结原因是 COMPLETION_DEVELOPMENT_NOT_COMPLETE / MN-04 a8 REVIEW。
+- **20:38:16** 原生 Gateway 热加载成功：PID 3612975，68项源码 SHA 一致，文件后端 ACTIVATED，调度钩子 COLLECTED，飞书 connected。
+- **20:38:53** 为使旧独立协调进程采用修复，按已有维护重启授权对其专属 systemd scope 发送 SIGTERM。先核 PID/start、当次业务进展、完整工具终态、无在途业务工具及无 SUBMITTED/UNKNOWN 外部审查，并以短事务发布围栏避免派发竞态；未改业务行。原 scope 的4个进程全部退出，无 SIGKILL，无伪造 checkpoint、裁决、测试或 work 完成；等待原生观察器核退并接续同一 work。
+
+实际业务接续结果和最终采样见下方增补及[发布核验记录](workflow-recovery-closeout-rollout.json)。原始会话、数据库及含凭据的提交映射不上传 GitHub。
+
+## 原生接续核验
+
+旧执行已由原生观察器核为 ENDED，writer_cleared=true；native_outcome=UNKNOWN，没有冒充业务成功。原生300秒 fire-claim 保护自然到期后，20:43:54 新执行 `97a455b39f3f4e3db7cd9726b1fc9786` / PID 648166 重新领取同一原 work。新进程文件后端 ACTIVATED，全部记录的源码哈希与0.16.2一致，没有另建业务owner或清除原生保护。
+
+截至20:47的当次只读查询，账本水位14252，唯一新增事件是 EXECUTION_BOUND；模型观察器 VERIFIED/complete=true，首个 main_request 仍未结束，没有工具调用。此时尚未核到新 OCR 或业务状态转换，不能把“领取成功、PID存活”报告为需求推进。后续实际业务结果继续增补于本节。

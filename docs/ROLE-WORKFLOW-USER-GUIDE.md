@@ -1,6 +1,6 @@
 # 角色工作流使用指南：需求接入、开发、最终验收与恢复
 
-**校正日期：2026-10-30，时间统一为 Asia/Shanghai（+08:00）。适用于已启用业务账本的 ACTIVE 模式。裁决材料版 3.29。观察修复：长测试按受控期限派生宽限期；写权诊断异常/恢复各稳定 120 秒后通知。**
+**校正日期：2026-10-30，时间统一为 Asia/Shanghai（+08:00）。适用于已启用业务账本的 ACTIVE 模式。裁决材料版 3.30。观察修复：长测试按受控期限派生宽限期；写权诊断异常/恢复各稳定 120 秒后通知。**
 
 日常操作在既有协调者飞书群完成；A、B、C 和 TESTER 群用于查看各自工作及控制本角色。固定五角色复用于不同需求，不需要为每个需求重新建群。规划者仍由用户按需手动触发，不是第六个常驻角色。
 
@@ -628,3 +628,11 @@ cd /home/wang/work/hermes-role-runtime
 若报告写“当次进度核验未完成”，表示当次入口没有取得完整核验结果，不能将旧 checkpoint 当作现状。2026-10-30 的现场错误来自通知健康明细使观察摘要超限，已修复摘要对嵌套元数据的预算处理；无需调整模型、放宽门禁或重复提交业务任务。
 
 当前查询将大明细保存为完整、带哈希的证据，摘要内通过 JSON Pointer 定位，保留精确状态计数及未核实原因。UNKNOWN 仍表示送达未知，不自动重发；UNVERIFIED 仍表示未核实，不代表恢复。完整证据损坏继续拒绝，不能靠吞掉异常伪装查询成功。实现与采用核验见[只读入口修复记录](analysis/coordinator-health-audit-20261030/LIVE-PROGRESS-OBSERVATION-BUDGET-REPAIR.md)。
+
+### 13.5 OCR 拒绝、异常返修与会话交接（0.16.2）
+
+OCR 提交前被拒不算审查通过，也不必永久停在 REVIEW。当前入口核对固定候选、原拒绝的零派发证明及新零模型预览：适配后有完整、无重复入选时，提示协调者沿原有效预算用新 action_id 提交；空覆盖或证明未核实继续阻断。UNKNOWN 副作用不盲目重试。
+
+决策目录用 execution_kind 区分真实 command 与责任 guidance；follow_verification_repair 不是可执行命令，其材料列出实际返修任务、当前候选和关联决策。UNVERIFIED 需原请求谱系的真实 MySQL 补验 PASS，再由协调者显式关闭；后续返修仅沿原生 attempt 链关联，不继承旧门禁。
+
+SNAPSHOT_STALE 的 refresh_readiness 给出当前提供方、责任人及冻结失败码。提供方全部完成、旧验证及 writer 核退后，原生 reconcile 自动刷新。会话达到原安全交接阈值后只允许保存 yield_execution 检查点或 safe_release；继续只读翻历史也须交接。群查询与报告会话不受此后台限制。详见[修复与上线核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md)。

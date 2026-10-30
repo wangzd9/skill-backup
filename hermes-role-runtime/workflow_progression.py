@@ -94,7 +94,7 @@ def next_actions(packet, ledger, *, snapshot=None):
         for event in packet.get('verification_retry_blocks',[])[-4:]:
             result.append({'action':'investigate_test_prerequisites','candidate_id':event['payload'].get('candidate_id'),
                 'retry_block':event,'reason':event['payload']['next']})
-        from workflow_verification_exceptions import facts as exception_facts, closure_passes
+        from workflow_verification_exceptions import facts as exception_facts, closure_passes, repair_followup
         snapshot=ledger.snapshot((packet.get('run') or {}).get('run_id')) if snapshot is None else snapshot
         exceptions=exception_facts(snapshot,work.get('run_id') or selected)
         for item in exceptions:
@@ -108,6 +108,7 @@ def next_actions(packet, ledger, *, snapshot=None):
             result.append({'action':action,'observation_event_id':item['observation_event_id'],
                 'candidate_id':item['candidate_id'],'state':item['state'],
                 'later_pass_options':pass_options,
+                'repair_followup':repair_followup(snapshot,item),
                 'payload':{'observation_event_id':item['observation_event_id']},
                 'reason':'核UNVERIFIED原始证据后显式选择repair/investigate/close。repair仅原范围已完成任务，落实真实新attempt；'
                     '已有处置则先核落账派单/安全核退/真实复验，不等待MN-07失败、不扩范围、不重复同因提交。'})
@@ -179,17 +180,19 @@ def next_actions(packet, ledger, *, snapshot=None):
                 if (kind in task['required_checks'] and not any(v['check_name']==kind for v in verifications)
                     and not any(a['kind']==kind and a['state'] not in ('REJECTED','ENDED') for a in actions)):
                     if kind=='ocr':
-                        from workflow_service_recovery import coverage_blocker
-                        blocker=coverage_blocker(ledger,candidate,actions)
-                        if blocker:
+                        from workflow_service_recovery import coverage_recovery
+                        recovery=coverage_recovery(ledger,candidate,actions)
+                        if recovery and recovery['status']!='READY':
                             result.append({'action':'review_coverage_required','candidate_id':cid,
-                                'coverage_blocker':blocker,'reason':blocker['next']})
+                                'coverage_blocker':recovery,'reason':recovery['next']})
                             continue
                     try:
                         from workflow_autonomy import select_grant
                         auth=select_grant(ledger,candidate,kind)
                         result.append({'action':'service_submit','candidate_id':cid,'kind':kind,
-                                       'authorization':auth,'reason':'使用已接受范围的剩余预算，无需逐候选再问用户'})
+                                       'authorization':auth,
+                                       **({'rejection_recovery':recovery} if kind=='ocr' and recovery else {}),
+                                       'reason':'使用已接受范围的剩余预算，无需逐候选再问用户'})
                     except ValueError:
                         result.append({'action':'authorization_required','candidate_id':cid,'kind':kind,
                                        'reason':'合并提出缺失的范围授权；不能循环等待或自行扩大预算'})

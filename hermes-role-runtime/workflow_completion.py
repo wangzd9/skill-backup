@@ -201,6 +201,24 @@ def target_current(ledger, snapshot, work):
         return False
 
 
+def refresh_status(ledger, snapshot, spec):
+    """Read-only reason for the same target guard used by reconciliation."""
+    if not spec:return {'ready':False,'code':'COMPLETION_PLAN_MISSING','owner':'COORDINATOR'}
+    try:
+        target=frozen_target(ledger,snapshot,spec)
+    except (ValueError,OSError,subprocess.SubprocessError) as exc:
+        import re
+        message=str(exc)
+        code=message if isinstance(exc,ValueError) and re.fullmatch('[A-Z][A-Z0-9_]+',message) else 'COMPLETION_TARGET_UNVERIFIED'
+        return {'ready':False,'code':code,'error_type':type(exc).__name__,'owner':'COORDINATOR',
+            'unfinished_suppliers':[{'task_id':t['task_id'],'attempt':t['attempt'],'phase':t['phase'],
+                'owner':'COORDINATOR' if t['phase']=='REVIEW' else t['role']}
+                for t in snapshot['tasks'] if t['run_id']==snapshot['current_run_id'] and t['phase']!='COMPLETED'],
+            'next':'先完成列出的当前提供方及其全部门禁；提供方齐备仍失败时核该错误码的合同、授权或合入证据。旧快照不能当新版本复验。'}
+    return {'ready':True,'code':'COMPLETION_TARGET_READY','owner':'runtime_reconciler','target':target,
+        'next':'原生reconcile在旧验证work及writer安全退出后自动冻结并派发新快照；不免除测试和最终收口。'}
+
+
 def reconcile(ledger):
     ensure_plan(ledger)
     snapshot=_snapshot(ledger);run_id=snapshot['current_run_id']
@@ -212,10 +230,9 @@ def reconcile(ledger):
     repairs=queue_repairs(ledger,snapshot,run_id)
     snapshot=_snapshot(ledger)
     state=facts(snapshot,run_id)
-    try:
-        target=frozen_target(ledger,snapshot,spec)
-    except (ValueError,OSError,subprocess.SubprocessError):
-        return repairs
+    readiness=refresh_status(ledger,snapshot,spec)
+    if not readiness['ready']:return repairs
+    target=readiness['target']
     old=next((w for w in snapshot['works'] if w['work_id']==state.get('work_id')),None)
     if old and (old['state']!='ENDED' or any(e['work_id']==old['work_id'] and e['state']!='ENDED' for e in snapshot['executions'])):
         return repairs
