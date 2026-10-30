@@ -487,6 +487,7 @@ class RuntimePlugin:
         ledger=workflow.open_ledger(self.pool_path,readonly=False)
         page_args={key:value for key,value in args.items() if key not in ('history','events_only')}
         page_args['through']=through
+        page_args['compact_mechanical']=True
         if 'after' not in page_args:
             page_args['after']=ledger.current_work(scope['role'])['processed_through']
         suffix=hashlib.sha256(json.dumps(page_args,sort_keys=True).encode()).hexdigest()
@@ -1174,17 +1175,10 @@ def register(ctx):
              'limit':{'type':'integer','minimum':1,'maximum':100},
              'events_only':{'type':'boolean','description':'续读只返回事件页及next_after/ACK边界，避免重复整份状态；首次/刷新省略。'},
              'history':{'type':'boolean','description':'只读回看旧事件；不发出可ACK的事件前缀，不改变业务游标。'}},'additionalProperties':False}},plugin.work_input_tool,disclosure='direct')
+    from workflow_decision_context import query_schema
     ctx.register_tool('role_decision_context','role_workflow',
         {'name':'role_decision_context','description':'绑定本工作单的只读待决目录、按对象取证和完整动作合同；准备材料不ACK、不授权、不填写PASS或执行服务。',
-         'parameters':{'type':'object','properties':{
-             'operation':{'type':'string','enum':['directory','prepare','contract','evidence']},
-             'decision_id':{'type':'string'},'action':{'type':'string'},
-             'expected_fingerprint':{'type':'string'},
-             'offset':{'type':'integer','minimum':0},'limit':{'type':'integer','minimum':1,'maximum':32},
-             'requests':{'type':'array','minItems':1,'maxItems':8,'items':{'type':'object','properties':{
-                 'kind':{'enum':['candidate','verification','action','event','obligation','issue']},
-                 'id':{'type':'string','minLength':1,'maxLength':256}},'required':['kind','id'],'additionalProperties':False}}},
-             'required':['operation'],'additionalProperties':False}},plugin.decision_context_tool,disclosure='direct')
+         'parameters':query_schema()},plugin.decision_context_tool,disclosure='direct')
     from workflow_contracts import control_target_schema
     ctx.register_tool('role_control_request','role_workflow',
         {'name':'role_control_request','description':'可信当前用户明确控制或裁决原文持久登记；由后台owner执行，不需全权口令。',

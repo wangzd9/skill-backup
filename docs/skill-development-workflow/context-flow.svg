@@ -8,7 +8,7 @@
 <text x="53" y="104" class="heading">① ACTIVE 工作单 → 当前输入快照</text>
 <text x="53" y="130" class="line">当前工作、全部阶段义务与 FAIL / UNKNOWN</text>
 <text x="53" y="153" class="line">完整待决目录；按对象准备，不自动填裁决</text>
-<text x="53" y="176" class="line">事件续读不重发整包；未展开 ≠ 已读</text>
+<text x="53" y="176" class="line">当前动作优先；机械段完整ID / 原件 / 显式ACK</text>
 <rect x="635" y="75" width="530" height="135" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
 <text x="653" y="104" class="heading">② 参考材料：canonical路径 + SHA</text>
 <text x="653" y="130" class="line">role_decision_context：合同 / 对象 / 完整引用</text>
@@ -39,7 +39,7 @@
 <text x="53" y="499" class="heading">⑥ 事件去重：精确确认自己已处理输入</text>
 <text x="53" y="525" class="line">相同pending合并；自己的ACK回声不重复唤醒</text>
 <text x="53" y="548" class="line">不同派单 / attempt / 服务终态 / 授权变化仍保留</text>
-<text x="53" y="571" class="line">两条 ACK 按启动水位计进展；新事件可接续</text>
+<text x="53" y="571" class="line">ACK衡量消费；真实业务转换与首次有效动作另计</text>
 <polyline points="635,540 565,540" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
 <rect x="35" y="665" width="1130" height="100" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
 <text x="53" y="694" class="heading">报告材料独立：role-status / summary-input</text>

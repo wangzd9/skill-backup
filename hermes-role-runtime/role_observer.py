@@ -383,7 +383,8 @@ def workflow_activities(database, pool, home, facts, now):
     for role in facts['roles']:
         work=works.get(role.get('current_work_id'))
         if work:
-            progress.append({'role':role['role'],'work_id':work['work_id'],'state':work['state'],
+            from workflow_business_progress import progress as business_progress
+            progress.append({**business_progress(facts,work,now),'role':role['role'],'work_id':work['work_id'],'state':work['state'],
                 'processed_through':work['processed_through'],'issued_through':work['issued_through'],
                 'last_checkpoint_at':checkpoints.get(work['work_id']),
                 'checkpoint_is_not_proof_of_progress':True})
@@ -422,11 +423,11 @@ def _workflow_observation(database, pool, home, instant):
     from workflow_notification_registry import diagnostics as notification_diagnostics
     observed_ledger=BusinessLedger(database,readonly=True,clock=lambda:instant)
     snapshot['notification_health']=notification_diagnostics(observed_ledger)
-    database_bytes=Path(database).stat().st_size
-    snapshot['capacity']={'database_bytes':database_bytes,'warning_bytes':2*1024**3,
-        'state':'CAPACITY_WARNING' if database_bytes>=2*1024**3 else 'OBSERVED',
-        'new_input_page_limit_bytes':65536,'historical_compaction_performed':False,
-        'retention':'保留命令、原始事件及不可变页；归档须一并保存哈希引用，不在线删库或VACUUM。'}
+    from workflow_capacity import observe as capacity_observe
+    try:snapshot['capacity']=capacity_observe(observed_ledger,at=instant)
+    except (OSError,ValueError,TypeError) as exc:
+        snapshot['capacity']={'state':'UNVERIFIED','error':type(exc).__name__}
+        fault('observer_capacity_unverified',database,error=type(exc).__name__)
     snapshot['closed_work_ids'] = [row['work_id'] for row in facts['works'] if row['state'] == 'ENDED']
     snapshot['closed_execution_ids'] = []
     try:
@@ -582,7 +583,7 @@ def _workflow_observation(database, pool, home, instant):
             try:
                 from workflow_terminal_observation import terminal
                 candidate=next(r for r in facts['candidates'] if r['candidate_id']==action['candidate_id'])
-                value.update(terminal(action,candidate,facts))
+                value.update(terminal(action,candidate,facts,ledger_dir=Path(database).parent))
             except (OSError,ValueError,KeyError,TypeError,StopIteration) as exc:
                 value.update(observation='terminal_receipt_unverified',reason=str(exc)[:160])
                 fault('observer_terminal_service_evidence_unverified',database,

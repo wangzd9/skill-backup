@@ -21,10 +21,10 @@ import workflow_work_memory as memory
 def synthetic():
     packet={'generation':1,'checked_at':'2026-10-30T17:00:00+08:00','role':'COORDINATOR',
         'run':{'run_id':'r','repo':'/isolated'},'work':{'work_id':'w','run_id':'r'},
-        'tasks':[{'task_id':'t','phase':'REVIEW','attempt':1}],
-        'candidates':[{'candidate_id':'c','run_id':'r','task_id':'t','head':'a'*40,'ac_version':'v1','state':'CURRENT'}],
-        'external_actions':[{'action_id':'a','candidate_id':'c','state':'RESULT_READY'}],
-        'verifications':[{'verification_id':s,'candidate_id':'c','result':s,'supersedes':[]} for s in ('FAIL','UNKNOWN','UNVERIFIED')],
+        'tasks':[{'run_id':'r','task_id':'t','phase':'REVIEW','attempt':1}],
+        'candidates':[{'candidate_id':'c','run_id':'r','task_id':'t','attempt':1,'head':'a'*40,'ac_version':'v1','state':'CURRENT'}],
+        'external_actions':[{'action_id':'a','candidate_id':'c','kind':'ocr','state':'RESULT_READY'}],
+        'verifications':[{'verification_id':s,'candidate_id':'c','check_name':'independent_test','result':s,'supersedes':[]} for s in ('FAIL','UNKNOWN','UNVERIFIED')],
         'next_actions':[{'action':'service_decide','action_id':'a','reason':'read original report'}],
         'completion':{},'controls':[],'historical_failures':[{'verification_id':'FAIL'}]}
     snapshot={'generation':1,'event_high_water':2,'events':[

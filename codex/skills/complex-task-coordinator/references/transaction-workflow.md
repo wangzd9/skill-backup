@@ -60,3 +60,10 @@ INCOMPLETE 不自动推荐再次 resume。先 service_collect 核原生状态及
 ## 用户裁决原文（2026-10-29）
 
 `record_user_decision`对可信当前用户答复持久登记，不要求全权口令。短答复如“按解读b”使用target={}，显式对象可填decision_id；不能由模型给短答复捏造ID。接收回执和实际处理分开：USER_DECISION_RECORDED→协调者读原提问和实现→resolve_user_decision→USER_DECISION_RESOLVED→更新checkpoint。未处理项持续进入next_actions，ACK事件不能吞掉处理义务。登记不授予外部权限、不修改冻结AC、不伪造测试通过；确有歧义只澄清关联，不重索同一裁决原文。
+
+
+2026-10-30 / 0.16.0 接续与证据合同：先处理当前合法动作及完整相关证据，不以追齐历史游标为业务动作前提，未读不ACK。decision工具四种互斥参数：directory(offset?/limit?/expected_fingerprint?)；prepare(decision_id,expected_fingerprint?)；contract(action)；evidence(requests)。prepare不传action，contract不传decision_id或fingerprint。目录和单项材料指纹分别核对；参数拒绝按回执纠正，不重复试探。
+
+测试pytest模式由运行时管理JUnit输出，junit模式argv必须含字面{junit_xml}。新操作的同候选/命令/真实环境失败或未知记录必须先处置；换ID、重建同版MySQL不算修复。原ID仅恢复既有执行，稳定性两次子运行和原证据保留。开发自测用delivery_evidence.directory中的绝对路径，不在Git工作区堆证据、不以忽略dirty交付。test-only OCR无入选时，原生适配只精确纳入默认排除测试源码，保留原显式过滤与规则；空覆盖仍阻断，不免审、不自动PASS。
+
+ACK、checkpoint、worker退出分别不代表业务完成。核最近真实状态转换、首次有效动作、session_handoff及异常下一责任人；旧INCOMPLETE单列历史，旧/跨需求UNKNOWN写者继续围栏。零派发拒绝不是业务通过；UNKNOWN通知不盲重发，健康总量与有界样本分别说明。完整实施与采用限制见工作区效果停滞修复记录。

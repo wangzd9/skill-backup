@@ -34,9 +34,9 @@
 <text x="458" y="556" class="line">实质进展/审查阻塞走 outbox；短报原通道，正文SHA匹配才记送达</text>
 <rect x="35" y="455" width="355" height="130" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
 <text x="53" y="484" class="heading">开发与验证</text>
-<text x="53" y="510" class="line">下游领取自动锚定已集成base</text>
-<text x="53" y="533" class="line">拒绝空候选；补验身份独立保存</text>
-<text x="53" y="556" class="line">PASS 与旧 FAIL 闭环明确核验</text>
+<text x="53" y="510" class="line">工作区外证据目录；绝对路径 / 干净候选</text>
+<text x="53" y="533" class="line">同前提失败不盲重跑；稳定性复跑保留</text>
+<text x="53" y="556" class="line">test-only精确入审；原规则 / FAIL闭环保留</text>
 <rect x="35" y="635" width="1130" height="75" rx="12" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
 <text x="53" y="664" class="heading">退出、结果和送达分别留证：ENDED ≠ 业务成功，UNKNOWN 不盲重放</text>
 <text x="53" y="690" class="line">阶段开发提前不跳过集成/验收；ACTIVE观察只读账本；单群积压可追溯摘要，保留投递额度、原件及SENT/UNKNOWN回执。</text>

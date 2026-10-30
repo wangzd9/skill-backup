@@ -11,7 +11,7 @@ def obj(properties, required=()):
 
 TEXT = {'type': 'string', 'minLength': 1}
 STRINGS = {'type': 'array', 'items': TEXT}
-EVIDENCE = obj({'path': TEXT, 'sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'}}, ['path'])
+EVIDENCE = obj({'path': {**TEXT,'description':'持久证据文件的绝对路径；不相对candidate.repo或工具cwd猜测。自测输出使用输入包delivery_evidence.directory，避免弄脏候选。'}, 'sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'}}, ['path'])
 TASK = obj({'task_id': TEXT, 'role': {'enum': ['A', 'B', 'C']}, 'dependencies': STRINGS,
             'stage_dependencies': obj({'development_start':STRINGS,'integration':STRINGS,'acceptance':STRINGS},
                                       ['development_start','integration','acceptance']),
@@ -86,6 +86,8 @@ CONTROL_TARGET = {'oneOf': [
 
 
 def payload_schema(action):
+    if action=='verify':
+        return {**PAYLOADS[action],'properties':{**PAYLOADS[action]['properties'],**test_execution_fields()}}
     if action=='resolve_verification_exception':
         schema=obj({'observation_event_id':{'type':'integer','minimum':1},
             'disposition':{'enum':['repair','investigate','close']},'reason':TEXT,
@@ -147,6 +149,22 @@ def payload_schema(action):
                  'timeout_seconds':{'type':'number','exclusiveMinimum':0}},
                 ['package','risk','question','ac','gate'])]}}}
     return schema
+
+
+def test_execution_rules():
+    return {'pytest':{'argv':'pytest或python -m pytest；保留测试选择和项目插件。',
+        'junit_output':'运行时注入；argv不得指定--junitxml或--junit-xml。',
+        'example':{'argv':['pytest','-q','<原合同测试路径>'],'report_format':'pytest'}},
+        'junit':{'argv':'argv中必须有字面占位{junit_xml}，由运行时替换为本次输出绝对路径。',
+            'example':{'argv':['<既有JUnit程序>','--output','{junit_xml}'],'report_format':'junit'}},
+        'replay':'同command_id只恢复既有执行；相同候选/命令/环境的失败不换ID盲目重跑，先核原证据并落实变更。',
+        'stability':'pytest保留原两次稳定性运行，UNVERIFIED不能改写为PASS/FAIL。'}
+
+
+def test_execution_fields():
+    return {'argv':{'type':'array','minItems':1,'items':TEXT,
+        'description':'pytest模式不传JUnit输出选项（运行时注入）；junit模式必须包含字面{junit_xml}占位。'},
+        'report_format':{'enum':['pytest','junit'],'description':'默认pytest；pytest由运行时管理JUnit及稳定性复跑；junit由既有程序输出到{junit_xml}。'}}
 
 
 def command_schema(actions):

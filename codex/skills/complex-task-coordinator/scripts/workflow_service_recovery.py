@@ -83,6 +83,27 @@ def error_receipt(exc):
             'next_action':'核对该 action 的原生状态和冻结证据；未知副作用不能重投'}
 
 
+def coverage_blocker(ledger, candidate, actions):
+    """A proven empty preview needs adaptation, not repeated paid submissions."""
+    for action in reversed(actions):
+        if action['kind']!='ocr' or action['state']!='REJECTED':continue
+        folder=ledger.path.parent/'services'/hashlib.sha256(action['action_id'].encode()).hexdigest()
+        try:
+            path=folder/'invocation.json';raw=path.read_bytes();value=json.loads(raw)
+            receipt=value.get('preflight_rejection') or {}
+            if receipt.get('code')!='OCR_REVIEW_COVERAGE_UNAVAILABLE':continue
+            if (value.get('action_id')!=action['action_id'] or value.get('candidate_id')!=candidate['candidate_id']
+                    or (value.get('frozen') or {}).get('candidate',{}).get('head')!=candidate['head']
+                    or not rejection_proof(value,folder) or path.read_bytes()!=raw):continue
+            return {'code':'OCR_REVIEW_COVERAGE_UNAVAILABLE','owner':'COORDINATOR',
+                'action_id':action['action_id'],'candidate_id':candidate['candidate_id'],
+                'coverage':receipt.get('coverage'),'gate_satisfied':False,
+                'source':{'path':str(path),'sha256':hashlib.sha256(raw).hexdigest()},
+                'next':'核原合同及排除依据，先修复审查适配并提供新预览；不因test-only自动豁免，不对空覆盖判PASS。'}
+        except (OSError,ValueError,TypeError):continue
+    return None
+
+
 def rejection_proof(value, directory):
     """Fail closed on any evidence of dispatch, including an interrupted start.
 

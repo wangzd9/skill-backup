@@ -1,0 +1,42 @@
+{
+  "report": "../MN-DELIVERY-STALL-ROOT-CAUSE-20261030.md",
+  "runtime_head": "9d8c3a67adfb00d6aadf408346c1a9e435c94d31",
+  "ledger_sampled_at": "2026-10-30T18:14:31.255584+08:00",
+  "ledger_event_high_water": 14226,
+  "session_followup_sampled_at": "2026-10-30T18:16:33.571002+08:00",
+  "files": [
+    {
+      "name": "../MN-DELIVERY-STALL-ROOT-CAUSE-20261030.md",
+      "bytes": 17482,
+      "sha256": "bb20301843d8e1a03c5e880d69705156db7d01d6ecd9ff2b5ba5f13925829d34"
+    },
+    {
+      "name": "collect_evidence.py",
+      "bytes": 12630,
+      "sha256": "9770673b3bde2f619dd1be72d77f7977b66fd84be7208e556ff46665f73f1da8"
+    },
+    {
+      "name": "evidence.json",
+      "bytes": 296651,
+      "sha256": "e02c3266bf6e5a3c4c740bebc5c3e32ad09d30e48bd3f3649845f50742293dbf"
+    },
+    {
+      "name": "session-followup.json",
+      "bytes": 712,
+      "sha256": "bccaca74c22b89249a10cc31ef27a3bfd9be8235def567ffcd55bee024de1620"
+    },
+    {
+      "name": "candidate-c59c0f7-test_mn01_migration.txt",
+      "bytes": 17021,
+      "sha256": "ed57baa5837e37a6bde597d8c35f8f90bac645834a7df100167fe303eba2bf85"
+    }
+  ],
+  "validation": {
+    "local_links_checked": 14,
+    "broken_local_references": [],
+    "audit_script_ast": "PASS",
+    "cross_evidence_counts": "PASS",
+    "runtime_tests_rerun": false,
+    "business_state_modified": false
+  }
+}

@@ -40,6 +40,7 @@ def observe(home,scope,*,api_call_count=0,approx_input_tokens=0,session_id=''):
            'session_id':session_id,'observed_at':time.time(),'requests':requests,
            'approx_input_tokens':tokens,'policy':limits,
            'checkpoint_required':requests>=limits['checkpoint_requests'] or tokens>=limits['checkpoint_input_tokens']}
+    value['last_blocked_action']=previous.get('last_blocked_action')
     save_json(path,value)
     return value
 
@@ -59,6 +60,10 @@ def tool_decision(home,scope,tool_name,args):
             return None
         if args.get('action')=='checkpoint' and (args.get('payload') or {}).get('yield_execution') is True:
             return None
+    value['last_blocked_action']={'at':time.time(),'reason':'SESSION_CHECKPOINT_REQUIRED',
+        'tool':tool_name,'action':args.get('action') if isinstance(args,dict) else None,
+        'invocation_started':False,'owner':scope['role'],'work_retained':True}
+    save_json(path,value)
     return {'action':'block','message':
             '本技术会话已到安全交接阈值。停止发起新业务动作；用本角色 checkpoint 工具保存真实进展、'
             '未决事项和下一步，payload.yield_execution=true，仅确认实际读过的事件前缀，然后结束本回合。'

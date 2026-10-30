@@ -1,0 +1,22 @@
+{
+  "sampled_at": "2026-10-30T18:16:33.571002+08:00",
+  "scope": "Read-only follow-up separate from primary ledger snapshot.",
+  "old_tester_session": {
+    "session_id": "cron_167580c0500b_20261030_173901",
+    "physical_requests": 21,
+    "known_prompt_requests": 21,
+    "prompt_tokens": 2747261,
+    "output_tokens": 97438,
+    "min_prompt": 66913,
+    "max_prompt": 162606,
+    "verify_integration_tool_error_category": "SAFE_SESSION_HANDOFF_REQUIRED"
+  },
+  "new_tester_session": {
+    "session_id": "cron_167580c0500b_20261030_181058",
+    "execution_id": "2dabc51821eb495e89139d89029cc8f1",
+    "initial_next_actions": [
+      "safe_release"
+    ],
+    "initial_completion_state": "SNAPSHOT_STALE"
+  }
+}

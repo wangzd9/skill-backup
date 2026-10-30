@@ -67,6 +67,25 @@ def bounded_events(ledger, rows, *, max_bytes=65536):
     return result
 
 
+def mechanical_segments(ledger, rows):
+    """Only known mechanical rows coalesce; every exact raw row stays readable."""
+    from workflow_progression import MECHANICAL
+    from collections import Counter
+    output=[];segment=[]
+    def flush():
+        if not segment:return
+        output.append({'event_id':segment[-1]['event_id'],'kind':'MECHANICAL_AUDIT_SUMMARY',
+            'event_ids':[e['event_id'] for e in segment],'counts':dict(Counter(e['kind'] for e in segment)),
+            'full_events':store(ledger,segment),'can_ack':False,
+            'notice':'连续机械段；完整原始记录按引用展开，未读不ACK。页边界不确认处理。'})
+        segment.clear()
+    for row in rows:
+        if row['kind'] in MECHANICAL:segment.append(row)
+        else:flush();output.append(row)
+    flush()
+    return output
+
+
 def capacity(ledger):
     """Read-only inventory. This never vacuums, deletes or rewrites history."""
     with ledger._connection() as db:

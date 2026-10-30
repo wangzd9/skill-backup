@@ -1,5 +1,7 @@
 # Hermes 角色运行优化
 
+2026-10-30 **0.16.0**：修正分操作工具合同和 JUnit 条件；当前动作优先，机械段完整发行且显式 ACK，业务转换另计。工作区外证据目录及绝对路径预检；新验证同前提失败/未知不盲重跑，稳定性复跑保留。test-only OCR 精确纳入默认排除测试源码并保留原规则。健康区分零派发拒绝、UNKNOWN 通知总量与历史债；材料关联有失效边界，容量覆盖 SQLite/WAL/持久附件。上线和业务采用见[实施记录](/home/wang/work/doc/analysis/coordinator-health-audit-20261030/EFFECTIVENESS-STALL-REPAIR-IMPLEMENTATION.md)。
+
 2026-10-30 **0.15.1**：当前审查按候选版本投影，历史 INCOMPLETE 保留原记录而不误列当前待办；RESULT_READY 与未完成结果分别显示。补验异常进入风险和下一步，前一工作单 checkpoint 只留历史引用；全局在途/未知 OCR 围栏和业务门禁保留。
 
 2026-10-30 **0.15.0**：同源账本裁决材料、完整待决目录、绑定工作单的对象取证/动作合同、纯事件续读、保守版本化记忆、短恢复、统一 ACK 进展及日志事件引用。MySQL补验UNVERIFIED现形成异常移交与安全退休，协调者显式处置后程序落实原范围已完成任务的新attempt；原结果与全部验收门禁保留。逐项审查和实际采用见[实施记录](/home/wang/work/doc/analysis/coordinator-health-audit-20261030/SEMANTIC-DECISION-IMPLEMENTATION.md)。

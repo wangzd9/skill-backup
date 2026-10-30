@@ -158,7 +158,7 @@ def prepare(job, *, pool_path, execution, home, session_id):
              'runtime_version_digest': code_version()['digest'],
              'drain_only': result.get('drain_only', False)}
     scope['session_policy']=limits
-    issued = ledger.work_inputs(result['identity'], limit=100, command_id='native-input:' + identifier)
+    issued = ledger.work_inputs(result['identity'], limit=100, compact_mechanical=True, command_id='native-input:' + identifier)
     packet = current_input(pool_path, role, scope=scope, event_page=issued)
     from workflow_toolsets import configure
     toolsets = configure(role)
@@ -166,6 +166,8 @@ def prepare(job, *, pool_path, execution, home, session_id):
     task = packet.get('task') or {}
     workdir = task.get('contract', {}).get('worktree') or run['repo']
     if role in {'A','B','C'}:
+        from workflow_delivery import evidence_directory
+        evidence_directory(ledger,work['work_id'],create=True)
         import subprocess
         destination=ledger.path.parent/'workspaces'/work['work_id']
         if not destination.exists():
@@ -517,6 +519,15 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None, snap
     packet['verification_retirements']=retirement_facts(snapshot,run_id)
     from workflow_verification_exceptions import facts as exception_facts, blockers as exception_blockers
     packet['verification_exceptions']=exception_facts(snapshot,run_id)
+    packet['verification_retry_blocks']=[e for e in snapshot['events'] if e['kind']=='VERIFICATION_RETRY_BLOCKED'
+        and e['run_id']==run_id and (e['payload'].get('candidate_id') in current_candidates
+            or work and e.get('work_id')==work['work_id'])
+        and not any(v['candidate_id']==e['payload'].get('candidate_id') and v['result']=='PASS'
+            and v['check_name'] in ('independent_test','supplemental_mysql') and v['created_at']>e['created_at']
+            for v in checks)
+        and not any(later['kind']=='INTEGRATION_TEST_RECORDED' and later.get('work_id')==e.get('work_id')
+            and later['event_id']>e['event_id'] and (later['payload'].get('stats') or {}).get('mechanical_result')=='PASS'
+            for later in snapshot['events'])]
     packet['mechanism_blockers']=exception_blockers(snapshot,run_id)
     packet['verification_exception_issues']=[e['payload'] for e in snapshot['events']
         if task and e['kind']=='VERIFICATION_EXCEPTION_REPAIR_QUEUED' and e['run_id']==run_id
@@ -543,6 +554,16 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None, snap
     from workflow_progression import approval_state
     packet['candidate_approvals']={c['candidate_id']:approval_state(snapshot,c)
                                    for c in candidates if c['state']=='CURRENT'}
+    from workflow_business_progress import progress, global_review_fences
+    packet['business_progress']=progress(snapshot,work,at.timestamp()) if work else None
+    packet['global_review_fences']=global_review_fences(ledger)
+    if scope and scope.get('home') and scope.get('execution_id'):
+        from runtime_common import read_json
+        from workflow_sessions import _path as budget_path
+        packet['session_handoff']=read_json(budget_path(scope['home'],scope),{})
+    if work and role in {'A','B','C'}:
+        from workflow_delivery import contract as delivery_contract
+        packet['delivery_evidence']=delivery_contract(ledger,work)
     from workflow_decision_context import sampling, startup_index
     packet['sampling']=sampling(snapshot,packet)
     from workflow_work_memory import inspect as memory_inspect

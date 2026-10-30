@@ -1,6 +1,6 @@
 # 角色工作流使用指南：需求接入、开发、最终验收与恢复
 
-**校正日期：2026-10-30，时间统一为 Asia/Shanghai（+08:00）。适用于已启用业务账本的 ACTIVE 模式。裁决材料版 3.27。观察修复：长测试按受控期限派生宽限期；写权诊断异常/恢复各稳定 120 秒后通知。**
+**校正日期：2026-10-30，时间统一为 Asia/Shanghai（+08:00）。适用于已启用业务账本的 ACTIVE 模式。裁决材料版 3.28。观察修复：长测试按受控期限派生宽限期；写权诊断异常/恢复各稳定 120 秒后通知。**
 
 日常操作在既有协调者飞书群完成；A、B、C 和 TESTER 群用于查看各自工作及控制本角色。固定五角色复用于不同需求，不需要为每个需求重新建群。规划者仍由用户按需手动触发，不是第六个常驻角色。
 
@@ -525,6 +525,31 @@ flowchart TD
 ```
 
 此链首先覆盖现有 `mysql_migration` 补验 profile，不将普通环境故障推断为代码 FAIL，也不新增任意环境/生产连接能力。实际上线及现场解堵证据见[实施记录](analysis/coordinator-health-audit-20261030/SEMANTIC-DECISION-IMPLEMENTATION.md)。
+
+### 13.3 交付停滞与效果复核修复（0.16.0）
+
+当前动作和完整证据优先于追齐全部历史游标；这不免除读取相关合同、失败和处置义务。`role_decision_context` 分操作使用以下参数，非法组合会拒绝并返回具体字段及最小纠正形式：
+
+| operation | 本操作参数 |
+| --- | --- |
+| directory | 可选 offset、limit、expected_fingerprint（目录指纹） |
+| prepare | decision_id；可选 expected_fingerprint（该项 material_fingerprint） |
+| contract | action；不传 decision_id、expected_fingerprint |
+| evidence | requests：已登记对象 kind/id，最多 8 项 |
+
+`verify`、`verify_integration` 的 pytest 模式由运行时注入 JUnit 输出，不能自行传 `--junitxml`；junit 模式的 argv 必须有字面 `{junit_xml}` 占位。首次参数拒绝且未冻结/启动时，可更正同一 command_id；已有执行仍按原身份恢复。
+
+原生事件页可扫描最多 512 条原始事件，将连续的五类已知机械事件合并发行；保留每个 ID、不可变完整原文、冻结上界与显式 ACK。CHECKPOINT 和业务事件不按机械记录折叠。ACK 只说明事件消费；业务进展另显示真实状态转换、当前执行首次有效动作和责任人，交接阈值拦截单独记录，不能用请求次数或水位增长冒充交付。
+
+开发输入中的 `delivery_evidence.directory` 是本工作单的持久证据目录，位于 Git 工作区外；受限 terminal 可向该目录输出自测报告，文件工具仍按业务 scope。交付前保持整个 Git 工作区干净（包括 untracked），`candidate.evidence` 使用实际文件的绝对路径。拒绝回执逐文件说明路径/哈希问题和 dirty 项；不猜相对路径，不忽略 dirty。
+
+新验证操作按候选、命令、声明输入和实际环境建立重复保护。已有相同前提的未通过或未知操作时，换 command_id 会返回原证据和协调者处置责任，不直接再跑；旧 command_id 可恢复原操作。修复候选、真实环境或声明输入后重新取证；重建同版本隔离 MySQL 实例不算夹具修复。pytest 的两次稳定性子运行保留。保护索引覆盖本版新执行，不把既有 35 次历史失败改写为新结果。
+
+test-only 候选在 OCR 无入选文件时，可用 OCR 公开的精确 include 配置纳入默认排除的测试源码；保留既有显式排除及项目/全局/语言规则，预览、解析和实际执行共用冻结配置。空覆盖继续阻断并由协调者处理，不能豁免必要审查或伪造 PASS。普通有业务文件的既有审查路径保持原选择策略。
+
+待决目录复用当前候选分类：历史 INCOMPLETE 单列，跨需求 SUBMITTED/UNKNOWN 围栏保留。健康摘要将已证明零派发的 REJECTED 与运行后终态分别观察；缺证据仍未核实。通知按状态/种类统计完整总量及有界样本，PERIODIC_SUMMARY 有独立消费者，UNKNOWN 仍不自动重发。SQLite/WAL 和持久附件统一做有界、缓存容量采样，扫描未完成时明确为下界；不在线删除或 VACUUM。
+
+材料关联在目录移除、指纹变化或账本水位变化后停止沿用，查询记录时延及字节元数据；共享物理请求只计一次。这些指标不证明因果节省。实际上线、回归及业务采用边界见[本轮实施记录](analysis/coordinator-health-audit-20261030/EFFECTIVENESS-STALL-REPAIR-IMPLEMENTATION.md)。
 
 ## 维护附录：只读核查与实现入口
 

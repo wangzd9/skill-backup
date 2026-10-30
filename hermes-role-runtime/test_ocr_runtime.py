@@ -26,7 +26,8 @@ if args[:2]==['delegate','rule']:
 def arg(key):return args[args.index(key)+1]
 excludes=arg('--exclude').split(',') if '--exclude' in args else []
 files=['a.py','b.py','tests/test_a.py']
-chosen=[f for f in files if f not in excludes and not f.startswith('tests/')]
+included=json.loads(Path(arg('--rule')).read_text()).get('include',[]) if '--rule' in args else []
+chosen=[f for f in files if f not in excludes and (not f.startswith('tests/') or f in included)]
 if '--preview' in args:
  print(json.dumps({'files':[{'path':f,'will_review':f in chosen,'exclude_reason':'default_path' if f.startswith('tests/') else 'user_exclude'} for f in files]}));sys.exit(0)
 mode=(root/'mode').read_text().strip()

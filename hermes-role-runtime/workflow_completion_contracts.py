@@ -2,11 +2,11 @@
 
 
 def payload_schema(action):
-    from workflow_contracts import obj, TEXT, EVIDENCE
+    from workflow_contracts import obj, TEXT, EVIDENCE, test_execution_fields
     events={'type':'array','uniqueItems':True,'items':{'type':'integer','minimum':1}}
     if action=='verify_integration':
-        return obj({'argv':{'type':'array','minItems':1,'items':TEXT},
-            'profile':{'enum':['local','mysql']},'report_format':{'enum':['pytest','junit']},
+        return obj({**test_execution_fields(),
+            'profile':{'enum':['local','mysql']},
             'timeout_seconds':{'type':'number','exclusiveMinimum':0,'maximum':3600},
             'evidence':{'type':'object'}},['argv'])
     if action=='deliver_integration':

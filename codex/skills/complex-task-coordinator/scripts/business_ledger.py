@@ -1078,10 +1078,11 @@ class BusinessLedger:
                 clauses.append('(run_id=? OR run_id IS NULL)'); args.append(run_id)
             return [_row(r) for r in db.execute('SELECT * FROM events WHERE '+' AND '.join(clauses)+' ORDER BY event_id LIMIT ?',(*args,limit))]
 
-    def work_inputs(self, identity, *, limit=1000, command_id, after=None, through=None):
+    def work_inputs(self, identity, *, limit=1000, command_id, after=None, through=None, compact_mechanical=False):
         def operation(db):
             if type(limit) is not int or not 1<=limit<=10000:
                 _deny('INVALID_EVENT_LIMIT')
+            if type(compact_mechanical) is not bool:_deny('INVALID_MECHANICAL_PAGE_MODE')
             work,_ = self._identity(db,identity,allow_drain=True)
             start=work['processed_through'] if after is None else after
             high=db.execute('SELECT COALESCE(MAX(event_id),0) FROM events').fetchone()[0]
@@ -1098,7 +1099,10 @@ class BusinessLedger:
             if type(upper) is not int or not start<=upper<=high:
                 _deny('PAGE_THROUGH_NOT_FROZEN_VALID_HIGH_WATER')
             rows = [_row(r) for r in db.execute('SELECT * FROM events WHERE event_id>? AND event_id<=? AND (run_id=? OR run_id IS NULL) ORDER BY event_id LIMIT ?',
-                                               (start,upper,work['run_id'],limit))]
+                                               (start,upper,work['run_id'],512 if compact_mechanical else limit))]
+            if compact_mechanical:
+                from workflow_input_pages import mechanical_segments
+                rows=mechanical_segments(self,rows)[:limit]
             from workflow_input_pages import bounded_events
             rows=bounded_events(self,rows)
             issued = rows[-1]['event_id'] if rows else start
@@ -1110,7 +1114,9 @@ class BusinessLedger:
                 'next_after':issued,'can_ack':True,'page_limit_bytes':65536,
                 'ack_action':{'action':'ack_events','payload':{'through':issued}},
                 'notice':'读取不等于处理；核对完整事件后显式确认已发行的连续前缀。'}
-        return self._command('work_inputs',command_id,[identity,limit,after,through],operation)
+        payload=[identity,limit,after,through]
+        if compact_mechanical:payload.append({'compact_mechanical':True,'scan_limit':512})
+        return self._command('work_inputs',command_id,payload,operation)
 
     def _ack(self, db, work, through):
         if type(through) is not int or not work['processed_through'] <= through <= work['issued_through']:
@@ -1277,7 +1283,8 @@ class BusinessLedger:
             path = Path(evidence['path']).resolve()
             raw = path.read_bytes()
         except OSError:
-            _deny('EVIDENCE_UNREADABLE',unknown=True)
+            _deny('EVIDENCE_UNREADABLE',unknown=True,path=evidence['path'],
+                recovery='使用实际持久文件的绝对路径；相对路径不按candidate.repo解释。')
         digest = hashlib.sha256(raw).hexdigest()
         if evidence.get('sha256') and evidence['sha256']!=digest:
             _deny('EVIDENCE_HASH_MISMATCH')
@@ -1316,8 +1323,12 @@ class BusinessLedger:
                 _deny('FULL_FROZEN_COMMIT_REQUIRED')
             if self._git(repo,'rev-parse','--verify',candidate['head']+'^{commit}')!=candidate['head']:
                 _deny('CANDIDATE_COMMIT_MISMATCH')
-            if self._git(repo,'rev-parse','HEAD')!=candidate['head'] or self._git(repo,'status','--porcelain'):
-                _deny('CANDIDATE_WORKTREE_CHANGED_OR_DIRTY')
+            dirty=self._git(repo,'status','--porcelain')
+            if self._git(repo,'rev-parse','HEAD')!=candidate['head'] or dirty:
+                from workflow_delivery import contract
+                lines=dirty.splitlines()
+                _deny('CANDIDATE_WORKTREE_CHANGED_OR_DIRTY',dirty_entries=lines[:20],dirty_entries_omitted=max(0,len(lines)-20),
+                    delivery_evidence=contract(self,work))
             if self._git(repo,'merge-base',candidate['base'],candidate['head'])!=candidate['base']:
                 _deny('CANDIDATE_BASE_NOT_ANCESTOR')
             changed=self._git(repo,'diff','--name-only',candidate['base'],candidate['head']).splitlines()
@@ -1327,6 +1338,8 @@ class BusinessLedger:
                 _deny('CANDIDATE_CHANGES_OUTSIDE_SCOPE')
             if not isinstance(candidate['evidence'],list) or not candidate['evidence']:
                 _deny('DELIVERY_EVIDENCE_REQUIRED')
+            from workflow_delivery import preflight
+            preflight(self,candidate)
             evidence = [self._evidence(v)[0] for v in candidate['evidence']]
             if self._git(repo,'rev-parse','HEAD')!=candidate['head'] or self._git(repo,'status','--porcelain'):
                 _deny('CANDIDATE_CHANGED_DURING_FREEZE')

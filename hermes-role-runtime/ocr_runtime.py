@@ -94,7 +94,7 @@ def validate_execution_identity(spec):
 def preflight_receipt(exc, operation):
     import re
     match = re.match(r'[A-Z][A-Z0-9_]+', str(exc))
-    return {'compatibility': getattr(exc, 'compatibility', None),
+    return {'compatibility': getattr(exc, 'compatibility', None),'coverage':getattr(exc,'coverage',None),
             'schema': 'ocr.preflight-rejection/v1', 'stage': 'preflight',
             'operation': operation, 'side_effects': 0, 'side_effect_scope': 'business_candidate',
             'dispatch_performed': False,
@@ -197,13 +197,14 @@ def batch_route(spec):
     return {key: value for key, value in route.items() if key != 'allowed_routes'}
 
 
-def preview(repo, base, head, excludes=(), background=None):
+def preview(repo, base, head, excludes=(), background=None, selection_rule=None):
     command = [str(OCR), 'review', '--from', base, '--to', head, '--preview', '--format', 'json',
                '--provider', PROVIDER]
     if excludes:
         command += ['--exclude', ','.join(excludes)]
     if background:
         command += ['--background-file', str(background)]
+    if selection_rule:command+=['--rule',selection_rule['path']]
     value = json.loads(run_command(command, cwd=repo, env=environment()))
     if not isinstance(value.get('files'), list):
         raise RuntimeError('PREVIEW_SCHEMA_UNSUPPORTED')
@@ -214,11 +215,12 @@ def selected(value):
     return [item['path'] for item in value['files'] if item.get('will_review') is True]
 
 
-def resolved_rules(repo, base, head, batch, background):
+def resolved_rules(repo, base, head, batch, background, selection_rule=None):
     command = [str(OCR), 'delegate', 'rule', '--from', base, '--to', head, '--format', 'json',
                '--background-file', str(background)]
     if batch['exclude']:
         command += ['--exclude', ','.join(batch['exclude'])]
+    if selection_rule:command+=['--rule',selection_rule['path']]
     command += batch['files']
     value = json.loads(run_command(command, cwd=repo, env=environment()))
     if value.get('schema_version') != '1' or not isinstance(value.get('groups'), list):
@@ -232,6 +234,13 @@ def rules_digest(value):
 
 def validate_snapshot(spec):
     repo = Path(spec['repo'])
+    selection=spec.get('selection_rule')
+    if selection:
+        if digest(Path(selection['path']).read_bytes())!=selection['sha256']:
+            raise RuntimeError('OCR_TEST_SELECTION_CHANGED')
+        for source in selection.get('filter_sources',[]):
+            if digest(Path(source['path']).read_bytes())!=source['sha256']:
+                raise RuntimeError('OCR_TEST_SELECTION_FILTER_CHANGED')
     if git(repo, 'rev-parse', 'HEAD') != spec['head']:
         raise RuntimeError('HEAD_CHANGED: 必须使用固定交付worktree')
     if git(repo, 'status', '--porcelain', '--untracked-files=no'):
@@ -377,8 +386,22 @@ def prepare(args):
     if not background.strip():
         raise RuntimeError('BACKGROUND_REQUIRED: 引用原需求/AC、不变量和允许行为')
     all_preview = preview(repo, base, head, background=args.background_file.resolve())
+    from workflow_ocr_selection import freeze as freeze_test_selection
+    selection=freeze_test_selection(repo,all_preview,directory.parent)
+    if selection:
+        spec['selection_rule']=selection
+        all_preview=preview(repo,base,head,background=args.background_file.resolve(),selection_rule=selection)
+        if not set(selection['test_files'])<=set(selected(all_preview)):
+            raise PreflightRejected('OCR_TEST_SELECTION_NOT_COVERED: 保留显式排除，核原合同及实际预览，不空审或判PASS')
     paths = selected(all_preview)
-    if not paths or len(set(paths)) != len(paths):
+    if not paths:
+        error=PreflightRejected('OCR_REVIEW_COVERAGE_UNAVAILABLE: 当前预览无入选文件；测试文件等被排除不等于免审。协调者核原合同与排除依据，修复适配后再预览；不得空审、自动PASS或扩大改动范围。')
+        error.coverage={'base':base,'head':head,'changed_file_count':len(all_preview['files']),
+            'selected_file_count':0,'excluded_files':[{k:item.get(k) for k in ('path','exclude_reason')}
+                for item in all_preview['files'][:32]],'excluded_files_omitted':max(0,len(all_preview['files'])-32),
+            'gate_satisfied':False,'owner':'COORDINATOR'}
+        raise error
+    if len(set(paths)) != len(paths):
         raise RuntimeError('NO_REVIEWABLE_FILES_OR_DUPLICATES: 记录排除依据，不执行空审查')
     all_paths = [item['path'] for item in all_preview['files']]
     if any(',' in path or '\n' in path or '*' in path or '?' in path or '[' in path or ']' in path
@@ -394,16 +417,17 @@ def prepare(args):
     prepared = []
     for number, files in enumerate(batches, 1):
         excludes = [path for path in all_paths if path not in files]
-        value = preview(repo, base, head, excludes, args.background_file.resolve())
+        value = preview(repo, base, head, excludes, args.background_file.resolve(),selection_rule=selection)
         if set(selected(value)) != set(files):
             raise RuntimeError('BATCH_PREVIEW_MISMATCH')
         batch = {'id': f'b{number:02}', 'files': files, 'exclude': excludes, 'preview': value}
-        rules = resolved_rules(repo, base, head, batch, args.background_file.resolve())
+        rules = resolved_rules(repo, base, head, batch, args.background_file.resolve(),selection_rule=selection)
         batch.update({'resolved_rules': rules, 'rules_sha256': rules_digest(rules)})
         prepared.append(batch)
     identity = digest(json.dumps({'repo': str(repo), 'base': base, 'head': head,
                       'files': sorted(paths), 'background': digest(background), 'config': cfg_hash,
                       'rules': [b['rules_sha256'] for b in prepared],
+                      **({'selection_rule':{k:v for k,v in selection.items() if k!='path'}} if selection else {}),
                       'execution_identity': identity_at_prepare,
                       'model_routing': spec.get('model_routing')},
                      sort_keys=True).encode())
@@ -685,11 +709,11 @@ def run_batches(directory, spec, result, cancelled, children):
                 if cfg_hash != spec['config_sha256']:
                     raise RuntimeError('CONFIG_CHANGED')
                 value = preview(Path(spec['repo']), spec['base'], spec['head'], batch['exclude'],
-                                directory / 'background.md')
+                                directory / 'background.md',selection_rule=spec.get('selection_rule'))
                 if set(selected(value)) != set(batch['files']):
                     raise RuntimeError('PREVIEW_CHANGED')
                 rules = resolved_rules(Path(spec['repo']), spec['base'], spec['head'], batch,
-                                       directory / 'background.md')
+                                       directory / 'background.md',selection_rule=spec.get('selection_rule'))
                 if rules_digest(rules) != batch['rules_sha256']:
                     raise RuntimeError('REVIEW_RULES_CHANGED')
                 entry = {'id': batch['id'], 'files': batch['files']}
@@ -716,6 +740,7 @@ def run_batches(directory, spec, result, cancelled, children):
                     command = [str(OCR), 'review', '--from', spec['base'], '--to', spec['head'], *parameters,
                                '--model', route['model'] if route else spec['model'],
                                '--background-file', str(directory / 'background.md')]
+                    if spec.get('selection_rule'):command+=['--rule',spec['selection_rule']['path']]
                     if batch['exclude']:
                         command += ['--exclude', ','.join(batch['exclude'])]
                     with (directory / (batch['id'] + '.log')).open('x') as log:

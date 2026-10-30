@@ -443,6 +443,15 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
                     from workflow_verification_exceptions import record
                     result['exception_handoff']=record(ledger,folder)
                 return result
+            from workflow_verification_retry import basis as retry_basis,claim as retry_claim
+            retry_key=retry_basis(ledger,candidate,argv,verification_profile,report_format,spec,environment_manifest)
+            retry_refusal=retry_claim(ledger,retry_key,folder)
+            if retry_refusal:
+                from workflow_verification_retry import blocked as retry_blocked
+                retry_refusal['coordination_handoff']=retry_blocked(ledger,identity,candidate,retry_key,retry_refusal,folder)
+                save_json(folder/'retry-refusal.json',retry_refusal)
+                return retry_refusal
+            save_json(folder/'retry-basis.json',{'basis':retry_key})
             if report_format=='pytest':
                 from workflow_test_environment import stability_command
                 command=stability_command(command,artifacts)
@@ -502,6 +511,10 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
         else:
             result['code'] = 'TEST_RESULT_UNVERIFIED'
         save_json(folder/'verification.json', result)
+        retry_key=(read_json(folder/'retry-basis.json',{}) or {}).get('basis')
+        if retry_key:
+            from workflow_verification_retry import finish as retry_finish
+            retry_finish(ledger,retry_key,folder,result)
         save_json(folder/'execution-phase.json',{'state':'RESULT_READY','command_id':command_id})
         if verification_profile=='mysql_migration' and result['status']=='UNVERIFIED':
             from workflow_verification_exceptions import record
@@ -535,8 +548,9 @@ def preflight_test_request(argv, timeout_seconds, evidence, report_format, *, ve
             or not environment_overrides['MN01_MYSQL_URL'] or '\0' in environment_overrides['MN01_MYSQL_URL']):
         code='FIXED_MYSQL_PROFILE_ENVIRONMENT_REQUIRED';field='environment_overrides'
     if code:
+        from workflow_contracts import test_execution_rules
         return {'status':'REJECTED','code':code,'phase':'INVALID_NOT_STARTED','side_effect_state':'NONE',
             'retryable':True,'new_command_id_required':False,'invalid_fields':[field],
-            'publication':None,'business_pass':False,
+            'publication':None,'business_pass':False,'execution_rules':test_execution_rules(),
             'next_action':'修正所列参数后可沿用 command_id；尚未冻结请求、建立 checkout 或启动测试。'}
     return None

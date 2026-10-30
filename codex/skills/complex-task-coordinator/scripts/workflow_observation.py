@@ -220,7 +220,7 @@ def step(prior_state, observation, now):
     transitions = []
     terminal_closures=deepcopy((prior_state or {}).get('terminal_service_closures',{}))
     terminal_services={s['action_id']:s for s in observation.get('services',[])
-        if s.get('observation')=='terminal_receipt_verified'}
+        if s.get('observation') in ('terminal_receipt_verified','rejection_no_dispatch_verified')}
     # SQLite/cache pressure can make a single observer sample temporarily
     # unverifiable. Keep the health fact immediately, but require a stable
     # 120-second episode before notifying and the same stable interval before
@@ -258,11 +258,11 @@ def step(prior_state, observation, now):
     for key, old in previous.items():
         if key in current:
             continue
-        if old.get('type')=='observer_independent_service_unverified' and old.get('action_id') in terminal_services:
+        if old.get('type') in ('observer_independent_service_unverified','observer_terminal_service_evidence_unverified') and old.get('action_id') in terminal_services:
             # Reclassify only on verified durable stop evidence. Archive the
             # original incident without replaying dozens of old recovery alerts.
             terminal_closures[key]={'original':old,'closed_at':now,
-                'basis':terminal_services[old['action_id']], 'transition':'terminal_receipt_verified'}
+                'basis':terminal_services[old['action_id']], 'transition':terminal_services[old['action_id']]['observation']}
             continue
         if key in observation.get('observation_reclassifications',[]):
             transitions.append({**old,'event_id':digest([old['episode'],'reclassified_unverified']),

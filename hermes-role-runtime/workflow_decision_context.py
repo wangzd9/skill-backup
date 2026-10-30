@@ -3,6 +3,69 @@ import hashlib
 import json
 
 
+def query_specs():
+    text={'type':'string','minLength':1}
+    fingerprint={'type':'string','pattern':'^[0-9a-f]{64}$',
+        'description':'directory使用目录fingerprint；prepare使用该项material_fingerprint，二者不可互换。'}
+    return {
+        'directory':({'offset':{'type':'integer','minimum':0},'limit':{'type':'integer','minimum':1,'maximum':32},
+            'expected_fingerprint':fingerprint},[],{'operation':'directory'}),
+        'prepare':({'decision_id':{**text,'description':'先从directory取得decision_id。'},
+            'expected_fingerprint':fingerprint},['decision_id'],{'operation':'prepare','decision_id':'<directory中的decision_id>'}),
+        'contract':({'action':{**text,'description':'contract只接受operation和action，不接受decision_id或fingerprint。'}},
+            ['action'],{'operation':'contract','action':'verify_integration'}),
+        'evidence':({'requests':{'type':'array','minItems':1,'maxItems':8,'items':{'type':'object',
+            'properties':{'kind':{'enum':['candidate','verification','action','event','obligation','issue']},'id':text},
+            'required':['kind','id'],'additionalProperties':False}}},['requests'],
+            {'operation':'evidence','requests':[{'kind':'event','id':'<已登记event_id>'}]})}
+
+
+def query_contract(operation):
+    fields,required,example=query_specs()[operation]
+    return {'operation':operation,'allowed_fields':['operation',*fields],
+        'required_fields':['operation',*required],'minimal_example':example,
+        'fingerprint_policy':'directory fingerprint与单项material_fingerprint分别核对；准备材料不ACK、不执行动作。'}
+
+
+def query_schema():
+    specs=query_specs();properties={'operation':{'type':'string','enum':list(specs),
+        'description':'四种互斥调用：directory(operation,offset?,limit?,expected_fingerprint?); '
+            'prepare(operation,decision_id,expected_fingerprint?); contract(operation,action); evidence(operation,requests)。'}}
+    branches=[]
+    for operation,(fields,required,example) in specs.items():
+        properties.update(fields)
+        branches.append({'type':'object','properties':{'operation':{'const':operation},**fields},
+            'required':['operation',*required],'additionalProperties':False})
+    # The host may strip top-level oneOf; descriptions and error receipts still
+    # expose the exact same per-operation rule, which is always enforced below.
+    return {'type':'object','properties':properties,'required':['operation'],
+        'additionalProperties':False,'oneOf':branches}
+
+
+def validate_query(args):
+    from jsonschema import Draft202012Validator
+    if not isinstance(args,dict):raise ValueError('DECISION_QUERY_OBJECT_REQUIRED')
+    operation=args.get('operation','directory');specs=query_specs()
+    if not isinstance(operation,str) or operation not in specs:raise ValueError('INVALID_DECISION_QUERY')
+    fields,required,_=specs[operation]
+    unexpected=sorted(set(args)-{'operation',*fields})
+    missing=sorted(set(required)-set(args))
+    schema={'type':'object','properties':fields,'required':required,'additionalProperties':False}
+    errors=list(Draft202012Validator(schema).iter_errors({k:v for k,v in args.items() if k!='operation'}))
+    if unexpected or errors:
+        error=ValueError('INVALID_DECISION_QUERY')
+        error.query_details={**query_contract(operation),'unexpected_fields':unexpected,'missing_fields':missing,
+            'invalid_fields':sorted({str(e.absolute_path[0]) for e in errors if e.absolute_path})}
+        correction={'operation':operation,**{k:v for k,v in args.items() if k in fields}}
+        if not errors and not missing:error.query_details['corrected_arguments']=correction
+        elif unexpected and not missing:
+            clean={k:v for k,v in args.items() if k in fields}
+            if Draft202012Validator({**schema,'additionalProperties':False}).is_valid(clean):
+                error.query_details['corrected_arguments']={'operation':operation,**clean}
+        raise error
+    return operation
+
+
 def digest(value):
     return hashlib.sha256(json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
@@ -66,8 +129,14 @@ def directory(packet, snapshot):
     from workflow_user_decisions import pending
     # The directory lists all obligations, even if next_actions intentionally
     # prioritizes final closure or safe retirement. No pending user answer is lost.
-    blockers={'nonterminal_actions':[{'action_id':a['action_id'],'candidate_id':a['candidate_id'],'state':a['state']}
-            for a in packet['external_actions'] if a['state'] not in ('ENDED','REJECTED')],
+    from workflow_query import review_action_projection
+    reviews=review_action_projection({**snapshot,'candidates':packet['candidates'],'tasks':packet['tasks'],
+        'external_actions':packet['external_actions'],'verifications':packet['verifications']},run_id)
+    blockers={'nonterminal_actions':reviews['attention'],
+        'historical_review_actions':[a for a in reviews['actions'] if not a['current_attention']
+            and a['state'] not in ('ENDED','REJECTED')],
+        'global_review_fences':packet.get('global_review_fences',[]),
+        'review_policy':reviews['history_policy'],
         'verification_results':[{'verification_id':v['verification_id'],'candidate_id':v['candidate_id'],
             'result':v['result'],'supersedes':v.get('supersedes',[])} for v in packet['verifications'] if v['result']!='PASS'],
         'pending_user_answers':[{'request_id':e['payload']['request_id'],'event_id':e['event_id']}
@@ -78,6 +147,7 @@ def directory(packet, snapshot):
         'historical_failures':packet.get('historical_failures',[]),
         'verification_exceptions':packet.get('verification_exceptions',[]),
         'mechanism_blockers':packet.get('mechanism_blockers',[])}
+    blockers['verification_retry_blocks']=packet.get('verification_retry_blocks',[])
     return {'version':1,'items':items,'blocker_index':blockers,
         'fingerprint':digest([items,blockers]),'authority':'preparation only; no verdict or permission',
         'sampling':sampling(snapshot,packet)}
@@ -95,7 +165,10 @@ def startup_index(ledger, packet, snapshot):
         except Exception:pass
     return {'tool':'role_decision_context','operation':'directory','items_total':len(value['items']),
         'fingerprint':value['fingerprint'],'full_directory':ref,
-        'notice':'完整待决目录含未闭合结果、控制与用户答复；prepare按decision_id取原对象和合同，contract按action取完整schema。未展开不等于已读。'}
+        'priority_items':value['items'][:4],'priority_items_omitted':max(0,len(value['items'])-4),
+        'call_contracts':{op:query_contract(op) for op in ('directory','prepare','contract','evidence')},
+        'notice':'先核当前阻断及其完整证据，执行已合法具备前提的动作；追齐全部历史游标不是动作前提。'
+            '未读不ACK，仍连续发行/显式确认；完整待决目录保留全部义务。prepare按decision_id，contract仅operation/action。'}
 
 
 def _bounded(ledger, value, *, limit=32768):
@@ -122,9 +195,13 @@ def _contract(role, action):
         'TESTER':{'verify_supplemental','verify_integration','deliver_integration'}}
     if action not in COMMANDS[role] | extra.get(role,set()) | {'ack_events'}:
         raise ValueError('COMMAND_NOT_ALLOWED_FOR_ROLE')
-    return {'action':action,'payload_schema':payload_schema(action),
+    result={'action':action,'payload_schema':payload_schema(action),
         'command_id_policy':'同一逻辑动作重试沿用；INVALID_NOT_STARTED可修正同ID；已冻结/启动不得改参重放。',
         'semantic_policy':'result/decision/reason/summary及supersedes均由角色阅读原证据后确认，不自动填PASS。'}
+    if action in ('verify','verify_integration'):
+        from workflow_contracts import test_execution_rules
+        result['execution_rules']=test_execution_rules()
+    return result
 
 
 def _objects(packet, snapshot):
@@ -209,6 +286,8 @@ def prepare(packet, snapshot, item):
         facts['task']=next((t for t in packet['tasks'] if candidate and t['task_id']==candidate['task_id']),None)
         facts['verifications']=[v for v in packet['verifications'] if v['candidate_id']==cid]
         facts['actions']=[a for a in packet['external_actions'] if a['candidate_id']==cid]
+        if action.get('coverage_blocker'):facts['coverage_blocker']=action['coverage_blocker']
+        if action.get('retry_block'):facts['retry_block']=action['retry_block']
     elif item['target'].get('task_id'):
         facts['task']=next((t for t in packet['tasks'] if t['task_id']==item['target']['task_id']),None)
     if action.get('request_id'):
@@ -250,23 +329,21 @@ def prepare(packet, snapshot, item):
 
 
 def _query(scope, args):
+    import time
+    started=time.monotonic();timings={}
     from workflow_runtime import guard,open_ledger,current_input
-    if not isinstance(args,dict):raise ValueError('DECISION_QUERY_OBJECT_REQUIRED')
-    operation=args.get('operation','directory')
-    allowed={'directory':{'operation','offset','limit','expected_fingerprint'},
-        'prepare':{'operation','decision_id','expected_fingerprint'},
-        'contract':{'operation','action'},'evidence':{'operation','requests'}}
-    if not isinstance(operation,str) or operation not in allowed or set(args)-allowed[operation]:raise ValueError('INVALID_DECISION_QUERY')
-    if 'expected_fingerprint' in args and (not isinstance(args['expected_fingerprint'],str)
-            or len(args['expected_fingerprint'])!=64):raise ValueError('INVALID_MATERIAL_FINGERPRINT')
+    operation=validate_query(args)
     if scope.get('kind')!='business':raise ValueError('CURRENT_BOUND_WORK_REQUIRED')
     guard(scope,allow_drain=True)
     if operation=='contract':
         if not isinstance(args.get('action'),str):raise ValueError('ACTION_REQUIRED')
         return _contract(scope['role'],args['action'])
-    ledger=open_ledger(scope['pool_path']);snapshot=ledger.snapshot(scope['run_id'])
+    ledger=open_ledger(scope['pool_path']);mark=time.monotonic();snapshot=ledger.snapshot(scope['run_id'])
+    timings['snapshot_ms']=round((time.monotonic()-mark)*1000,3);mark=time.monotonic()
     packet=current_input(scope['pool_path'],scope['role'],scope=scope,snapshot=snapshot,model_view=False)
+    timings['current_input_ms']=round((time.monotonic()-mark)*1000,3);mark=time.monotonic()
     catalog=directory(packet,snapshot)
+    timings['directory_ms']=round((time.monotonic()-mark)*1000,3);mark=time.monotonic()
     expected=args.get('expected_fingerprint')
     if operation=='directory':
         if expected is not None and expected!=catalog['fingerprint']:
@@ -276,7 +353,8 @@ def _query(scope, args):
         result={'status':'FOUND','items_total':len(catalog['items']),'items':catalog['items'][offset:offset+limit],
             'next_offset':offset+limit if offset+limit<len(catalog['items']) else None,
             'fingerprint':catalog['fingerprint'],'blocker_index':_bounded(ledger,catalog['blocker_index']),
-            'sampling':catalog['sampling'],'work_memory_validation':packet.get('work_memory_validation'),'can_ack':False}
+            'sampling':catalog['sampling'],'work_memory_validation':packet.get('work_memory_validation'),
+            'business_progress':packet.get('business_progress'),'can_ack':False}
     elif operation=='prepare':
         item=next((i for i in catalog['items'] if i['decision_id']==args.get('decision_id')),None)
         if item is None:return {'status':'MISSING','decision_id':args.get('decision_id'),'refresh_required':True}
@@ -301,6 +379,9 @@ def _query(scope, args):
                 'object_sha256':digest(value) if value is not None else None})
         result={'items':items,'sampling':catalog['sampling'],'can_ack':False,
             'notice':'逐项状态独立；FOUND只表示取到对象或哈希一致，不证明语义覆盖或已读原文件。'}
+    timings['material_ms']=round((time.monotonic()-mark)*1000,3)
+    timings['total_ms']=round((time.monotonic()-started)*1000,3)
+    result['query_measurement']={'timings_ms':timings,'cache_used':False,'authority':'observational_only'}
     from workflow_decision_metrics import observe
     try:observe(ledger,scope,operation,result,catalog['items'])
     except Exception:pass  # Telemetry cannot disable evidence access.
@@ -313,4 +394,5 @@ def query(scope, args):
     except GuardRejected:raise  # Identity receipts keep their native diagnostics.
     except ValueError as exc:
         return {'status':'REJECTED','code':str(exc),'phase':'INVALID_NOT_STARTED','can_ack':False,
-            'side_effect_state':'NONE','next_action':'按role_decision_context参数更正查询；该查询不提交业务动作。'}
+            'side_effect_state':'NONE','query_contract':getattr(exc,'query_details',None),
+            'next_action':'按query_contract.corrected_arguments更正；缺字段时按minimal_example及directory补齐。该查询不提交业务动作。'}

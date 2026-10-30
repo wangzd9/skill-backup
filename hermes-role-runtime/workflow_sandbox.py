@@ -97,11 +97,13 @@ def _run(packet):
         text=True).strip()) / 'objects'
     scratch = root / '.git' / 'workflow-tmp'
     scratch.mkdir(exist_ok=True)
+    from workflow_delivery import evidence_directory
+    evidence_root=evidence_directory(ledger,scope['work_id'],create=True)
     command = [shutil.which('bwrap') or '/usr/bin/bwrap', '--die-with-parent', '--unshare-all',
                '--ro-bind', '/', '/', '--proc', '/proc', '--dev', '/dev',
                '--tmpfs', '/tmp', '--tmpfs', '/run',
                '--ro-bind', str(source_objects), str(source_objects),
-               '--bind', str(root), str(root),
+               '--bind', str(root), str(root), '--bind',str(evidence_root),str(evidence_root),
                '--remount-ro', '/tmp', '--setenv', 'TMPDIR', str(scratch),
                '--chdir', str(cwd), '--cap-drop', 'ALL']
     if packet.get('file_edit'):

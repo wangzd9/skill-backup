@@ -1,0 +1,376 @@
+"""MN-01（DESIGN §3.1/§8）：20261022_01_mn01_node_fields 迁移行为。
+
+- SQLite 面实跑 upgrade→downgrade→upgrade 往返（仿 test_raw_collection_rcc01
+  模块级迁移函数口径）；
+- gate 重放幂等（upgrade 在已含新列的库上不得重复 DDL）；
+- DESIGN §8 回滚契约：存在 B 绑定数据（source_copy/artifact
+  storage_node_id='B'）时 downgrade fail-closed 拒绝且不删任何对象；
+- 无 B 依赖时 downgrade 对称 drop（索引先于列），upgrade 零 UPDATE 不回填。
+
+真 MySQL 双向按 ``MN01_MYSQL_URL`` 门控（缺库 skip 不假绿；SQLite 通过
+不等于 MySQL DDL 通过，MySQL 8.4 TEXT/索引宽度面留 TESTER 隔离库复验）。
+"""
+
+import os
+from pathlib import Path
+
+import pytest
+from sqlalchemy import create_engine, inspect, text
+
+import app.models as models
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
+from alembic.script import ScriptDirectory
+
+REV_ID = "20261022_01_mn01_node_fields"
+
+RUN_NEW_COLS = (
+    "execution_node_id",
+    "execution_profile_snapshot_json",
+    "reserved_disk_bytes",
+    "execution_reservation_state",
+    "execution_slot_id",
+)
+
+# MySQL 门控（缺库 skip 不假绿）
+MN01_MYSQL_URL = os.environ.get("MN01_MYSQL_URL", "")
+
+
+def _run_migration(engine, direction, rev_id=REV_ID):
+    """在独立空库上执行指定 revision 的 upgrade/downgrade（模块级函数口径）。
+
+    旧库形态：create_all 生成当前 model 全量 DDL，再手工回退到目标 revision
+    的前置状态（upgrade 时 drop 新列新索引；downgrade 时保留新列）。
+    """
+    script = ScriptDirectory(str(Path(__file__).resolve().parents[1] / "alembic"))
+    rev = script.get_revision(rev_id)
+    with engine.begin() as conn:
+        models.Base.metadata.create_all(conn)
+        conn.execute(
+            text(
+                "CREATE TABLE IF NOT EXISTS alembic_version "
+                "(version_num VARCHAR(32) NOT NULL, PRIMARY KEY (version_num))"
+            )
+        )
+        if direction == "upgrade":
+            # 回退到 down_revision 状态（模拟迁移前旧库）：drop MN-01 新对象。
+            # DROP INDEX 是 SQLite 语法；MySQL 需 ALTER TABLE ... DROP INDEX
+            # （TESTER 真实 8.4 隔离库已复现裸 DROP INDEX 报 1064）。
+            drop_index = (
+                "ALTER TABLE pipeline_run DROP INDEX ix_pipeline_run_node_state"
+                if engine.dialect.name == "mysql"
+                else "DROP INDEX ix_pipeline_run_node_state"
+            )
+            for stmt in (
+                drop_index,
+                "ALTER TABLE resource_pool DROP COLUMN admission_revision",
+                "ALTER TABLE artifact DROP COLUMN storage_node_id",
+                "ALTER TABLE source_copy DROP COLUMN storage_node_id",
+                "ALTER TABLE pipeline_run DROP COLUMN execution_slot_id",
+                "ALTER TABLE pipeline_run DROP COLUMN execution_reservation_state",
+                "ALTER TABLE pipeline_run DROP COLUMN reserved_disk_bytes",
+                "ALTER TABLE pipeline_run DROP COLUMN execution_profile_snapshot_json",
+                "ALTER TABLE pipeline_run DROP COLUMN execution_node_id",
+            ):
+                conn.execute(text(stmt))
+            conn.execute(text(f"INSERT INTO alembic_version (version_num) VALUES ('{rev.down_revision}')"))
+        else:
+            conn.execute(text(f"INSERT INTO alembic_version (version_num) VALUES ('{rev.revision}')"))
+        ctx = MigrationContext.configure(conn)
+        with Operations.context(ctx):
+            if direction == "upgrade":
+                rev.module.upgrade()
+            else:
+                rev.module.downgrade()
+            target = rev.revision if direction == "upgrade" else rev.down_revision
+            conn.execute(text("UPDATE alembic_version SET version_num=:v"), {"v": target})
+
+
+def _sqlite_engine(tmp_path, name):
+    return create_engine(f"sqlite:///{tmp_path / f'{name}.db'}")
+
+
+def _reset_model_tables(engine):
+    """清空本测试拥有的库内容（真实 MySQL 隔离库预置用）。
+
+    ``metadata.drop_all`` 在 MySQL（supports_alter=True）下因
+    resource_request.lease_id ↔ resource_lease.resource_request_id 的无名互相外键
+    报 CircularDependencyError（无法定 DROP 顺序，TESTER 真实 8.4 已复现）。
+    MySQL 面改用 FOREIGN_KEY_CHECKS=0 + 逐表 DROP + 恢复；SQLite 面无循环，保留 drop_all。
+    """
+    dialect = engine.dialect.name
+    with engine.begin() as conn:
+        if dialect == "mysql":
+            conn.execute(text("SET FOREIGN_KEY_CHECKS=0"))
+            for table in models.Base.metadata.sorted_tables:
+                conn.execute(text(f"DROP TABLE IF EXISTS {table.name}"))
+            conn.execute(text("SET FOREIGN_KEY_CHECKS=1"))
+        else:
+            models.Base.metadata.drop_all(conn)
+
+
+def _version(engine):
+    with engine.connect() as conn:
+        return conn.execute(text("SELECT version_num FROM alembic_version")).scalar()
+
+
+def _run_cols(engine):
+    return {c["name"]: c for c in inspect(engine).get_columns("pipeline_run")}
+
+
+def _assert_mn01_objects_present(engine):
+    cols = _run_cols(engine)
+    for name in RUN_NEW_COLS:
+        assert name in cols, f"pipeline_run 缺 {name}"
+    assert cols["execution_node_id"]["nullable"] is True
+    assert cols["execution_profile_snapshot_json"]["nullable"] is True
+    assert cols["reserved_disk_bytes"]["nullable"] is False
+    assert cols["execution_reservation_state"]["nullable"] is False
+    assert cols["execution_slot_id"]["nullable"] is True
+    assert "ix_pipeline_run_node_state" in {i["name"] for i in inspect(engine).get_indexes("pipeline_run")}
+    assert "storage_node_id" in {c["name"] for c in inspect(engine).get_columns("source_copy")}
+    assert "storage_node_id" in {c["name"] for c in inspect(engine).get_columns("artifact")}
+    pool_cols = {c["name"]: c for c in inspect(engine).get_columns("resource_pool")}
+    assert "admission_revision" in pool_cols
+    # OCR b01-002/b01-003：模型与迁移契约两侧一致断言（消除 autogenerate
+    # 永久 drift）——TEXT 快照列不得有 server default；admission_revision
+    # 必须有 server_default '0'（模型已补 server_default 对齐迁移）。
+    assert cols["execution_profile_snapshot_json"]["default"] is None
+    assert str(pool_cols["admission_revision"]["default"]).strip("'\"") == "0"
+
+
+def _assert_mn01_objects_gone(engine):
+    cols = _run_cols(engine)
+    for name in RUN_NEW_COLS:
+        assert name not in cols, f"pipeline_run 残留 {name}"
+    assert "ix_pipeline_run_node_state" not in {i["name"] for i in inspect(engine).get_indexes("pipeline_run")}
+    assert "storage_node_id" not in {c["name"] for c in inspect(engine).get_columns("source_copy")}
+    assert "storage_node_id" not in {c["name"] for c in inspect(engine).get_columns("artifact")}
+    assert "admission_revision" not in {c["name"] for c in inspect(engine).get_columns("resource_pool")}
+
+
+# ---------------------------------------------------------------------------
+# upgrade：新增列/索引（零 UPDATE）
+# ---------------------------------------------------------------------------
+def test_upgrade_adds_columns_and_index(tmp_path):
+    engine = _sqlite_engine(tmp_path, "mn01-up")
+    _run_migration(engine, "upgrade")
+    _assert_mn01_objects_present(engine)
+    assert _version(engine) == REV_ID
+    engine.dispose()
+
+
+def test_upgrade_gate_idempotent_on_replay(tmp_path):
+    """空库 create_all 后重放 upgrade（gate 全跳过）不得重复 DDL。"""
+    engine = _sqlite_engine(tmp_path, "mn01-replay")
+    _run_migration(engine, "upgrade")
+    with engine.begin() as conn:
+        script = ScriptDirectory(str(Path(__file__).resolve().parents[1] / "alembic"))
+        rev = script.get_revision(REV_ID)
+        ctx = MigrationContext.configure(conn)
+        with Operations.context(ctx):
+            rev.module.upgrade()
+    _assert_mn01_objects_present(engine)
+    engine.dispose()
+
+
+# ---------------------------------------------------------------------------
+# downgrade：无 B 依赖时对称 drop；upgrade 往返
+# ---------------------------------------------------------------------------
+def test_downgrade_without_b_dependency_drops_objects(tmp_path):
+    engine = _sqlite_engine(tmp_path, "mn01-down")
+    _run_migration(engine, "downgrade")
+    _assert_mn01_objects_gone(engine)
+    assert _version(engine) == "20261018_01_raw_collection"
+    engine.dispose()
+
+
+def test_upgrade_downgrade_upgrade_roundtrip(tmp_path):
+    engine = _sqlite_engine(tmp_path, "mn01-rt")
+    _run_migration(engine, "upgrade")
+    _assert_mn01_objects_present(engine)
+    with engine.begin() as conn:
+        script = ScriptDirectory(str(Path(__file__).resolve().parents[1] / "alembic"))
+        rev = script.get_revision(REV_ID)
+        conn.execute(text("UPDATE alembic_version SET version_num=:v"), {"v": rev.revision})
+        ctx = MigrationContext.configure(conn)
+        with Operations.context(ctx):
+            rev.module.downgrade()
+        conn.execute(text("UPDATE alembic_version SET version_num=:v"), {"v": rev.down_revision})
+    _assert_mn01_objects_gone(engine)
+    assert _version(engine) == "20261018_01_raw_collection"
+    # 再 upgrade 往返
+    with engine.begin() as conn:
+        conn.execute(
+            text("UPDATE alembic_version SET version_num=:v"),
+            {"v": "20261018_01_raw_collection"},
+        )
+        script = ScriptDirectory(str(Path(__file__).resolve().parents[1] / "alembic"))
+        rev = script.get_revision(REV_ID)
+        ctx = MigrationContext.configure(conn)
+        with Operations.context(ctx):
+            rev.module.upgrade()
+        conn.execute(text("UPDATE alembic_version SET version_num=:v"), {"v": REV_ID})
+    _assert_mn01_objects_present(engine)
+    engine.dispose()
+
+
+# ---------------------------------------------------------------------------
+# DESIGN §8：B 绑定数据时 downgrade fail-closed，不删任何对象
+# ---------------------------------------------------------------------------
+def _seed_node_rows(engine, node_id):
+    """以 ORM 建一条 source_copy + artifact（storage_node_id=node_id）。"""
+    from sqlalchemy.orm import sessionmaker
+
+    factory = sessionmaker(bind=engine, expire_on_commit=False)
+    with factory() as db:
+        db.add(
+            models.SourceCopy(
+                source_id=f"src-mn01-{node_id.lower()}",
+                pipeline_run_id=f"run-mn01-{node_id.lower()}",
+                storage_type="A100_PHASE0",
+                storage_node_id=node_id,
+                path=f"/seed/{node_id.lower()}/bag",
+                identity_key=f"key-mn01-{node_id.lower()}",
+            )
+        )
+        db.add(
+            models.Artifact(
+                artifact_id=f"art-mn01-{node_id.lower()}",
+                source_id=f"src-mn01-{node_id.lower()}",
+                pipeline_run_id=f"run-mn01-{node_id.lower()}",
+                artifact_type="A100_PHASE1",
+                storage_node_id=node_id,
+                path=f"/seed/{node_id.lower()}/out",
+            )
+        )
+        db.commit()
+
+
+def test_downgrade_blocked_when_b_rows_exist(tmp_path):
+    engine = _sqlite_engine(tmp_path, "mn01-block")
+    _run_migration(engine, "upgrade")
+    _seed_node_rows(engine, "B")
+    with engine.begin() as conn:
+        script = ScriptDirectory(str(Path(__file__).resolve().parents[1] / "alembic"))
+        rev = script.get_revision(REV_ID)
+        conn.execute(text("UPDATE alembic_version SET version_num=:v"), {"v": rev.revision})
+        ctx = MigrationContext.configure(conn)
+        with pytest.raises(Exception) as exc:
+            with Operations.context(ctx):
+                rev.module.downgrade()
+    assert "DOWNGRADE_BLOCKED" in str(exc.value)
+    # fail-closed：对象全部保留
+    _assert_mn01_objects_present(engine)
+    assert _version(engine) == REV_ID
+    with engine.connect() as conn:
+        assert conn.execute(text("SELECT COUNT(*) FROM source_copy WHERE storage_node_id = 'B'")).scalar() == 1
+    engine.dispose()
+
+
+def test_downgrade_blocked_when_run_bound_to_b(tmp_path):
+    """MN-04（OCR b01-001 留痕）：run 绑定 B 但尚未产出副本/产物的形态也必须阻断降级。
+
+    只查 source_copy/artifact 会漏掉"已分配 B 但还没写产物"的在途 run；降级会把
+    B 物理位置从账本抹掉，旧应用只能访问 A 无法恢复。
+    """
+    engine = _sqlite_engine(tmp_path, "mn01-runb")
+    _run_migration(engine, "upgrade")
+    from sqlalchemy.orm import sessionmaker
+
+    factory = sessionmaker(bind=engine, expire_on_commit=False)
+    with factory() as db:
+        db.add(
+            models.PipelineRun(
+                pipeline_run_id="run-mn04-b",
+                source_id="src-mn04-b",
+                status="RUNNING",
+                execution_node_id="B",
+                execution_reservation_state="HELD",
+                execution_slot_id="slot-0",
+                reserved_disk_bytes=1024,
+                attempt=1,
+            )
+        )
+        db.commit()
+    with engine.begin() as conn:
+        script = ScriptDirectory(str(Path(__file__).resolve().parents[1] / "alembic"))
+        rev = script.get_revision(REV_ID)
+        conn.execute(text("UPDATE alembic_version SET version_num=:v"), {"v": rev.revision})
+        ctx = MigrationContext.configure(conn)
+        with pytest.raises(Exception) as exc:
+            with Operations.context(ctx):
+                rev.module.downgrade()
+    assert "DOWNGRADE_BLOCKED" in str(exc.value)
+    assert "pipeline_run 1 行" in str(exc.value)
+    _assert_mn01_objects_present(engine)
+    engine.dispose()
+
+
+def test_downgrade_not_blocked_when_only_a_rows(tmp_path):
+    """只有 A 绑定数据不触发 §8 阻断（A 是旧应用可达节点）。"""
+    engine = _sqlite_engine(tmp_path, "mn01-aonly")
+    _run_migration(engine, "upgrade")
+    _seed_node_rows(engine, "A")
+    with engine.begin() as conn:
+        script = ScriptDirectory(str(Path(__file__).resolve().parents[1] / "alembic"))
+        rev = script.get_revision(REV_ID)
+        conn.execute(text("UPDATE alembic_version SET version_num=:v"), {"v": rev.revision})
+        ctx = MigrationContext.configure(conn)
+        with Operations.context(ctx):
+            rev.module.downgrade()
+        conn.execute(text("UPDATE alembic_version SET version_num=:v"), {"v": rev.down_revision})
+    _assert_mn01_objects_gone(engine)
+    engine.dispose()
+
+
+# ---------------------------------------------------------------------------
+# 真 MySQL 双向（缺库 skip 不假绿）
+# ---------------------------------------------------------------------------
+@pytest.mark.skipif(
+    not MN01_MYSQL_URL,
+    reason="MN01_MYSQL_URL 未设置或不可达（无真 MySQL 隔离库，MySQL DDL 面跳过不假绿）",
+)
+def test_mysql_upgrade_downgrade_roundtrip_real():
+    """真 MySQL（隔离库 mn01_migration_test）双向：upgrade→downgrade→upgrade。
+
+    覆盖 SQLite 不能证明的 MySQL 8.4 DDL 面：BIGINT server_default、组合索引、
+    无 TEXT server_default、downgrade drop 顺序。缺库 skip，不得把 SQLite 通过
+    当成 MySQL 通过。
+    """
+    url = MN01_MYSQL_URL
+    if not url.startswith("mysql+pymysql://"):
+        url = url.replace("mysql://", "mysql+pymysql://", 1)
+    engine = create_engine(url)
+    # 隔离库预置：清空本测试拥有的库内容后从零建表（不 DROP DATABASE，
+    # 不触碰库外对象）。MySQL 面用 _reset_model_tables 绕过互相外键的
+    # drop_all 循环依赖（TESTER 真实 8.4 已复现 CircularDependencyError）。
+    _reset_model_tables(engine)
+    _run_migration(engine, "upgrade")
+    _assert_mn01_objects_present(engine)
+    assert _version(engine) == REV_ID
+    # downgrade
+    with engine.begin() as conn:
+        script = ScriptDirectory(str(Path(__file__).resolve().parents[1] / "alembic"))
+        rev = script.get_revision(REV_ID)
+        conn.execute(text("UPDATE alembic_version SET version_num=:v"), {"v": rev.revision})
+        ctx = MigrationContext.configure(conn)
+        with Operations.context(ctx):
+            rev.module.downgrade()
+        conn.execute(text("UPDATE alembic_version SET version_num=:v"), {"v": rev.down_revision})
+    _assert_mn01_objects_gone(engine)
+    assert _version(engine) == "20261018_01_raw_collection"
+    # upgrade 往返
+    with engine.begin() as conn:
+        conn.execute(
+            text("UPDATE alembic_version SET version_num=:v"),
+            {"v": "20261018_01_raw_collection"},
+        )
+        script = ScriptDirectory(str(Path(__file__).resolve().parents[1] / "alembic"))
+        rev = script.get_revision(REV_ID)
+        ctx = MigrationContext.configure(conn)
+        with Operations.context(ctx):
+            rev.module.upgrade()
+        conn.execute(text("UPDATE alembic_version SET version_num=:v"), {"v": REV_ID})
+    _assert_mn01_objects_present(engine)
+    engine.dispose()

@@ -15,11 +15,31 @@ REGISTRY={kind:{'producer':producer,'renderer':'workflow_reports.render_notifica
 
 
 def diagnostics(ledger):
-    items=ledger.outbox_items(states=('PENDING',),limit=256)
-    return [{'notification_id':r['notification_id'],'kind':r['kind'],
-        'age_seconds':max(0,ledger.clock()-r['created_at']),
-        'reason':'NO_REGISTERED_CONSUMER' if r['kind'] not in REGISTRY else 'PENDING_AGE_EXCEEDED'}
-        for r in items if r['kind'] not in REGISTRY or ledger.clock()-r['created_at']>1800]
+    now=ledger.clock()
+    with ledger._connection() as db:
+        groups=[dict(r) for r in db.execute('SELECT state,kind,COUNT(*) AS count,MIN(created_at) AS oldest_at '
+            'FROM outbox GROUP BY state,kind ORDER BY state,kind')]
+    samples=ledger.outbox_items(states=('PENDING','UNKNOWN'),limit=256)
+    def owner(kind):
+        if kind=='PERIODIC_SUMMARY':return 'workflow_reports.deliver_notification'
+        return REGISTRY.get(kind,{}).get('consumer','UNREGISTERED_CONSUMER')
+    states={}
+    for row in groups:
+        states[row['state']]=states.get(row['state'],0)+row['count']
+        row.update(oldest_age_seconds=max(0,now-row['oldest_at']),owner=owner(row['kind']),
+            delivery_confirmation='UNKNOWN_NO_REPLAY' if row['state']=='UNKNOWN' else
+                'RECORDED_SENT' if row['state']=='SENT' else 'NOT_CONFIRMED')
+    pending=states.get('PENDING',0);unknown=states.get('UNKNOWN',0)
+    return {'counts_by_state':states,'counts_by_state_kind':groups,'unresolved_count':pending+unknown,
+        'confirmation_coverage':{'sent':states.get('SENT',0),'unknown':unknown,
+            'policy':'SENT按既有确认回执记账；UNKNOWN没有平台送达证明，不作已送或丢失推断。'},
+        'samples':[{'notification_id':r['notification_id'],'kind':r['kind'],'state':r['state'],
+            'age_seconds':max(0,now-r['created_at']),'owner':owner(r['kind']),
+            'reason':'DELIVERY_UNKNOWN_NO_AUTOMATIC_REPLAY' if r['state']=='UNKNOWN' else
+                'NO_REGISTERED_CONSUMER' if owner(r['kind'])=='UNREGISTERED_CONSUMER' else
+                'PENDING_AGE_EXCEEDED' if now-r['created_at']>1800 else 'PENDING'} for r in samples],
+        'samples_omitted':max(0,pending+unknown-len(samples)),
+        'unknown_policy':'保留UNKNOWN；核平台回执或明确处置，不自动重发。'}
 
 
 def suppress_stale(ledger, item):
