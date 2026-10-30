@@ -353,7 +353,7 @@
   },
   "business_actions_by_maintenance": false,
   "business_rows_directly_edited": false,
-  "business_status": "Native coordinator has reclaimed its original work and adopted current sources; first model request remains in flight. No new OCR submission or business transition verified yet.",
+  "business_status": "Resumed: native owner committed new OCR action mn04-a8-ocr-002 at e14253; fresh service status is RUNNING and exactly tests/test_mn01_migration.py selected. Waiting for genuine review result. e14173 stays open and MN-07 remains SNAPSHOT_STALE pending required gates.",
   "native_resumption": {
     "checked_at": "2026-10-30T20:49:14+08:00",
     "event_high_water": 14252,
@@ -625,5 +625,164 @@
     "branch": "main",
     "pushed": true,
     "runtime_commit": "ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa"
+  },
+  "business_resumption": {
+    "checked_at": "2026-10-30T20:58:16.871753+08:00",
+    "event_high_water": 14253,
+    "authority": "fresh readonly live_progress, native service/spec/state and immutable tool receipt; no checkpoint used",
+    "tasks": [
+      {
+        "task_id": "MN-01",
+        "role": "A",
+        "phase": "COMPLETED",
+        "attempt": 7,
+        "candidate_id": "candidate-c75efadfe17d406ea42062f2ad8732dc",
+        "head": "daf3f9b23b62c7c67b5b297dd57ff3e0277209d0"
+      },
+      {
+        "task_id": "MN-02",
+        "role": "B",
+        "phase": "COMPLETED",
+        "attempt": 3,
+        "candidate_id": "candidate-mn02-attempt3-b0",
+        "head": "5714b291443b6b812b9d0fc73d5154e767dcde15"
+      },
+      {
+        "task_id": "MN-03",
+        "role": "C",
+        "phase": "COMPLETED",
+        "attempt": 9,
+        "candidate_id": "candidate-1dcf5941311049e8bd281059e7d25863",
+        "head": "56778fad2750c3b13aad5c814219777e600624c0"
+      },
+      {
+        "task_id": "MN-04",
+        "role": "A",
+        "phase": "REVIEW",
+        "attempt": 8,
+        "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+        "head": "e82af00254ddd4dc67a823b142f0f7c6c4d5d596",
+        "recorded_checks": {
+          "independent_test": [
+            "PASS"
+          ],
+          "ocr": []
+        },
+        "dependency_ready": true
+      },
+      {
+        "task_id": "MN-05",
+        "role": "B",
+        "phase": "COMPLETED",
+        "attempt": 3,
+        "candidate_id": "candidate-26cc19d187f691a2274c1b403923ea74",
+        "head": "26cc19d187f691a2274c1b403923ea7443536925",
+        "dependency_details": {
+          "development_start": {
+            "missing": [
+              "MN-04"
+            ],
+            "contract_mismatches": []
+          },
+          "integration": {
+            "missing": [
+              "MN-04"
+            ],
+            "contract_mismatches": []
+          },
+          "acceptance": {
+            "missing": [
+              "MN-04"
+            ],
+            "contract_mismatches": []
+          }
+        }
+      },
+      {
+        "task_id": "MN-06",
+        "role": "C",
+        "phase": "COMPLETED",
+        "attempt": 2,
+        "candidate_id": "candidate-ec625d3c843c4c21b1d364a363745c9d",
+        "head": "0225b72274986eaee1305ecb57c8b67f8e34f7bc"
+      }
+    ],
+    "completion": {
+      "state": "SNAPSHOT_STALE",
+      "work_id": "work-0109bcdb04ed4f639e98b338118a88cb",
+      "completion_event_id": null,
+      "validation_task_id": "MN-07",
+      "closure_task_id": "MN-08",
+      "scope": "accepted_local_development"
+    },
+    "open_gates": [
+      {
+        "code": "OCR_SERIAL_ACTION_STILL_ACTIVE_OR_UNKNOWN",
+        "count": 1
+      },
+      {
+        "code": "VERIFICATION_EXCEPTION_REPAIR_PENDING",
+        "observation_event_id": 14173,
+        "owner": "COORDINATOR",
+        "state": "REPAIR_QUEUED",
+        "work_id": "work-2c31ed88a98f4a5d95400816e43769e2"
+      }
+    ],
+    "ocr_serial_gate": {
+      "blocked": true,
+      "blocking_count": 1,
+      "state_counts": {
+        "ENDED": 33,
+        "INCOMPLETE": 7,
+        "REJECTED": 8,
+        "SUBMITTED": 1
+      },
+      "scope": "global"
+    },
+    "action": {
+      "action_id": "mn04-a8-ocr-002",
+      "state": "SUBMITTED",
+      "kind": "ocr",
+      "candidate_id": "candidate-5d3737ba6bf549ab980058e4007052aa",
+      "created_at": 1793365038.7791271
+    },
+    "original_owner_execution": "97a455b39f3f4e3db7cd9726b1fc9786",
+    "registration_event_id": 14253,
+    "native": {
+      "native_id": "fe57ead766604892b993393597f54ed3",
+      "unit": "coordinator-ocr-fe57ead766604892b993393597f54ed3.service",
+      "service_state": {
+        "MainPID": "700578",
+        "Result": "success",
+        "ExecMainStatus": "0",
+        "ActiveState": "active",
+        "SubState": "running"
+      },
+      "state": "RUNNING",
+      "batches": [
+        {
+          "id": "b01",
+          "files": [
+            "tests/test_mn01_migration.py"
+          ],
+          "state": "RUNNING",
+          "pid": 700668,
+          "started_at": "2026-10-30T12:57:20.584508+00:00"
+        }
+      ],
+      "selected_files": [
+        "tests/test_mn01_migration.py"
+      ],
+      "spec_sha256_matches_receipt": true
+    },
+    "next": "Wait for real OCR result; coordinator must read and adjudicate it before approval/merge, then same-source MySQL revalidation and explicit exception closure, followed by native MN-07 snapshot refresh and acceptance.",
+    "maintenance_business_state_edits": false
+  },
+  "github_mechanism_release": {
+    "commit": "f95c6ceea813f74e85f527a0af38bc447690cfb7",
+    "remote": "wangzd9/skill-backup",
+    "branch": "main",
+    "remote_head_verified": true,
+    "runtime_commit": "9ead79defc953f941606620d2c6dbf004e4fd973"
   }
 }

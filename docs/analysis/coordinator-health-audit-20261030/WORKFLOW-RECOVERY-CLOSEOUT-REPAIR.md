@@ -47,3 +47,13 @@
 追加验证：接续9项、决策28项共37项通过。决策工具发现测试首次未带已安装 Hermes core 的 PYTHONPATH，修正测试环境后28项全过。20:52:50 网关热加载成功，PID3612975、68项源码哈希全部匹配；20:53:00 生产只读材料重放 source_status=FOUND、10项真实证据均匹配，唯一选择元数据为 tests/test_mn01_migration.py。正在运行的协调worker不被旁路替换，已有请求按原门禁继续；新安全会话采用0.16.3。
 
 0.16.2 机制快照已提交 `700edaf` 并推送既有 GitHub 仓库 wangzd9/skill-backup 的 main；0.16.3 与最终接续证据随后同步。
+
+## 实际业务已恢复推进，当前等待真实审查结果
+
+20:57:18，原生协调者执行 `97a455b39f3f4e3db7cd9726b1fc9786` 使用原有效授权，以新 action_id **mn04-a8-ocr-002** 正常 service_submit，账本 **e14253 / EXTERNAL_ACTION_REGISTERED**；工具回执 COMMITTED / SUBMITTED。没有由维护进程冒用其identity或直接修改业务状态。
+
+随后只读 `ocr_runtime.py status` 与 systemd 当次核验一致：受管服务 `coordinator-ocr-fe57ead766604892b993393597f54ed3.service` active/running，主PID700578、审查子进程700668；spec哈希与提交回执相符，唯一批次b01实际入选 **tests/test_mn01_migration.py**，状态RUNNING。原先拒绝后的无人推进已解除，不能把启动审查报告为审查通过。最终当次账本、原生服务和精确时间保存在发布记录 business_resumption；该节不引用历史checkpoint作当前状态。
+
+当前真实等待点是OCR结果尚未返回。MN-04 a8仍为REVIEW；e14173仍是REPAIR_QUEUED；MN-07仍为SNAPSHOT_STALE。后续由原协调者读取完整审查结果并裁决，满足门禁后批准/合入/完成a8；再由原TESTER完成同源MySQL补验，真实PASS后显式close异常；MN-07在提供方及writer条件齐备后原生刷新并最终验证。当前未伪造这些后续动作或宣称需求完成。
+
+机制0.16.3与指南已提交并推送GitHub **wangzd9/skill-backup/main**：`f95c6ce`，远端HEAD已核对一致；本节业务接续证据另随显式快照提交同步。保留该仓原有未跟踪文件，不上传数据库、原始会话、凭据及含token的invocation。
