@@ -67,8 +67,11 @@ def sweep(ledger):
     results.extend(apply_resolved_decisions(ledger))
     from workflow_task_merge_policy import reconcile
     results.extend(reconcile(ledger))
+    from workflow_verification_exceptions import recover, reconcile as reconcile_exceptions
+    results.extend(recover(ledger))
     from workflow_verification_lifecycle import reconcile as retire_verifications
     results.extend(retire_verifications(ledger))
+    results.extend(reconcile_exceptions(ledger))
     from workflow_supplemental import queue_repairs
     queue_repairs(ledger)
     from workflow_completion import reconcile as reconcile_completion

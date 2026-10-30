@@ -2,9 +2,9 @@
 
 备份本机当前使用的 Hermes、Codex 技能和复杂任务协作配套资源。
 
-2026-10-30 机制源码快照见 [MECHANISM-SNAPSHOT.json](MECHANISM-SNAPSHOT.json)：运行时 `f332dc4`、Hermes core `c3901f5`，包括六个角色/显示 Skill、共享脚本和[用户指南](docs/ROLE-WORKFLOW-USER-GUIDE.md)。核心累计补丁已在隔离目录从记录的基线还原并逐文件核验。
+2026-10-30 机制源码快照见 [MECHANISM-SNAPSHOT.json](MECHANISM-SNAPSHOT.json)：运行时 `e9cff36`、Hermes core `c3901f5`，包括六个角色/显示 Skill、共享脚本和[用户指南](docs/ROLE-WORKFLOW-USER-GUIDE.md)。核心累计补丁已在隔离目录从记录的基线还原并逐文件核验。
 
-长测试观察宽限期按受控任务期限加 180 秒计算；诊断异常和恢复各稳定 120 秒后通知。时段总结按完整冻结快照采样窗口，校验保留分号条件及具体错误分区；协调者七区包含同水位业务内容。0.13.1补齐审计F1～F8的阶段义务、覆盖矩阵、游标接续、输入页去重、问题处置、通知及监控生命周期；上线采用与剩余证据债见[实施记录](docs/analysis/coordinator-health-audit-20261030/IMPLEMENTATION.md)。0.14.0增加保真包内去重、终态授权归档、角色工具发现与可见字节观测；安全重启及新PID采用证据见[Token优化记录](docs/analysis/coordinator-health-audit-20261030/TOKEN-OPTIMIZATION-IMPLEMENTATION.md)。快照同步本身不激活 Gateway。其他技能和配置模板保留原采样版本；恢复步骤见 [RESTORE.md](RESTORE.md)。
+长测试观察宽限期按受控任务期限加 180 秒计算；诊断异常和恢复各稳定 120 秒后通知。时段总结按完整冻结快照采样窗口，校验保留分号条件及具体错误分区；协调者七区包含同水位业务内容。0.13.1补齐审计F1～F8的阶段义务、覆盖矩阵、游标接续、输入页去重、问题处置、通知及监控生命周期；上线采用与剩余证据债见[实施记录](docs/analysis/coordinator-health-audit-20261030/IMPLEMENTATION.md)。0.14.0增加保真包内去重、终态授权归档、角色工具发现与可见字节观测；安全重启及新PID采用证据见[Token优化记录](docs/analysis/coordinator-health-audit-20261030/TOKEN-OPTIMIZATION-IMPLEMENTATION.md)。0.15.0增加只读裁决材料、事件续读、统一ACK、保守历史记忆和补验UNVERIFIED异常移交/安全退休/原范围返修；实际采用和验证边界见[裁决材料实施记录](docs/analysis/coordinator-health-audit-20261030/SEMANTIC-DECISION-IMPLEMENTATION.md)。快照同步本身不激活 Gateway。其他技能和配置模板保留原采样版本；恢复步骤见 [RESTORE.md](RESTORE.md)。
 
 | 路径 | 内容 |
 |---|---|

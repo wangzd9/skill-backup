@@ -13,6 +13,8 @@ def configure(role, *, readonly=False):
         'role_repo_state', 'role_requirement_catalog', 'role_work_input'])
     result = ['role_business_read_v1']
     if not readonly:
+        create_custom_toolset('role_business_decision_v1', '本工作单只读裁决材料及动作合同', tools=['role_decision_context'])
+        result.append('role_business_decision_v1')
         if role in {'A', 'B', 'C'}:
             create_custom_toolset('role_business_edit_v1', '本单开发及自测，仍逐次经过原生范围门禁',
                                   tools=['terminal', 'write_file', 'patch'])

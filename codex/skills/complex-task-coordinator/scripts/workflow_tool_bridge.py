@@ -50,6 +50,9 @@ def usage(role, *, include_background=False):
                'Git porcelain的两份blob是HEAD/暂存区，不能用它们相同断言仅mtime变化；看真实diff证据。'
                '文件归属需派单/交付证据，不从文件名推断其他会话；未确认可弃不得建议删除。'
                '开发日志用 append_development_log，payload={"content":"真实里程碑正文"}，固定追加本需求 DEVELOPMENT-LOG.md。'
+               '补验UNVERIFIED看verification_exceptions，用resolve_verification_exception显式repair/investigate/close；'
+               'repair需observation_event_id、当前candidate_id、原scope内affected_paths及核证reason，原writer退出后原生落实新attempt。'
+               '已完成任务不走extend_task_scope，不等MN-07先失败；内部机制缺口不等于缺用户授权。'
                'ACTIVE 启动原因看 admission_hint，不从旧 pool.current 推断；writer fence 表示同角色写执行占用。'
                'waiting_external 会定期重新核验；工具拒绝码和条件证据须逐项读取，不把历史 checkpoint 当实时事实。')
     elif role=='TESTER':
@@ -61,7 +64,8 @@ def usage(role, *, include_background=False):
                'issues填id/kind/task_id/test_event_ids/summary及blocking/confidence/accepted_scope/ac_ids/disposition/owner。仅已确认且阻断本地合同的code issue自动返修。非阻断或范围外须rationale和review_required=true，协调者逐项复核才能收口。'
                '替身与实物分开写明，未执行/环境失败为UNVERIFIED，不可用skip或一句总结冒充PASS。')
         text+=('收到supplemental_verification工作时，用verify_supplemental，payload={}；固定候选MySQL8.4隔离补验由受控入口提供数据库，'
-               '不能改用普通verify跳过profile，不能把skip写成MySQL通过；无需普通shell或用户提供生产数据库。')
+               '不能改用普通verify跳过profile，不能把skip写成MySQL通过；无需普通shell或用户提供生产数据库。'
+               'UNVERIFIED保留原证据并移交协调者，收到退休请求用safe_release退出，不在旧work等待新候选或重复重跑。')
     if include_background:
         text+=(' 用户裁决以USER_DECISION_RECORDED及next_actions为准；用resolve_user_decision记录原提问关联、语义核对和代码依据，'
                '然后更新checkpoint，不能把已登记短答复留作待用户重发；登记不替代原验收门禁或授权。')

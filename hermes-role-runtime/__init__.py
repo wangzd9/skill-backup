@@ -459,7 +459,7 @@ class RuntimePlugin:
     def work_input_tool(self,args,*,session_id='',turn_id='',**kwargs):
         import json
         scope=self._frozen_scope(session_id)
-        if not scope or not scope.get('workflow_version') or set(args)-{'after','through','limit','history'}:
+        if not scope or not scope.get('workflow_version') or set(args)-{'after','through','limit','history','events_only'}:
             raise ValueError('CURRENT_BOUND_WORK_REQUIRED')
         workflow.guard(scope,allow_drain=True)
         import hashlib
@@ -469,6 +469,8 @@ class RuntimePlugin:
         through=args.get('through',high)
         if 'history' in args and type(args['history']) is not bool:
             raise ValueError('INVALID_HISTORY_QUERY')
+        if 'events_only' in args and type(args['events_only']) is not bool:
+            raise ValueError('INVALID_EVENTS_ONLY_QUERY')
         if args.get('history'):
             # This is a separate read view, not an issued business prefix. A
             # historical page must never advance issued_through or allow ACK.
@@ -483,7 +485,7 @@ class RuntimePlugin:
                 'frozen_through':through,'may_have_more':len(rows)==limit,
                 'notice':'历史回读未改变 issued_through/processed_through；不能据此确认业务事件。'},ensure_ascii=False)
         ledger=workflow.open_ledger(self.pool_path,readonly=False)
-        page_args={key:value for key,value in args.items() if key!='history'}
+        page_args={key:value for key,value in args.items() if key not in ('history','events_only')}
         page_args['through']=through
         if 'after' not in page_args:
             page_args['after']=ledger.current_work(scope['role'])['processed_through']
@@ -492,6 +494,10 @@ class RuntimePlugin:
             command_id='tool-input:'+scope['execution_id']+':'+suffix)
         if page.get('status') not in {'COMMITTED','DUPLICATE'}:
             return json.dumps(page,ensure_ascii=False)
+        if args.get('events_only'):
+            return json.dumps({**page,'kind':'current-work-events',
+                'events':workflow.project_events(ledger,page['events']),
+                'notice':'只返回本次发行的事件页及ACK边界；没有刷新非事件状态，不代表已处理或已确认。'},ensure_ascii=False)
         return json.dumps(workflow.current_input(self.pool_path,scope['role'],scope=scope,event_page=page),ensure_ascii=False)
 
     def scheduler_observation_tick(self,home=None,hook_contract_version=None,**kwargs):
@@ -609,10 +615,29 @@ class RuntimePlugin:
         scope=self._frozen_scope(session_id)
         if not scope or not scope.get('workflow_version'):
             raise ValueError('CURRENT_BOUND_WORK_REQUIRED')
-        if set(args)!={'action','payload','command_id'}:
-            raise ValueError('需要action、payload和稳定command_id')
-        result=workflow.command(scope,args['action'],args['payload'],command_id=args['command_id'])
+        from workflow_recovery import guidance
+        if (not isinstance(args,dict) or set(args)!={'action','payload','command_id'}
+                or not isinstance(args.get('action'),str) or not isinstance(args.get('payload'),dict)
+                or not isinstance(args.get('command_id'),str)
+                or not args['command_id'].strip()):
+            result={'status':'REJECTED','code':'INVALID_COMMAND_ENVELOPE','phase':'INVALID_NOT_STARTED',
+                'side_effect_state':'NONE','fields':['action','payload','command_id']}
+            return json.dumps({**result,'recovery':guidance(scope,result,not_started=True)},ensure_ascii=False)
+        try:
+            result=workflow.command(scope,args['action'],args['payload'],command_id=args['command_id'])
+        except workflow.GuardRejected as exc:
+            result=exc.result
+        if result.get('status') not in ('COMMITTED','DUPLICATE'):
+            result={**result,'recovery':guidance(scope,result,action=args['action'])}
         return json.dumps(result,ensure_ascii=False)
+
+    def decision_context_tool(self,args,*,session_id='',turn_id='',**kwargs):
+        import json
+        from workflow_decision_context import query
+        scope=self._frozen_scope(session_id)
+        if not scope or not scope.get('workflow_version'):
+            raise ValueError('CURRENT_BOUND_WORK_REQUIRED')
+        return json.dumps(query(scope,args),ensure_ascii=False)
 
     def control_tool(self,args,*,session_id='',turn_id='',**kwargs):
         import json
@@ -1012,6 +1037,14 @@ class RuntimePlugin:
         self.record_model_activity('start',session_id=session_id,**metadata)
         self.record_api_time('start',session_id=session_id,model=model,**metadata)
         self.record_usage('start',session_id=session_id,model=model,**metadata)
+        try:
+            from workflow_decision_metrics import request as decision_request
+            from workflow_runtime import open_ledger
+            scope=self._frozen_scope(session_id)
+            if scope and scope.get('kind')=='business':
+                decision_request(open_ledger(scope['pool_path']),scope,metadata)
+        except Exception:
+            logger.warning('裁决请求关联不可用；请求及用量继续正常记录',exc_info=True)
         if 'qwen3.8' not in model: return None
         # 原生 hook 的 request 经脱敏/限长，工具观测只使用实际可取得的字段。
         body=(request or {}).get('body')
@@ -1139,7 +1172,19 @@ def register(ctx):
          'parameters':{'type':'object','properties':{
              'after':{'type':'integer','minimum':0},'through':{'type':'integer','minimum':0},
              'limit':{'type':'integer','minimum':1,'maximum':100},
+             'events_only':{'type':'boolean','description':'续读只返回事件页及next_after/ACK边界，避免重复整份状态；首次/刷新省略。'},
              'history':{'type':'boolean','description':'只读回看旧事件；不发出可ACK的事件前缀，不改变业务游标。'}},'additionalProperties':False}},plugin.work_input_tool,disclosure='direct')
+    ctx.register_tool('role_decision_context','role_workflow',
+        {'name':'role_decision_context','description':'绑定本工作单的只读待决目录、按对象取证和完整动作合同；准备材料不ACK、不授权、不填写PASS或执行服务。',
+         'parameters':{'type':'object','properties':{
+             'operation':{'type':'string','enum':['directory','prepare','contract','evidence']},
+             'decision_id':{'type':'string'},'action':{'type':'string'},
+             'expected_fingerprint':{'type':'string'},
+             'offset':{'type':'integer','minimum':0},'limit':{'type':'integer','minimum':1,'maximum':32},
+             'requests':{'type':'array','minItems':1,'maxItems':8,'items':{'type':'object','properties':{
+                 'kind':{'enum':['candidate','verification','action','event','obligation','issue']},
+                 'id':{'type':'string','minLength':1,'maxLength':256}},'required':['kind','id'],'additionalProperties':False}}},
+             'required':['operation'],'additionalProperties':False}},plugin.decision_context_tool,disclosure='direct')
     from workflow_contracts import control_target_schema
     ctx.register_tool('role_control_request','role_workflow',
         {'name':'role_control_request','description':'可信当前用户明确控制或裁决原文持久登记；由后台owner执行，不需全权口令。',
@@ -1150,7 +1195,7 @@ def register(ctx):
              'required':['action'],'additionalProperties':False}},plugin.control_tool,disclosure='direct')
     for name,toolset,actions in (
             ('role_coordination_command','role_coordination',['publish_plan','decide','checkpoint','ack_events','safe_release',
-                'service_submit','service_collect','service_decide','service_resume','service_reject','extend_task_scope','refresh_task_base','refresh_development_base','merge','complete','complete_requirement','append_development_log','commit_documentation','resolve_user_decision','environment_recovered']),
+                'service_submit','service_collect','service_decide','service_resume','service_reject','extend_task_scope','refresh_task_base','refresh_development_base','merge','complete','complete_requirement','append_development_log','commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception']),
             ('role_development_command','role_development',['deliver','checkpoint','ack_events','safe_release']),
             ('role_test_command','role_testing',['verify','verify_supplemental','verify_integration','deliver_integration','close_verification','checkpoint','ack_events','safe_release'])):
         from workflow_contracts import command_schema

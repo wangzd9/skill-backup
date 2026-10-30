@@ -516,6 +516,19 @@ class BusinessLedger:
                     return {'can_start_model':True,'reason':'VERIFICATION_RETIREMENT_SAFE_RELEASE_REQUIRED',
                             'work_id':work['work_id'],'drain_only':True,'requires_user_approval':False}
                 waiting=work['checkpoint'].get('waiting_external')
+                if role=='COORDINATOR':
+                    from workflow_verification_exceptions import facts as exception_facts
+                    # A dated investigation is a bounded internal handoff, not
+                    # indefinite external authorization wait. One due wake per
+                    # ruling; subsequent unchanged resumptions retain backoff.
+                    last_bound=db.execute('SELECT COALESCE(MAX(bound_at),0) FROM executions WHERE work_id=?',
+                        (work['work_id'],)).fetchone()[0]
+                    exception_snapshot={'events':[_row(r) for r in db.execute("SELECT * FROM events WHERE run_id=? "
+                        "AND kind LIKE 'VERIFICATION_EXCEPTION_%' ORDER BY event_id",(run_id,))]}
+                    due=[i for i in exception_facts(exception_snapshot,run_id) if i['state']=='INVESTIGATING'
+                        and last_bound<i['disposition']['payload']['review_after']<=self.clock()]
+                    if due:return {'can_start_model':True,'reason':'VERIFICATION_EXCEPTION_REVIEW_DUE',
+                        'work_id':work['work_id'],'observation_event_ids':[i['observation_event_id'] for i in due]}
                 if waiting and not relevant:
                     from workflow_wait import review
                     recheck = review(self, db, work, run)
@@ -1027,7 +1040,9 @@ class BusinessLedger:
                     selected=prepare_pending_base(self,db,selected)
                     work = self._new_work(db,run_id,role,'development',selected)
             generation = work['execution_generation'] + 1
-            writer = {'cgroup':actual['cgroup'],'pgrp':actual['pgrp'],'dedicated_process_group':actual['pgrp']==execution['pid']}
+            writer = {'cgroup':actual['cgroup'],'pgrp':actual['pgrp'],'dedicated_process_group':actual['pgrp']==execution['pid'],
+                      'processed_through_at_bind':work['processed_through'],
+                      'event_high_water_at_bind':db.execute('SELECT COALESCE(MAX(event_id),0) FROM events').fetchone()[0]}
             db.execute('INSERT INTO executions VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
                        (execution['execution_id'],work['work_id'],role,authority['generation'],generation,
                         execution['pid'],actual['process_start'],_json(supplied_scope),_json(writer),'ACTIVE',self.clock(),None))
@@ -1120,6 +1135,10 @@ class BusinessLedger:
                     expected={'checkpoint':{'summary':'正文'},'processed_through':'外层整数（不大于已发行水位）','yield_execution':'外层布尔值'},
                     effective_processed_through=work['processed_through'],issued_through=work['issued_through'],
                     saved=False,acknowledged=False,yielded=False)
+            if 'work_memory' in payload:
+                from workflow_work_memory import validate as validate_work_memory
+                try:validate_work_memory(payload['work_memory'])
+                except ValueError as exc:_deny(str(exc))
             waiting = payload.get('waiting_external', [])
             if (not isinstance(waiting, list) or len(waiting)>32
                     or any(not isinstance(value,str) or not value.strip() or len(value)>512 for value in waiting)):

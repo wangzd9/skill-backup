@@ -13,6 +13,8 @@ import threading
 
 LOCK=threading.Lock()
 TARGETS={
+    '__init__.py':('RuntimePlugin.work_input_tool','RuntimePlugin.work_command_tool',
+                   'RuntimePlugin.decision_context_tool','RuntimePlugin.on_api'),
     'workflow_sandbox.py':('tool_directive', '_run'),
     'requirement_runtime.py':('list_requirements',),
     'workflow_registration.py':('freeze_sources','packages','register_packages','prepared_package'),
@@ -39,6 +41,12 @@ TARGETS={
     'workflow_views.py':('work_packet','fit_report'),
     'workflow_model_input.py':('_pointer','deduplicate','project'),
     'workflow_toolsets.py':('configure',),
+    'workflow_coordination_log.py':('append',),
+    'workflow_decision_context.py':('digest','sampling','_basis','_target','directory','startup_index','_bounded','_contract','_objects','_source_checks','_source_status','prepare','_query','query'),
+    'workflow_decision_metrics.py':('_root','_key','observe','request'),
+    'workflow_work_memory.py':('validate','inspect'),
+    'workflow_recovery.py':('guidance',),
+    'workflow_verification_exceptions.py':('facts','_result_source','record','recover','_repair_context','resolve','reconcile','revalidation_ids','closure_passes','blockers'),
     'prefix_audit.py':('PrefixAudit.record',),
     'workflow_service_recovery.py':('resume_readiness','resume'),
     'workflow_observation.py':('step','saved_health',),
@@ -80,7 +88,7 @@ TARGETS={
     'workflow_integration_workspace.py':('select',),
     'workflow_intake.py':('accept','scoped_control'),
     'workflow_user_decisions.py':('answer_source','record','pending','resolve','recover_native_answer'),
-    'workflow_supplemental.py':('source_task','request','queue_repairs','permits_closure','summary','docker','mysql_session','verify'),
+    'workflow_supplemental.py':('_context_from_event','source_task','request','queue_repairs','permits_closure','summary','docker','mysql_session','verify'),
     'workflow_merge.py':('merge_candidate',),
     'workflow_integration_recovery.py':('prepare_pending_base','refresh_undelivered','refresh_base'),
     'workflow_tool_bridge.py':('usage',),
@@ -96,6 +104,7 @@ TARGETS={
 # module globals; replacing the functions alone would leave a live host
 # advertising the old payload shape.
 CONSTANT_TARGETS={
+    'workflow_notification_registry.py':('REGISTRY',),
     'business_ledger.py':('_SCHEMA',),
     'workflow_contracts.py':('TASK','PAYLOADS','CONTROL_TARGET'),
     'workflow_reports.py':('PERSONAL_SECTIONS','_BOLD_REPORT_FIELD',
@@ -154,7 +163,7 @@ def activate():
         # This added capability is a fixed read-only Git query, not shell access.
         # Update cached allowlists on a live host as well as fresh imports.
         for module in loaded_by_path.get(root/'workflow_runtime.py', []):
-            module.READ_TOOLS = module.READ_TOOLS | {'role_repo_state'}
+            module.READ_TOOLS = module.READ_TOOLS | {'role_repo_state','role_decision_context'}
         for module in loaded_by_path.get(root/'manual_access.py', []):
             module.READONLY_TOOLS = module.READONLY_TOOLS | {'role_repo_state'}
         for module,name,value in constants:

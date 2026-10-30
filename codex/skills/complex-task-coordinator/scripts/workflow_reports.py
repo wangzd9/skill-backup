@@ -174,6 +174,9 @@ def build_facts(ledger, role, start, end, *, usage_index, project, pool_path=Non
     from workflow_verification_lifecycle import facts as retirement_facts
     facts['local_development_automation']=automation_facts(snapshot,run_id)
     facts['verification_retirements']=retirement_facts(snapshot,run_id)
+    from workflow_verification_exceptions import facts as exception_facts,blockers
+    facts['verification_exceptions']=exception_facts(snapshot,run_id)
+    facts['mechanism_blockers']=blockers(snapshot,run_id)
     if pool_path is not None:
         from workflow_observation import saved_health
         facts['observation'] = _observation_facts(ledger,
@@ -644,6 +647,10 @@ def render_notification(ledger, item):
     payload, kind = item['payload'], item['kind']
     if isinstance(payload.get('text'), str):
         return payload['text']
+    if kind=='VERIFICATION_EXCEPTION_REPAIR_QUEUED':
+        return ('**补验异常已登记返修**\n\n**任务：** '+str(payload['task_id'])+' / attempt '+str(payload['attempt'])+
+            '\n\n**责任人：** '+str(payload['owner'])+'；'+str(payload['reason'])+
+            '\n\n**边界：** 原 scope、AC 与必要验证保持；旧结果仍为未验证，修复后按固定新候选独立复验。')
     if kind in ('INTEGRATION_VERIFICATION_QUEUED','INTEGRATION_VERIFICATION_REPORTED','FINAL_ACCEPTANCE_REWORK_QUEUED','REQUIREMENT_COMPLETED'):
         labels={'INTEGRATION_VERIFICATION_QUEUED':'最终集成验证已自动排队',
             'INTEGRATION_VERIFICATION_REPORTED':'最终集成验证已交付',
@@ -968,6 +975,9 @@ def render_live_progress_fallback(packet, role):
         for issue in completion.get('issues', [])[:3]:
             lines.append(_live_bullet('验收问题 '+str(issue.get('id')),
                 '最近回执 event:'+str(completion.get('event_id'))+' · '+str(issue.get('task_id'))+'：'+str(issue.get('summary'))))
+        for item in [i for i in (context or {}).get('verification_exceptions',[]) if i['blocking']][:3]:
+            lines.append(_live_bullet('补验异常处置',str(item['task_id'])+' 补验保留未验证结果；协调者负责核证处置并落实返修/调查，'
+                '状态 '+item['state']+'；不等待用户重复授权，不能据执行退出判完成。'))
         pending = [task for task in tasks if task.get('phase') not in ('COMPLETED', 'CANCELLED')]
         if not pending and final.get('state') not in (None,'NOT_PLANNED','COMPLETED'):
             pending=[{'task_id':final.get('validation_task_id') or '最终验收','phase':final_labels.get(final['state'],final['state'])}]

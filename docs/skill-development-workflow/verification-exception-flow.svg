@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="860" viewBox="0 0 1200 860" role="img" aria-labelledby="title desc">
+<title id="title">补验异常闭环：结果保留，责任移交，原生落实返修</title><desc id="desc">UNVERIFIED不是PASS或FAIL；协调者判断处置，程序安全退休旧单并落实原范围新attempt。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker></defs>
+<style>text{font-family:"Noto Sans CJK SC","Microsoft YaHei","PingFang SC",sans-serif;fill:#0f172a}.heading{font-size:21px;font-weight:700}.line{font-size:16px}.note{font-size:14px;fill:#475569}</style>
+<rect width="1200" height="860" fill="#ffffff" rx="16"/>
+<text x="32" y="35" class="heading">补验异常闭环：结果保留，责任移交，原生落实返修</text>
+<rect x="35" y="75" width="530" height="135" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="53" y="104" class="heading">① TESTER：固定候选补验未验证</text>
+<text x="53" y="130" class="line">保存原始结果、候选版本及证据哈希</text>
+<text x="53" y="153" class="line">登记异常并移交协调者；不重复同因重跑</text>
+<text x="53" y="176" class="line">旧 work 不等待新候选，不修改夹具</text>
+<rect x="635" y="75" width="530" height="135" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+<text x="653" y="104" class="heading">② 原 TESTER 安全退出</text>
+<text x="653" y="130" class="line">VERIFICATION_RETIREMENT_REQUESTED</text>
+<text x="653" y="153" class="line">本人 safe_release；真实 writer 与子进程核退</text>
+<text x="653" y="176" class="line">worker 退出 ≠ work 完成，不强杀接管</text>
+<polyline points="565,140 635,140" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="300,210 300,265" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="35" y="265" width="530" height="160" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+<text x="53" y="294" class="heading">③ 协调者：核证并记录处置</text>
+<text x="53" y="320" class="line">repair：原 scope 文件、固定候选与理由</text>
+<text x="53" y="343" class="line">investigate：责任人与具体下一步 / 复核时点</text>
+<text x="53" y="366" class="line">close：后续同链真实补验 PASS + 语义依据</text>
+<text x="53" y="389" class="line">UNVERIFIED 原事实始终保留</text>
+<rect x="635" y="265" width="530" height="160" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="653" y="294" class="heading">④ 程序：持久返修请求 → 新 attempt</text>
+<text x="653" y="320" class="line">有效本地策略；原已完成且合入的供应候选</text>
+<text x="653" y="343" class="line">等原 writer 清零；不扩 scope / AC / 必要检查</text>
+<text x="653" y="366" class="line">事务登记原 owner 可领取的新 attempt</text>
+<text x="653" y="389" class="line">版本 / 授权变化显式阻断，刷新后重新处置</text>
+<polyline points="565,345 635,345" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="900,210 900,265" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="900,425 900,480" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="635" y="480" width="530" height="135" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+<text x="653" y="509" class="heading">⑤ 原 owner 修复并独立验证</text>
+<text x="653" y="535" class="line">原自测 / TESTER / OCR / 适用强审门禁</text>
+<text x="653" y="558" class="line">真实合入与完成后，原 profile 排队补验</text>
+<text x="653" y="581" class="line">新候选不能继承旧批准、PASS 或失败关闭</text>
+<rect x="35" y="480" width="530" height="135" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+<text x="53" y="509" class="heading">⑥ 异常关闭与最终收口</text>
+<text x="53" y="535" class="line">协调者核新固定候选真实补验 PASS</text>
+<text x="53" y="558" class="line">显式关闭异常，旧 UNVERIFIED 不改写</text>
+<text x="53" y="581" class="line">未处置异常继续阻断最终需求收口</text>
+<polyline points="635,550 565,550" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline points="1165,550 1185,550 1185,55 300,55 300,75" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="7 5"/>
+<text x="35" y="690" class="note">进度和待决目录显示异常责任人与等待链；调查按时复核，派单拒绝登记机制阻断及恢复动作。</text>
+<text x="35" y="735" class="note">不等 MN-07 先失败，不用 extend_task_scope 修改已完成任务，不把内部机制缺口变成用户重新授权。</text>
+<text x="35" y="795" class="note">当前覆盖原 mysql_migration 补验链；不开放生产、真实远端或任意测试环境能力。</text>
+</svg>

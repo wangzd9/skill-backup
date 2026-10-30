@@ -1,5 +1,7 @@
 # Hermes 角色运行优化
 
+2026-10-30 **0.15.0**：同源账本裁决材料、完整待决目录、绑定工作单的对象取证/动作合同、纯事件续读、保守版本化记忆、短恢复、统一 ACK 进展及日志事件引用。MySQL补验UNVERIFIED现形成异常移交与安全退休，协调者显式处置后程序落实原范围已完成任务的新attempt；原结果与全部验收门禁保留。逐项审查和实际采用见[实施记录](/home/wang/work/doc/analysis/coordinator-health-audit-20261030/SEMANTIC-DECISION-IMPLEMENTATION.md)。
+
 2026-10-30 **0.14.0**：ACTIVE工作输入保真去重，终态动作授权哈希归档，后台工具发现匹配角色能力，补充脱敏hook可见字节观测。保留模型、推理预算、全部验收/授权门禁和显式ACK；不依据字节降幅宣称Token或交付效率已达标。实施与安全重启采用见[本轮记录](/home/wang/work/doc/analysis/coordinator-health-audit-20261030/TOKEN-OPTIMIZATION-IMPLEMENTATION.md)。
 
 2026-10-20 缺陷修复、验证、安装和恢复边界见 [FIXES-20261020.md](FIXES-20261020.md)。源码交付与生产完整采用分别记录；隔离首次激活测试不替代真实 M 门。

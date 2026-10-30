@@ -1,0 +1,642 @@
+{
+  "schema_version": 1,
+  "captured_at_utc": "2026-10-30T08:18:23.230579+00:00",
+  "analysis_report": "COORDINATOR-SEMANTIC-DECISION-PLAN.md",
+  "repository": "/home/wang/work/hermes-role-runtime",
+  "source_head": "f332dc489089d95a3a6054ecf5a81e97aeddbd2a",
+  "initial_draft_head": "deafa31eb8c2fe7da3e4d4d4b81218d12db704c6",
+  "scope": "Static source analysis and document preparation; no runtime code/configuration/ledger changes, external model calls, service dispatch or business tests in this turn.",
+  "runtime_adoption": "Not independently reverified; source implementation is not proof of live adoption or measured quality/latency improvements.",
+  "historical_usage_basis": "The 14:47 token snapshot predates later fixes and is not a post-optimization baseline.",
+  "implemented_source_capabilities": [
+    "Explicit ACK, checkpoint control-field rejection and effective receipts.",
+    "Bounded content-addressed event pages and scoped snapshots.",
+    "Resumption backoff and dispatch coalescing.",
+    "Phase obligations, evidence matrices, semantic closure review and issue dispositions.",
+    "Pre-effect command/test parameter validation.",
+    "f332dc4 exact same-packet text deduplication and terminal authorization archives.",
+    "f332dc4 native role-specific tool discovery and sanitized hook byte observations."
+  ],
+  "static_followups": [
+    {
+      "point": 1,
+      "subject": "Consistent preparation snapshot",
+      "basis": [
+        "workflow_runtime.py:447",
+        "workflow_progression.py:82",
+        "workflow_completion.py:448"
+      ],
+      "limit": "Repeated sampling is a code-path observation, not a reproduced inconsistent decision."
+    },
+    {
+      "point": 2,
+      "subject": "Decision-focused context beyond implemented exact deduplication",
+      "basis": [
+        "workflow_runtime.py:466",
+        "workflow_model_input.py:9",
+        "workflow_model_input.py:55"
+      ]
+    },
+    {
+      "point": 3,
+      "subject": "Object-oriented evidence reads and events-only pagination",
+      "basis": [
+        "workflow_query.py:106",
+        "__init__.py:459"
+      ],
+      "detail": "Normal event pagination still calls current_input at __init__.py:495."
+    },
+    {
+      "point": 4,
+      "subject": "Versioned, source-bound working memory",
+      "basis": [
+        "workflow_contracts.py:37",
+        "business_ledger.py:1112",
+        "workflow_query.py:41"
+      ]
+    },
+    {
+      "point": 5,
+      "subject": "Action preparation with fixed inputs, missing prerequisites and semantic fields",
+      "basis": [
+        "workflow_progression.py:140",
+        "workflow_runtime.py:624"
+      ]
+    },
+    {
+      "point": 6,
+      "subject": "Evidence-review tables and exact user-answer referents",
+      "basis": [
+        "workflow_acceptance_obligations.py:52",
+        "workflow_acceptance_obligations.py:98",
+        "workflow_user_decisions.py:36",
+        "workflow_user_decisions.py:77"
+      ]
+    },
+    {
+      "point": 7,
+      "subject": "Service-owned background preparation and evidence assembly",
+      "basis": [
+        "workflow_services.py:56",
+        "workflow_services.py:71",
+        "workflow_runtime.py:940"
+      ]
+    },
+    {
+      "point": 8,
+      "subject": "Verify implemented tool discovery adoption; improve per-action contract lookup",
+      "basis": [
+        "workflow_toolsets.py:4",
+        "tests/test_token_optimization.py:111"
+      ],
+      "limit": "Source and existing test cases inspected, not rerun or newly measured in live model requests."
+    },
+    {
+      "point": 9,
+      "subject": "Concise structured error and recovery receipts",
+      "basis": [
+        "workflow_runtime.py:598",
+        "workflow_tool_bridge.py:17",
+        "delivery_evidence.py:505"
+      ]
+    },
+    {
+      "point": 10,
+      "subject": "Unify progress accounting for independent ACK and checkpoint ACK",
+      "basis": [
+        "workflow_resumption.py:5",
+        "business_ledger.py:1105",
+        "business_ledger.py:1112"
+      ],
+      "limit": "Potential mismatch inferred statically; no reproduction or live false-backoff claim."
+    },
+    {
+      "point": 11,
+      "subject": "Reuse committed decision facts across reports and logs",
+      "basis": [
+        "workflow_reports.py:100",
+        "workflow_coordination_log.py:10"
+      ]
+    },
+    {
+      "point": 12,
+      "subject": "Associate physical requests, work preparation and rework with decisions",
+      "basis": [
+        "usage_accounting.py:180",
+        "workflow_measurements.py:191",
+        "prefix_audit.py",
+        "workflow_model_input.py:70"
+      ],
+      "limit": "Hook bytes and projected JSON bytes are not measured prompt tokens or guaranteed resource savings."
+    }
+  ],
+  "files": [
+    {
+      "path": "__init__.py",
+      "bytes": 80788,
+      "sha256": "904e0e59f8358509e286fcbe5031e9c75e0b40101220630bb1fd5704c9f07b2d",
+      "git_blob": "6d75b055b482d5303c145747ae54db4fea2253c1",
+      "line_count": 1159,
+      "references": [
+        {
+          "line": 459,
+          "enclosing_symbol": "RuntimePlugin.work_input_tool",
+          "symbol_line": 459
+        },
+        {
+          "line": 1137,
+          "enclosing_symbol": "register",
+          "symbol_line": 1071
+        }
+      ]
+    },
+    {
+      "path": "business_ledger.py",
+      "bytes": 156681,
+      "sha256": "9cd9be7d2e88205badbfad55ec6d2059983fe5edb27042dfd07b4928d03e6511",
+      "git_blob": "67dfd455f5c45e513f61e6af5bf9aa943d6f09a0",
+      "line_count": 2245,
+      "references": [
+        {
+          "line": 426,
+          "enclosing_symbol": "BusinessLedger.snapshot",
+          "symbol_line": 426
+        },
+        {
+          "line": 481,
+          "enclosing_symbol": "BusinessLedger.admission_hint",
+          "symbol_line": 481
+        },
+        {
+          "line": 1105,
+          "enclosing_symbol": "BusinessLedger.ack_events",
+          "symbol_line": 1105
+        },
+        {
+          "line": 1112,
+          "enclosing_symbol": "BusinessLedger.checkpoint",
+          "symbol_line": 1112
+        },
+        {
+          "line": 1642,
+          "enclosing_symbol": "BusinessLedger.adjudicate_service",
+          "symbol_line": 1642
+        }
+      ]
+    },
+    {
+      "path": "delivery_evidence.py",
+      "bytes": 33836,
+      "sha256": "93a21e88c4a39686df61134ab4673b7fff072fb2e8b75190dfd42b0c56d751a0",
+      "git_blob": "0442d8f54ab610092ac774f500ee641731ab057d",
+      "line_count": 535,
+      "references": [
+        {
+          "line": 505,
+          "enclosing_symbol": "preflight_test_request",
+          "symbol_line": 505
+        }
+      ]
+    },
+    {
+      "path": "prefix_audit.py",
+      "bytes": 2683,
+      "sha256": "0d5c575bae4ada1dd03707ab201db49a32c32f9faf5a97086f4a0c888795a087",
+      "git_blob": "299f16929b3ce2387525b90f9b40c448ffa1d41e",
+      "line_count": 44,
+      "references": []
+    },
+    {
+      "path": "tests/test_health_audit_repair.py",
+      "bytes": 23344,
+      "sha256": "f70f6d6417e273dba54c3002fd8c71c57424d1db492fc061b5c185fde5952d89",
+      "git_blob": "ddc3421abd56483734d488383828d2578b0dd35d",
+      "line_count": 319,
+      "references": [
+        {
+          "line": 19,
+          "enclosing_symbol": "InputLifecycleTests",
+          "symbol_line": 19
+        }
+      ]
+    },
+    {
+      "path": "tests/test_token_optimization.py",
+      "bytes": 9732,
+      "sha256": "ecc37fd9541272bca6430dd5b4792f46d157982e3bd9b2fcff582754a0605e24",
+      "git_blob": "819cd64d435a3b04b7da1349a27f8b01f143f4d9",
+      "line_count": 173,
+      "references": [
+        {
+          "line": 111,
+          "enclosing_symbol": "ToolDiscoveryTests",
+          "symbol_line": 111
+        }
+      ]
+    },
+    {
+      "path": "usage_accounting.py",
+      "bytes": 22427,
+      "sha256": "40e7328a189796ac9a38ff2f082cd284a7d37f956305358ff148297edb52c3ea",
+      "git_blob": "189ac6d4928cd936dac07e8e00b1cc82e2e57915",
+      "line_count": 354,
+      "references": [
+        {
+          "line": 180,
+          "enclosing_symbol": "record",
+          "symbol_line": 180
+        }
+      ]
+    },
+    {
+      "path": "workflow_acceptance_obligations.py",
+      "bytes": 6938,
+      "sha256": "378b0fcfbff5d6d623d72c7e04925fd290874802471fcbe969dd749d2c48a10e",
+      "git_blob": "932b9de0e25b7b8196a87e2cb7c60e28ca52b754",
+      "line_count": 112,
+      "references": [
+        {
+          "line": 52,
+          "enclosing_symbol": "validate_matrix",
+          "symbol_line": 52
+        },
+        {
+          "line": 98,
+          "enclosing_symbol": "closure_review",
+          "symbol_line": 98
+        }
+      ]
+    },
+    {
+      "path": "workflow_completion.py",
+      "bytes": 28918,
+      "sha256": "0142f1eb468c36a8a342f80b13fc137c235ef37bccec1c8cf4bff09f2ef1d7e6",
+      "git_blob": "8958ef55ba76e05d20bc3cb97d314ddb2f05b274",
+      "line_count": 460,
+      "references": [
+        {
+          "line": 448,
+          "enclosing_symbol": "next_actions",
+          "symbol_line": 448
+        }
+      ]
+    },
+    {
+      "path": "workflow_completion_contracts.py",
+      "bytes": 3182,
+      "sha256": "135ebbfe8aadcf32ecc34fb3cb64cf02defb93243ae6b697455fdf665c573f2b",
+      "git_blob": "5312341c771900792abdac110084294175d4f9dc",
+      "line_count": 40,
+      "references": []
+    },
+    {
+      "path": "workflow_contracts.py",
+      "bytes": 12924,
+      "sha256": "f22723cd3e7e2ca05c533b8a7a11575cf2dc489fb9204db8053c96268ccfee7d",
+      "git_blob": "36d177fe9782ce35fbf4b526ede3212ecfb6d2ec",
+      "line_count": 185,
+      "references": [
+        {
+          "line": 37,
+          "enclosing_symbol": null,
+          "symbol_line": null
+        },
+        {
+          "line": 63,
+          "enclosing_symbol": null,
+          "symbol_line": null
+        },
+        {
+          "line": 142,
+          "enclosing_symbol": "command_schema",
+          "symbol_line": 142
+        }
+      ]
+    },
+    {
+      "path": "workflow_coordination_log.py",
+      "bytes": 2363,
+      "sha256": "b0e8d95ae9d6c3b03cc932b02a5eb0722268e6f986f0908c388c0e78a4f56889",
+      "git_blob": "8ba92108f0e4c523a5f9bf580c5197f2d99a47bc",
+      "line_count": 47,
+      "references": [
+        {
+          "line": 10,
+          "enclosing_symbol": "append",
+          "symbol_line": 10
+        }
+      ]
+    },
+    {
+      "path": "workflow_diagnostics.py",
+      "bytes": 36969,
+      "sha256": "00d4eed40f274d571a1591755680dc5b87b08ff74718dd664c8058231f3ce133",
+      "git_blob": "82c0f210af12dd66307b8a2141870d810cbb10c7",
+      "line_count": 655,
+      "references": [
+        {
+          "line": 203,
+          "enclosing_symbol": "build_receipt",
+          "symbol_line": 203
+        }
+      ]
+    },
+    {
+      "path": "workflow_dispatch.py",
+      "bytes": 21788,
+      "sha256": "a0ebe8b27517285424672fa0e9872d53e95fd23203ad7e160884b6198df71688",
+      "git_blob": "f91417e7cd0bbfd312887262ca41b615147d3d5b",
+      "line_count": 414,
+      "references": [
+        {
+          "line": 320,
+          "enclosing_symbol": "request_role_wakeup",
+          "symbol_line": 320
+        }
+      ]
+    },
+    {
+      "path": "workflow_input_pages.py",
+      "bytes": 3507,
+      "sha256": "ae409f989089e14cbb167d626a34fee5c6dd3786465eec9096b6e853ac947390",
+      "git_blob": "ac77155b5a9f122d8665a0c00319effab2474b20",
+      "line_count": 78,
+      "references": []
+    },
+    {
+      "path": "workflow_issue_policy.py",
+      "bytes": 4120,
+      "sha256": "b83bd16b2687888ef3c40919445daf13cedecb45fc72e7b4092743e9c431d84b",
+      "git_blob": "f9c9c6629ab4c5a0ee956838d63fa05e3ff02379",
+      "line_count": 71,
+      "references": [
+        {
+          "line": 40,
+          "enclosing_symbol": "review_dispositions",
+          "symbol_line": 40
+        }
+      ]
+    },
+    {
+      "path": "workflow_measurements.py",
+      "bytes": 12767,
+      "sha256": "2337c4d38d1c7b0a0600ac006fe9ad134e27594e31be12350c6e6c04955e8e1b",
+      "git_blob": "1f600f70d387fe69568975bc48fcfb8d32ad9d13",
+      "line_count": 216,
+      "references": [
+        {
+          "line": 191,
+          "enclosing_symbol": "summarize_dispatch",
+          "symbol_line": 191
+        }
+      ]
+    },
+    {
+      "path": "workflow_model_input.py",
+      "bytes": 3992,
+      "sha256": "917685f333921a1b2f5e94877bdbd53b034af8c3b8f04bd225dd77effed75ce0",
+      "git_blob": "41dfa7399579ab64298fdccb8f4254c2f3d3e01d",
+      "line_count": 76,
+      "references": [
+        {
+          "line": 9,
+          "enclosing_symbol": "deduplicate",
+          "symbol_line": 9
+        },
+        {
+          "line": 55,
+          "enclosing_symbol": "project",
+          "symbol_line": 55
+        },
+        {
+          "line": 70,
+          "enclosing_symbol": "project",
+          "symbol_line": 55
+        }
+      ]
+    },
+    {
+      "path": "workflow_progression.py",
+      "bytes": 18165,
+      "sha256": "d99d6fc2ffca4b90a9f49fa9b5a8ae73f629e96c1c569c3cda46e333644d8ee1",
+      "git_blob": "0f5010a226e8618cdb7fef617b083ba156c544c2",
+      "line_count": 234,
+      "references": [
+        {
+          "line": 82,
+          "enclosing_symbol": "next_actions",
+          "symbol_line": 82
+        },
+        {
+          "line": 140,
+          "enclosing_symbol": "next_actions",
+          "symbol_line": 82
+        }
+      ]
+    },
+    {
+      "path": "workflow_query.py",
+      "bytes": 32520,
+      "sha256": "9c8e88c68d66d7c4a4bdbe26989c4ea2f5d6e7931e4da6c8dde8c93c5b467598",
+      "git_blob": "d81b7806cfd87baececbd0a155e124a75583d019",
+      "line_count": 541,
+      "references": [
+        {
+          "line": 41,
+          "enclosing_symbol": "checkpoint_history",
+          "symbol_line": 41
+        },
+        {
+          "line": 106,
+          "enclosing_symbol": "_paged_artifact",
+          "symbol_line": 106
+        },
+        {
+          "line": 263,
+          "enclosing_symbol": "live_progress",
+          "symbol_line": 263
+        }
+      ]
+    },
+    {
+      "path": "workflow_reports.py",
+      "bytes": 73093,
+      "sha256": "a5ba1e7646cfef473d4601d16ae1e0b63f3bbfd17a00a6380a3fdc1b4850f0a2",
+      "git_blob": "a65f44cd3cf7c2624206228eb4b7ebc45f7180bd",
+      "line_count": 1179,
+      "references": [
+        {
+          "line": 100,
+          "enclosing_symbol": "build_facts",
+          "symbol_line": 100
+        }
+      ]
+    },
+    {
+      "path": "workflow_resumption.py",
+      "bytes": 1664,
+      "sha256": "e89c10c657710b978ee639a8c379ab7f173de61073926530a26eb4c20e349516",
+      "git_blob": "5a594758cd90d8047390bbca50cae1086d9720a6",
+      "line_count": 25,
+      "references": [
+        {
+          "line": 5,
+          "enclosing_symbol": "admission",
+          "symbol_line": 5
+        }
+      ]
+    },
+    {
+      "path": "workflow_runtime.py",
+      "bytes": 61095,
+      "sha256": "465642760c33aaa9d37d264140db99e32a46584dc95afe28ce6e6cc717e492de",
+      "git_blob": "b065265462e224f1e98c06ce0744bef8708fd9ae",
+      "line_count": 1009,
+      "references": [
+        {
+          "line": 183,
+          "enclosing_symbol": "prepare",
+          "symbol_line": 111
+        },
+        {
+          "line": 447,
+          "enclosing_symbol": "current_input",
+          "symbol_line": 447
+        },
+        {
+          "line": 466,
+          "enclosing_symbol": "current_input",
+          "symbol_line": 447
+        },
+        {
+          "line": 543,
+          "enclosing_symbol": "seal_input",
+          "symbol_line": 543
+        },
+        {
+          "line": 576,
+          "enclosing_symbol": "_tool_decision",
+          "symbol_line": 576
+        },
+        {
+          "line": 598,
+          "enclosing_symbol": "_tool_decision",
+          "symbol_line": 576
+        },
+        {
+          "line": 624,
+          "enclosing_symbol": "_execute_command",
+          "symbol_line": 624
+        },
+        {
+          "line": 635,
+          "enclosing_symbol": "_execute_command",
+          "symbol_line": 624
+        },
+        {
+          "line": 940,
+          "enclosing_symbol": "collect_event_tick",
+          "symbol_line": 940
+        }
+      ]
+    },
+    {
+      "path": "workflow_services.py",
+      "bytes": 29389,
+      "sha256": "6ae338ebb2926b0a1be8e0e453cbd1ca7026188092a0298a624fff04d1472d42",
+      "git_blob": "b51de0a1e92e6f09db5065b1aa5479314deb7f9e",
+      "line_count": 476,
+      "references": [
+        {
+          "line": 56,
+          "enclosing_symbol": "_freeze_background",
+          "symbol_line": 56
+        },
+        {
+          "line": 71,
+          "enclosing_symbol": "_request_inputs",
+          "symbol_line": 71
+        },
+        {
+          "line": 261,
+          "enclosing_symbol": "submit_service",
+          "symbol_line": 261
+        }
+      ]
+    },
+    {
+      "path": "workflow_tool_bridge.py",
+      "bytes": 7964,
+      "sha256": "cf2f82b7e8b144ef2974093c6c5cf41672ab567f708b734c3ea5f5637aaa6c14",
+      "git_blob": "0070bebc587cce6ec89a989f2975c35380903cc8",
+      "line_count": 71,
+      "references": [
+        {
+          "line": 17,
+          "enclosing_symbol": "usage",
+          "symbol_line": 17
+        }
+      ]
+    },
+    {
+      "path": "workflow_toolsets.py",
+      "bytes": 1353,
+      "sha256": "97329a6584f28ad8d25b58a3554f4ee1dfa870157ccce88bc980738e314e83fb",
+      "git_blob": "3cddc1d1b9c6cfe29a56d55590858e97f6fa01a8",
+      "line_count": 23,
+      "references": [
+        {
+          "line": 4,
+          "enclosing_symbol": "configure",
+          "symbol_line": 4
+        }
+      ]
+    },
+    {
+      "path": "workflow_user_decisions.py",
+      "bytes": 8864,
+      "sha256": "41f94ecc6e84633158cc1e281ad6290f3dd33b4a901a408c6addb46507803d46",
+      "git_blob": "4baa3edaffb7108f80a76ce5131d392ba46fe174",
+      "line_count": 145,
+      "references": [
+        {
+          "line": 36,
+          "enclosing_symbol": "record",
+          "symbol_line": 36
+        },
+        {
+          "line": 77,
+          "enclosing_symbol": "resolve",
+          "symbol_line": 77
+        }
+      ]
+    },
+    {
+      "path": "workflow_views.py",
+      "bytes": 8970,
+      "sha256": "faf90613de990f6d372f2538acc5875707726a8cdc2e0293fae7a45759377f66",
+      "git_blob": "e587283c41012e23505c6ee0960db5d35ae0b3c6",
+      "line_count": 168,
+      "references": [
+        {
+          "line": 22,
+          "enclosing_symbol": "rows_view",
+          "symbol_line": 22
+        },
+        {
+          "line": 47,
+          "enclosing_symbol": "work_packet",
+          "symbol_line": 47
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "source_files_match_head": true,
+    "source_ast_parsed": true,
+    "reference_lines_in_range": true,
+    "business_tests_run": false,
+    "runtime_adoption_verified": false,
+    "raw_messages_or_model_reasoning_exported": false
+  }
+}

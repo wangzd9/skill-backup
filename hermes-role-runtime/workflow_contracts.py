@@ -86,6 +86,15 @@ CONTROL_TARGET = {'oneOf': [
 
 
 def payload_schema(action):
+    if action=='resolve_verification_exception':
+        schema=obj({'observation_event_id':{'type':'integer','minimum':1},
+            'disposition':{'enum':['repair','investigate','close']},'reason':TEXT,
+            'candidate_id':TEXT,'affected_paths':{'type':'array','minItems':1,'maxItems':32,'items':TEXT},
+            'next_action':TEXT,'verification_id':TEXT},['observation_event_id','disposition','reason'])
+        schema['allOf']=[{'if':{'properties':{'disposition':{'const':value}}},
+            'then':{'required':fields}} for value,fields in (
+                ('repair',['candidate_id','affected_paths']),('investigate',['next_action']),('close',['verification_id']))]
+        return schema
     if action=='environment_recovered':
         return obj({'validation_event_id':{'type':'integer','minimum':1},'summary':TEXT,
             'evidence':{'type':'array','minItems':1,'items':EVIDENCE}},['validation_event_id','summary','evidence'])
@@ -108,7 +117,8 @@ def payload_schema(action):
                 'review':{**TEXT,'maxLength':4000}},['path','sha256','review'])}},
             ['expected_head','expected_branch','summary','files'])
     if action=='append_development_log':
-        return obj({'content':{**TEXT,'maxLength':65536}},['content'])
+        return obj({'content':{**TEXT,'maxLength':65536},'source_event_ids':{'type':'array',
+            'maxItems':32,'uniqueItems':True,'items':{'type':'integer','minimum':1}}},['content'])
     if action=='refresh_development_base':
         return obj({'task_id':TEXT,'reason':TEXT},['task_id','reason'])
     if action=='refresh_task_base':
@@ -175,7 +185,7 @@ def validate_payload(action, payload):
         errors=list(Draft202012Validator(payload_schema(action)).iter_errors(payload))
         if errors:raise ValueError('INVALID_ACK_PAYLOAD: through 必须是已发行的连续前缀水位')
         return
-    if action not in PAYLOADS and action not in ('extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','append_development_log','commit_documentation','verify_supplemental','resolve_user_decision','verify_integration','deliver_integration','complete_requirement'):
+    if action not in PAYLOADS and action not in ('resolve_verification_exception','extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','append_development_log','commit_documentation','verify_supplemental','resolve_user_decision','verify_integration','deliver_integration','complete_requirement'):
         raise ValueError('COMMAND_UNSUPPORTED')
     errors = sorted(Draft202012Validator(payload_schema(action)).iter_errors(payload),
                     key=lambda error: list(map(str, error.absolute_path)))

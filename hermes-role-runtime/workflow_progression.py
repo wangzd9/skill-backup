@@ -79,7 +79,7 @@ def event_view(events):
     return output
 
 
-def next_actions(packet, ledger):
+def next_actions(packet, ledger, *, snapshot=None):
     role=packet['role']; result=[]
     work = packet.get('work') or {}
     selected = packet.get('selected_run_id') or ledger.mode()['current_run_id']
@@ -90,11 +90,29 @@ def next_actions(packet, ledger):
                       '等待原生 writer 核验清零后，新 tick 领取新 run 工作；不得继续发布旧 run 计划或只读空转等待。',
             'payload': {'reason': 'RUN_SWITCHED：安全释放旧 run 工作，保留历史与未决证据'}}]
     from workflow_completion import next_actions as completion_actions
-    final_actions=completion_actions(packet,ledger)
-    if final_actions:
-        return final_actions
     if role=='COORDINATOR':
-        snapshot=ledger.snapshot((packet.get('run') or {}).get('run_id'))
+        from workflow_verification_exceptions import facts as exception_facts, closure_passes
+        snapshot=ledger.snapshot((packet.get('run') or {}).get('run_id')) if snapshot is None else snapshot
+        exceptions=exception_facts(snapshot,work.get('run_id') or selected)
+        for item in exceptions:
+            if not item['blocking']:continue
+            action='resolve_verification_exception'
+            if item['state']=='WAITING_SAFE_EXIT':action='wait_for_verification_exit'
+            pass_options=closure_passes(snapshot,item)
+            if item['state']=='REPAIR_QUEUED':
+                if not pass_options:
+                    action='follow_verification_repair'
+            result.append({'action':action,'observation_event_id':item['observation_event_id'],
+                'candidate_id':item['candidate_id'],'state':item['state'],
+                'later_pass_options':pass_options,
+                'payload':{'observation_event_id':item['observation_event_id']},
+                'reason':'核UNVERIFIED原始证据后显式选择repair/investigate/close。repair仅原范围已完成任务，落实真实新attempt；'
+                    '已有处置则先核落账派单/安全核退/真实复验，不等待MN-07失败、不扩范围、不重复同因提交。'})
+    final_actions=completion_actions(packet,ledger,snapshot=snapshot)
+    if final_actions:
+        return result+final_actions
+    if role=='COORDINATOR':
+        snapshot=ledger.snapshot((packet.get('run') or {}).get('run_id')) if snapshot is None else snapshot
         from workflow_user_decisions import pending
         for decision in pending(snapshot, selected):
             result.append({'action':'resolve_user_decision','request_id':decision['payload']['request_id'],
@@ -203,7 +221,7 @@ def next_actions(packet, ledger):
                 'reason':'已入账的固定候选MySQL补验，使用受控临时8.4实例与Unix socket；不需要shell、生产URL或再次授权；skip不能报MySQL通过。'}]
         candidate_id=work.get('candidate_id')
         if candidate_id:
-            snapshot=ledger.snapshot(work.get('run_id'))
+            snapshot=ledger.snapshot(work.get('run_id')) if snapshot is None else snapshot
             previous_passes=[row for row in snapshot['verifications']
                 if row['candidate_id']==candidate_id and row['check_name']=='independent_test'
                 and row['result']=='PASS']
@@ -219,7 +237,8 @@ def next_actions(packet, ledger):
         result.append({'action':'verify','reason':'用固定候选和显式 pytest 环境；pytest 命令自动选需求仓库 .venv；'
             '超时用 timeout_seconds，不依赖未安装的 --timeout 插件。环境错误修正 argv 后重试，不发布FAIL'})
     else:
-        pending_refresh=ledger.events(run_id=work.get('run_id') or selected,limit=10000)
+        pending_refresh=(snapshot['events'] if snapshot is not None else
+                         ledger.events(run_id=work.get('run_id') or selected,limit=10000))
         if any(e['kind']=='DEVELOPMENT_BASE_REFRESH_REQUESTED' and e['work_id']==work.get('work_id') for e in pending_refresh):
             return [{'action':'checkpoint','payload':{'checkpoint':{'next':'保存真实成果commit/head和私有路径，协调者refresh_development_base后迁移交付；禁止空占位候选。'},'yield_execution':True},
                      'reason':'当前开发基线需安全刷新；先保存真实成果再提交此checkpoint并退出，不等待用户授权、不改在途基线。'}]

@@ -2,7 +2,7 @@
 
 REGISTRY={kind:{'producer':producer,'renderer':'workflow_reports.render_notification',
     'consumer':'workflow_notifications.drain_business_notifications','target':'event_role',
-    'quiet':'suppress','max_pending_age_seconds':1800 if kind.startswith(('INTEGRATION_','FINAL_','REQUIREMENT_')) else None}
+    'quiet':'suppress','max_pending_age_seconds':1800 if kind.startswith(('INTEGRATION_','FINAL_','REQUIREMENT_','VERIFICATION_EXCEPTION_')) else None}
     for kind,producer in {
         'WORK_CLAIMED':'business_ledger','CANDIDATE_DELIVERED':'business_ledger',
         'CANDIDATE_DECIDED':'business_ledger','COORDINATOR_PROGRESS':'workflow_reports',
@@ -10,6 +10,7 @@ REGISTRY={kind:{'producer':producer,'renderer':'workflow_reports.render_notifica
         'INTEGRATION_VERIFICATION_QUEUED':'workflow_completion',
         'INTEGRATION_VERIFICATION_REPORTED':'workflow_completion',
         'FINAL_ACCEPTANCE_REWORK_QUEUED':'workflow_completion_repair',
+        'VERIFICATION_EXCEPTION_REPAIR_QUEUED':'workflow_verification_exceptions',
         'REQUIREMENT_COMPLETED':'workflow_completion'}.items()}
 
 

@@ -66,7 +66,18 @@ def _context_from_event(db, work):
         origin_events=[item for item in events if item['kind']=='SUPPLEMENTAL_VERIFICATION_REQUESTED'
                        and item['payload'].get('work_id')==payload.get('origin_work_id')]
         candidate=_row(db.execute('SELECT * FROM candidates WHERE candidate_id=?',(work.get('candidate_id'),)).fetchone())
-        failures=payload.get('supersedes')
+        failures=payload.get('supersedes');exception_ids=payload.get('exception_event_ids',[])
+        exception_valid=True
+        if exception_ids:
+            from workflow_verification_exceptions import revalidation_ids
+            exception_events=[_row(r) for r in db.execute('SELECT * FROM events WHERE run_id=? ORDER BY event_id',(work['run_id'],))]
+            previous_ids={w['work_id'] for w in [_row(r) for r in db.execute(
+                "SELECT * FROM works WHERE run_id=? AND kind='supplemental_verification'",(work['run_id'],))]
+                if w['work_id']==payload.get('origin_work_id') or any(e['kind']=='SUPPLEMENTAL_REVALIDATION_QUEUED'
+                    and e['work_id']==w['work_id'] and e['payload'].get('origin_work_id')==payload.get('origin_work_id') for e in exception_events)}
+            exception_valid=bool(candidate and isinstance(exception_ids,list) and len(exception_ids)<=32
+                and all(type(e) is int for e in exception_ids) and len(set(exception_ids))==len(exception_ids)
+                and set(exception_ids)<=set(revalidation_ids({'events':exception_events},previous_ids,candidate)))
         source_payload=origin_events[0]['payload'] if len(origin_events)==1 else {}
         source_provenance=source_payload.get('provenance') or {}
         if (not origin or len(origin_events)!=1 or event['run_id']!=work.get('run_id')
@@ -84,7 +95,7 @@ def _context_from_event(db, work):
                 or source_provenance.get('authenticated') is not True
                 or not source_provenance.get('message_id') or not source_provenance.get('user_id')
                 or not source_provenance.get('chat_id')
-                or not isinstance(failures,list) or not failures
+                or not exception_valid or not isinstance(failures,list) or (not failures and not exception_ids)
                 or any(not isinstance(value,str) or not value for value in failures)
                 or len(set(failures))!=len(failures)):
             _deny('SUPPLEMENTAL_CONTEXT_BINDING_MISMATCH', unknown=True)
@@ -95,6 +106,7 @@ def _context_from_event(db, work):
                  'origin_work_id':origin['work_id'],'origin_task_id':origin['task_id'],
                  'supersedes':failures,'candidate_id':work['candidate_id'],'run_id':work['run_id'],
                  'task_id':work['task_id'],'attempt':work['attempt'],'head':payload.get('head')}
+        if exception_ids:context['exception_event_ids']=exception_ids
 
     if stored:
         saved=json.loads(stored['context'])
@@ -213,12 +225,18 @@ def queue_repairs(ledger):
             checks=[v for v in snapshot['verifications'] if v['candidate_id'] in ids and v['check_name']=='supplemental_mysql']
             closed={key for v in checks if v['result']=='PASS' for key in v['supersedes']}
             failures=[v['verification_id'] for v in checks if v['result']=='FAIL' and v['verification_id'] not in closed]
-            if not failures or any(w['state']!='ENDED' for w in previous):
+            from workflow_verification_exceptions import facts as exception_facts, revalidation_ids
+            exceptions=[item for item in exception_facts(snapshot,run_id) if item['work_id'] in {w['work_id'] for w in previous}
+                and item['state']=='REPAIR_QUEUED']
+            if (not failures and not exceptions) or any(w['state']!='ENDED' or w['active_execution_id']
+                    or any(e['work_id']==w['work_id'] and e['state']!='ENDED' for e in snapshot['executions']) for w in previous):
                 continue
             source=ledger._one(db,'candidates','candidate_id',origin['candidate_id'])
             candidates=[c for c in snapshot['candidates'] if c['run_id']==run_id and c['state']=='CURRENT' and c['candidate_id'] not in ids
                         and any(m['candidate_id']==c['candidate_id'] for m in snapshot['merges'])]
             for candidate in reversed(candidates):
+                exception_ids=revalidation_ids(snapshot,{w['work_id'] for w in previous},candidate)
+                if not failures and not exception_ids:continue
                 task=next(t for t in snapshot['tasks'] if t['run_id']==run_id and t['task_id']==candidate['task_id'])
                 path='tests/test_mn01_migration.py'
                 if task['phase']!='COMPLETED' or path not in task['scope']:
@@ -238,11 +256,13 @@ def queue_repairs(ledger):
                          'supersedes':failures,'candidate_id':candidate['candidate_id'],
                          'run_id':run_id,'task_id':candidate['task_id'],'attempt':candidate['attempt'],
                          'head':candidate['head']}
+                if exception_ids:context['exception_event_ids']=exception_ids
                 _save_context(db,identifier,context,ledger.clock)
                 event=ledger._event(db,'SUPPLEMENTAL_REVALIDATION_QUEUED',{
                     'work_id':identifier,'origin_work_id':origin['work_id'],
                     'original_request_event_id':context['request_event_id'],
                     'candidate_id':candidate['candidate_id'],'head':candidate['head'],'supersedes':failures,
+                    **({'exception_event_ids':exception_ids} if exception_ids else {}),
                     'reason':'原隔离补验范围内、已合入的后代候选修复固定测试，自动重验；不需要用户重授'},run_id=run_id,role='TESTER',work_id=identifier)
                 queued.append({'work_id':identifier,'event_id':event});break
         return {'queued':queued}
@@ -332,6 +352,7 @@ def summary(snapshot, run_id):
                              'candidate_id':work['candidate_id'],'run_id':work['run_id'],
                              'task_id':work['task_id'],'attempt':work['attempt'],
                              'head':event['payload'].get('head')}
+                    if event['payload'].get('exception_event_ids'):derived['exception_event_ids']=event['payload']['exception_event_ids']
         context_state='VERIFIED' if derived else 'UNVERIFIED'
         if context is not None:
             if (not isinstance(context,dict) or context.get('schema_version')!=1
@@ -341,13 +362,15 @@ def summary(snapshot, run_id):
                 context=None;context_state='MISMATCH'
         else:
             context=derived
+        exceptions=[e for e in work_events if e['kind']=='VERIFICATION_EXCEPTION_RECORDED' and e['work_id']==work['work_id']]
         rows.append({key:work[key] for key in ('work_id','task_id','candidate_id','state')} |
                     {'owner':'TESTER','profile':(context or {}).get('profile'),
                      'origin_task_id':(context or {}).get('origin_task_id') or work['task_id'],
                      'supersedes':checks[-1]['supersedes'] if checks else (context or {}).get('supersedes',[]),
                      'request_event_id':(context or {}).get('request_event_id'),
                      'context_state':context_state,
-                     'result':checks[-1]['result'] if checks else 'NOT_VERIFIED',
+                     'result':'UNVERIFIED' if exceptions else checks[-1]['result'] if checks else 'NOT_VERIFIED',
+                     'exception_event_ids':[e['event_id'] for e in exceptions],
                      'next':'按补验结果处理真实缺陷；不得仍称待用户指定或把排队当作通过。'})
     return rows
 

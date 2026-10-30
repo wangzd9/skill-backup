@@ -114,6 +114,20 @@ class CompletionTests(LedgerFixture):
         old=next(v for v in self.ledger.snapshot()['events'] if v['kind']=='INTEGRATION_VERIFICATION_REPORTED')
         self.assertEqual('FAIL',old['payload']['result'])
 
+    def test_open_verification_exception_blocks_closure_even_with_real_final_pass(self):
+        self.queue();tp,tester,eid=self.run_final()
+        self.assertCommitted(deliver(self.ledger,tester,self.payload(eid),command_id='passed-with-open-exception'))
+        self.close(tp,tester)
+        # Explicitly labeled isolated event exercises the closure guard; this
+        # does not claim a real supplemental run occurred in this fixture.
+        with self.ledger._connection() as db:
+            self.ledger._event(db,'VERIFICATION_EXCEPTION_RECORDED',{'candidate_id':self.cid,
+                'result':'UNVERIFIED','isolated_synthetic_guard_fixture':True},run_id='run-one',work_id=tester['work_id'])
+        result=complete(self.ledger,self.coord,{'summary':'must remain blocked','review':'isolated guard check',
+            'historical_failures':[]},command_id='closure-blocked-by-exception')
+        self.assertEqual('REQUIREMENT_VERIFICATION_EXCEPTION_DISPOSITION_REQUIRED',result['code'])
+        self.assertFalse(any(e['kind']=='REQUIREMENT_COMPLETED' for e in self.ledger.snapshot()['events']))
+
     def test_fail_requires_real_failed_evidence_and_original_task_mapping(self):
         self.queue();tp,tester,eid=self.run_final()
         issue={'id':'FALSE-DEFECT','kind':'code','task_id':'T1','test_event_ids':[eid],'summary':'Cannot label passing evidence as a defect'}

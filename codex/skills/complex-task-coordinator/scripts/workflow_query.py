@@ -95,6 +95,9 @@ def progress_context(snapshot, run_id, role):
     result['strong_review_actions'] = [{key: action[key] for key in ('action_id', 'state')}
         for action in snapshot['external_actions']
         if action['candidate_id'] in candidate_ids and action['kind'] != 'ocr']
+    from workflow_verification_exceptions import facts as exception_facts,blockers
+    result['verification_exceptions']=exception_facts(snapshot,run_id)
+    result['mechanism_blockers']=blockers(snapshot,run_id)
     return result
 
 
@@ -291,6 +294,9 @@ def live_progress(pool_path, role):
         gates.append({'code': 'ROLE_' + slot['control'], 'role': role})
     if active_ocr:
         gates.append({'code': 'OCR_SERIAL_ACTION_STILL_ACTIVE_OR_UNKNOWN', 'count': len(active_ocr)})
+    from workflow_verification_exceptions import blockers as exception_blockers
+    mechanism_blockers=exception_blockers(snapshot,run_id)
+    gates.extend({k:b[k] for k in ('code','observation_event_id','owner','state','work_id')} for b in mechanism_blockers)
     # An open gate is not a diagnosis. Report what the OCR version gate actually
     # resolved to, so a role never has to infer it from a stale REJECTED action.
     ocr_version_gate = ocr_gate_state()
@@ -370,6 +376,8 @@ def live_progress(pool_path, role):
     supplemental_rows=summary(snapshot,run_id)
     packet['artifacts']['supplemental_verifications']=_artifact(
         ledger,role+'-supplemental-verifications',supplemental_rows)
+    packet['artifacts']['verification_exception_blockers']=_artifact(
+        ledger,role+'-verification-exception-blockers',mechanism_blockers)
     packet['supplemental_verifications']=[{key:row[key] for key in (
         'work_id','task_id','candidate_id','state','owner','profile',
         'supersedes','result') if key in row}

@@ -362,6 +362,9 @@ def complete(ledger, identity, payload, *, command_id):
         snapshot=_snapshot(ledger);state=facts(snapshot,work['run_id'])
         if state['state']!='READY_FOR_CLOSURE':
             _deny('REQUIREMENT_FINAL_VERIFICATION_NOT_PASSED')
+        from workflow_verification_exceptions import facts as exception_facts
+        open_exceptions=[i['observation_event_id'] for i in exception_facts(snapshot,work['run_id']) if i['blocking']]
+        if open_exceptions:_deny('REQUIREMENT_VERIFICATION_EXCEPTION_DISPOSITION_REQUIRED',observation_event_ids=open_exceptions)
         validation=next(w for w in snapshot['works'] if w['work_id']==state['work_id'])
         if not target_current(ledger,snapshot,validation):
             _deny('REQUIREMENT_FINAL_SNAPSHOT_CHANGED')
@@ -445,8 +448,9 @@ def verify(ledger, identity, payload, *, command_id):
     return execute_candidate_tests(ledger,identity,None,payload['argv'],verification_profile='integration_local',**kwargs)
 
 
-def next_actions(packet, ledger):
-    snapshot=_snapshot(ledger);work=packet.get('work') or {}
+def next_actions(packet, ledger, *, snapshot=None):
+    snapshot=_snapshot(ledger) if snapshot is None else snapshot
+    work=packet.get('work') or {}
     run_id=(packet.get('run') or {}).get('run_id')
     state=facts(snapshot,run_id)
     if work.get('kind')=='integration_verification':
@@ -456,5 +460,7 @@ def next_actions(packet, ledger):
         return [{'action':'verify_integration','reason':'按completion_plan原合同逐AC独立取证；使用受控测试入口，可选mysql profile提供真实隔离8.4，随后deliver_integration提交覆盖与问题。不可改业务代码，不执行真实远端/NAS操作。'},
                 {'action':'deliver_integration','reason':'每项AC显式引用本单INTEGRATION_TEST_RECORDED事件；失败按问题ID关联原开发task，环境缺口留UNVERIFIED，不虚构PASS。'}]
     if packet['role']=='COORDINATOR' and state['state']=='READY_FOR_CLOSURE':
+        from workflow_verification_exceptions import facts as exception_facts
+        if any(i['blocking'] for i in exception_facts(snapshot,run_id)):return []
         return [{'action':'complete_requirement','reason':'原生最终验证已PASS；核对固定版本、逐AC证据与遗留问题，在本地授权内完成收口，不再索要用户派发或收口口令。'}]
     return []

@@ -438,6 +438,10 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
                           'publication':None, 'business_pass':False, 'repair_candidate':False,
                           'next_action':'保留候选，使用项目测试环境与已安装插件；执行超时用 timeout_seconds。修正 argv 后使用新的 command_id 重试验证。'}
                 save_json(folder/'environment-failure.json', result)
+                save_json(folder/'execution-phase.json',{'state':'ENVIRONMENT_UNVERIFIED','command_id':command_id})
+                if verification_profile=='mysql_migration':
+                    from workflow_verification_exceptions import record
+                    result['exception_handoff']=record(ledger,folder)
                 return result
             if report_format=='pytest':
                 from workflow_test_environment import stability_command
@@ -499,6 +503,9 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
             result['code'] = 'TEST_RESULT_UNVERIFIED'
         save_json(folder/'verification.json', result)
         save_json(folder/'execution-phase.json',{'state':'RESULT_READY','command_id':command_id})
+        if verification_profile=='mysql_migration' and result['status']=='UNVERIFIED':
+            from workflow_verification_exceptions import record
+            result['exception_handoff']=record(ledger,folder)
         return result
 
 

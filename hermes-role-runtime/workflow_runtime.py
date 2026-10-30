@@ -20,7 +20,7 @@ import workflow_diagnostics as diagnostics
 
 ROLES = ('COORDINATOR', 'A', 'B', 'C', 'TESTER')
 READ_TOOLS = frozenset({'read_file', 'search_files', 'skill_view', 'skills_list',
-                        'role_live_progress', 'role_repo_state', 'role_requirement_catalog', 'role_work_input',
+                        'role_live_progress', 'role_repo_state', 'role_requirement_catalog', 'role_work_input', 'role_decision_context',
                         'tool_search', 'tool_describe'})
 COMMAND_TOOLS = {'COORDINATOR': 'role_coordination_command', 'TESTER': 'role_test_command',
                  'A': 'role_development_command', 'B': 'role_development_command',
@@ -202,6 +202,8 @@ def prepare(job, *, pool_path, execution, home, session_id):
         '未确认时续读下一页用 paging.next_after；历史回读用 role_work_input history=true，不能用于 ACK。'
         'requires_paging 仅为体积提示；事件续读看 paging.events_may_have_more，反复翻旧页不能缩减非事件字段。'
         'detail_artifacts 为未展开的完整证据；waiting_external 只在仅余外部授权或结果时按建议保存。'
+        '事件续读用role_work_input events_only=true；首次或状态变化需要完整快照时省略该参数。'
+        '待决目录和按对象材料用role_decision_context；contract按action取完整schema，prepare只预填ID不填裁决结论。'
         'same_as 是本包内相同原文的JSON Pointer，递归展开即可读取，不依赖上轮记忆；未展开归档不能声称已读。'
         '独立材料查询尽量在同轮并行；按路径/范围/哈希复用本人已核实结论，版本或环境改变即重新读取。'
         + usage(role,include_background=role=='COORDINATOR')+'\n'
@@ -444,11 +446,11 @@ def project_events(ledger, events):
     return event_view(projected)
 
 
-def current_input(pool_path, role, *, scope=None, at=None, event_page=None):
+def current_input(pool_path, role, *, scope=None, at=None, event_page=None, snapshot=None, model_view=True):
     at = _now(at)
     ledger = open_ledger(pool_path)
     selected=(scope or {}).get('run_id') or (ledger.current_work(role) or {}).get('run_id') or ledger.mode()['current_run_id']
-    snapshot = ledger.snapshot(selected)
+    snapshot = ledger.snapshot(selected) if snapshot is None else snapshot
     row = next((item for item in snapshot['roles'] if item['role'] == role), None)
     if row is None:
         raise ValueError('ROLE_NOT_IN_RUNTIME')
@@ -473,9 +475,9 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None):
                           if row['state'] == 'CURRENT' and
                           (role == 'COORDINATOR' or row['attempt'] == (work or {}).get('attempt'))]
     checks = [row for row in snapshot.get('verifications', []) if row.get('candidate_id') in ids]
-    events = event_page['events'] if event_page else ledger.events(
-        after=(work or {}).get('processed_through', 0), through=snapshot['event_high_water'],
-        run_id=(work or {}).get('run_id') or snapshot.get('current_run_id'), limit=100)
+    events = event_page['events'] if event_page else [e for e in snapshot['events']
+        if e['event_id']>(work or {}).get('processed_through',0) and e['event_id']<=snapshot['event_high_water']
+        and e.get('run_id') in (None,run_id)][:100]
     through = events[-1]['event_id'] if events else (work or {}).get('processed_through', 0)
     packet = {'schema_version': 1, 'kind': 'current-work-input', 'checked_at': at.isoformat(),
               'mode': snapshot['mode'], 'generation': snapshot['generation'], 'role': role,
@@ -513,6 +515,12 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None):
     from workflow_verification_lifecycle import facts as retirement_facts
     packet['local_development_automation']=automation_facts(snapshot,run_id)
     packet['verification_retirements']=retirement_facts(snapshot,run_id)
+    from workflow_verification_exceptions import facts as exception_facts, blockers as exception_blockers
+    packet['verification_exceptions']=exception_facts(snapshot,run_id)
+    packet['mechanism_blockers']=exception_blockers(snapshot,run_id)
+    packet['verification_exception_issues']=[e['payload'] for e in snapshot['events']
+        if task and e['kind']=='VERIFICATION_EXCEPTION_REPAIR_QUEUED' and e['run_id']==run_id
+        and e['payload']['task_id']==task['task_id'] and e['payload']['attempt']==task['attempt']]
     from workflow_completion import facts as completion_facts, context as completion_context, historical_failures
     from workflow_completion_repair import task_issues
     packet['completion']=completion_facts(snapshot,run_id)
@@ -520,7 +528,7 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None):
     packet['historical_failures']=historical_failures(snapshot,run_id) if role=='COORDINATOR' else []
     if (work or {}).get('kind')=='integration_verification':
         packet['integration_validation']=completion_context(snapshot,work)
-    packet['next_actions']=next_actions(packet,ledger)
+    packet['next_actions']=next_actions(packet,ledger,snapshot=snapshot)
     misplaced=sorted(set((work or {}).get('checkpoint',{}))&{'processed_through','issued_through','yield_execution'})
     if misplaced:
         packet['checkpoint_contract_warnings']={'code':'LEGACY_CHECKPOINT_CONTROL_FIELDS_IGNORED',
@@ -535,6 +543,14 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None):
     from workflow_progression import approval_state
     packet['candidate_approvals']={c['candidate_id']:approval_state(snapshot,c)
                                    for c in candidates if c['state']=='CURRENT'}
+    from workflow_decision_context import sampling, startup_index
+    packet['sampling']=sampling(snapshot,packet)
+    from workflow_work_memory import inspect as memory_inspect
+    memory=memory_inspect(snapshot,work)
+    if memory is not None:packet['work_memory_validation']=memory
+    if not model_view:
+        return packet
+    packet['decision_context']=startup_index(ledger,packet,snapshot)
     from workflow_views import work_packet
     work_packet(ledger,packet)
     return seal_input(packet)
@@ -597,9 +613,10 @@ def _tool_decision(scope, tool_name, args=None):
                            capture=checked.get('capture')) from exc
     error = rejected(scope, 'ROLE_CAPABILITY_NOT_ALLOWED', operation=tool_name, capability=tool_name,
                      capture=checked.get('capture'))
-    from workflow_tool_bridge import usage
-    return {'action': 'block', 'message': '当前角色或阶段不开放该动作；'+usage(scope['role'],include_background=scope['role']=='COORDINATOR'),
-            'decision': error.decision}
+    from workflow_recovery import guidance
+    return {'action':'block','message':'当前角色不开放该工具；使用本角色command或role_decision_context查询合同。',
+            'decision':error.decision,
+            'recovery':guidance(scope,error.result,not_started=True)}
 
 
 def command(scope, action, payload, *, command_id):
@@ -624,7 +641,7 @@ def command(scope, action, payload, *, command_id):
 def _execute_command(scope, action, payload, *, command_id):
     guard(scope, allow_drain=action in {'checkpoint', 'safe_release','ack_events'})
     identity = identity_from_scope(scope)
-    extra=({'extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','complete_requirement','append_development_log','commit_documentation','resolve_user_decision','environment_recovered'}
+    extra=({'extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','complete_requirement','append_development_log','commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception'}
            if scope['role']=='COORDINATOR' else {'verify_supplemental','verify_integration','deliver_integration'} if scope['role']=='TESTER' else set())
     if action not in COMMANDS[scope['role']] and action not in extra and action!='ack_events':
         raise ValueError('COMMAND_NOT_ALLOWED_FOR_ROLE')
@@ -647,6 +664,9 @@ def _execute_command(scope, action, payload, *, command_id):
 
 def _validated_command(scope, action, payload, identity, *, command_id):
     ledger = open_ledger(scope['pool_path'], readonly=False)
+    if action=='resolve_verification_exception':
+        from workflow_verification_exceptions import resolve
+        return resolve(ledger,identity,payload,command_id=command_id)
     if action in ('verify_integration','deliver_integration','complete_requirement'):
         from workflow_completion import verify, deliver, complete
         function={'verify_integration':verify,'deliver_integration':deliver,'complete_requirement':complete}[action]
@@ -665,7 +685,8 @@ def _validated_command(scope, action, payload, identity, *, command_id):
         return commit(ledger,identity,payload,command_id=command_id)
     if action=='append_development_log':
         from workflow_coordination_log import append
-        return append(ledger,identity,payload['content'],command_id=command_id)
+        return append(ledger,identity,payload['content'],command_id=command_id,
+            source_event_ids=payload.get('source_event_ids'))
     if action=='refresh_development_base':
         from workflow_integration_recovery import refresh_undelivered
         return refresh_undelivered(ledger,identity,payload['task_id'],payload['reason'],command_id=command_id)
