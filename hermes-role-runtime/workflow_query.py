@@ -46,6 +46,42 @@ def checkpoint_history(work, events):
     return history(event.get('created_at'), event_id=event.get('event_id'))
 
 
+def review_action_projection(snapshot, run_id):
+    """Index current review obligations separately from retired-candidate history.
+
+    Historical SUBMITTED/UNKNOWN actions remain visible and fence OCR globally.
+    Classification changes no action, verdict, failure closure or authorization.
+    """
+    candidates={c['candidate_id']:c for c in snapshot['candidates']}
+    tasks={(t['run_id'],t['task_id']):t for t in snapshot['tasks']}
+    actions=[]
+    for action in snapshot['external_actions']:
+        candidate=candidates[action['candidate_id']]
+        if action['kind']!='ocr' and candidate['run_id']!=run_id:continue
+        task=tasks.get((candidate['run_id'],candidate['task_id']))
+        current=bool(task and candidate['state']=='CURRENT' and candidate['attempt']==task['attempt']
+            and task['phase']!='CANCELLED')
+        live=action['state'] in ('SUBMITTED','UNKNOWN')
+        row={k:action[k] for k in ('action_id','kind','state','candidate_id')}
+        row.update({k:candidate[k] for k in ('run_id','task_id','attempt')})
+        row.update(current_candidate=current,candidate_state=candidate['state'],
+            current_attempt=(task or {}).get('attempt'),task_phase=(task or {}).get('phase'),
+            current_attention=live or current and action['state'] in ('RESULT_READY','INCOMPLETE','FAILED','CANCELLED'))
+        actions.append(row)
+    priority={'UNKNOWN':0,'SUBMITTED':1,'RESULT_READY':2,'FAILED':3,'INCOMPLETE':4,'CANCELLED':5}
+    actions.sort(key=lambda a:(priority.get(a['state'],9),a['action_id']))
+    historical=[a for a in actions if a['run_id']==run_id and not a['current_candidate'] and a['state']=='INCOMPLETE']
+    current_ocr=[c for c in candidates.values() if c['run_id']==run_id and c['state']=='CURRENT'
+        and (task:=tasks.get((run_id,c['task_id']))) and task['attempt']==c['attempt'] and task['phase']!='CANCELLED']
+    checks={v['candidate_id'] for v in snapshot['verifications'] if v['check_name']=='ocr' and v['result']=='PASS'}
+    return {'actions':actions,'attention':[a for a in actions if a['current_attention']],
+        'historical_incomplete_count':len(historical),
+        'historical_incomplete_by_task':dict(Counter(a['task_id'] for a in historical)),
+        'current_ocr_candidate_count':len(current_ocr),
+        'current_ocr_pass_count':sum(c['candidate_id'] in checks for c in current_ocr),
+        'history_policy':'旧候选INCOMPLETE保留原状态和证据，不自动关闭，不作为当前候选待裁决；历史在途/未知仍保留全局围栏。'}
+
+
 def progress_context(snapshot, run_id, role):
     """Business descriptions for reports; saved narratives keep their own dates."""
     def excerpt(value, limit=800):
@@ -92,9 +128,11 @@ def progress_context(snapshot, run_id, role):
         'issues': [{key: excerpt(issue[key]) for key in ('id', 'task_id', 'kind', 'summary') if key in issue}
                    for issue in payload.get('issues', [])]}
     candidate_ids = {c['candidate_id'] for c in snapshot['candidates'] if c['run_id'] == run_id}
-    result['strong_review_actions'] = [{key: action[key] for key in ('action_id', 'state')}
-        for action in snapshot['external_actions']
+    reviews=review_action_projection(snapshot,run_id)
+    result['review_activity']={key:value for key,value in reviews.items() if key!='actions'}
+    result['strong_review_actions'] = [action for action in reviews['attention']
         if action['candidate_id'] in candidate_ids and action['kind'] != 'ocr']
+    result['strong_review_history_count']=sum(a['kind']!='ocr' and a['run_id']==run_id for a in reviews['actions'])
     from workflow_verification_exceptions import facts as exception_facts,blockers
     result['verification_exceptions']=exception_facts(snapshot,run_id)
     result['mechanism_blockers']=blockers(snapshot,run_id)
@@ -280,11 +318,8 @@ def live_progress(pool_path, role):
     candidates = {c['candidate_id']: c for c in snapshot['candidates']}
     global_ocr = [a for a in snapshot['external_actions'] if a['kind'] == 'ocr']
     active_ocr = [a for a in global_ocr if a['state'] in ('SUBMITTED', 'UNKNOWN')]
-    actions = [{**{key: a[key] for key in ('action_id', 'kind', 'state')},
-                **{key: candidates[a['candidate_id']][key] for key in ('run_id', 'task_id')}}
-               for a in snapshot['external_actions']
-               if a['kind'] == 'ocr' or candidates[a['candidate_id']]['run_id'] == run_id]
-    actions.sort(key=lambda a: (a['state'] not in ('SUBMITTED', 'UNKNOWN'), a['action_id']))
+    reviews=review_action_projection(snapshot,run_id)
+    actions=reviews['actions']
     gates = []
     if snapshot['mode'] != 'ACTIVE' or not snapshot['admission_open']:
         gates.append({'code': 'MECHANISM_ADMISSION_CLOSED'})
@@ -363,13 +398,15 @@ def live_progress(pool_path, role):
             'reason': ocr_version_gate.get('reason'),
             'installed': {'version': (ocr_version_gate.get('installed') or {}).get('version')},
             'detail_artifact': _artifact(ledger, role+'-ocr-version-gate', ocr_version_gate)},
-        'external_actions': [a for a in actions if a['state'] in ('SUBMITTED', 'UNKNOWN', 'INCOMPLETE')],
+        'external_actions': reviews['attention'],
         'external_action_summary': {'total': len(actions),
             'state_counts': dict(Counter(a['state'] for a in actions)),
-            'serial_blocking_count': len(active_ocr), 'detail_artifact': 'artifacts.manifest → facts'},
+            'serial_blocking_count': len(active_ocr),
+            'historical_incomplete_count':reviews['historical_incomplete_count'],
+            'detail_artifact': 'artifacts.manifest → facts'},
         'open_gates': gates.copy(), 'tasks': [_task_summary(row) for row in task_rows],
         'roles': [_role_summary(row, run_id) for row in roles],
-        'gate_coverage': '运行/角色控制、全局OCR串行占用、任务未解决原因；候选检查列为账本记录，不表示验收已通过。',
+        'gate_coverage': '运行/角色控制、全局OCR串行占用、补验异常处置、任务未解决原因；候选检查列为账本记录，不表示验收已通过。',
         'artifacts': artifacts,
         'limits': '检查结果仅为账本记录，不代替证据复核或批准。测试能力未实测则待验证；历史 FAIL 不证明当前环境不可用。'}
     from workflow_supplemental import summary

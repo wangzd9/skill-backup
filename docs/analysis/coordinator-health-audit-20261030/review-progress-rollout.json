@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "runtime": {
+    "version": "0.15.1",
+    "commit": "9d8c3a67adfb00d6aadf408346c1a9e435c94d31",
+    "branch": "feature/role-workflow-v3"
+  },
+  "regression": {
+    "tests_passed": 233,
+    "elapsed_seconds": 203.272,
+    "production_business_tests_rerun": false
+  },
+  "gateway": {
+    "checked_at": "2026-10-30T17:56:25+08:00",
+    "gateway_pid": 3612975,
+    "gateway_state": "running",
+    "platforms": {
+      "feishu": "connected"
+    },
+    "activation_pid": 3612975,
+    "activation_state": "ACTIVATED",
+    "mode": "future_calls_only",
+    "verified_source_files": 61,
+    "source_mismatches": [],
+    "file_backend_pid": 3612975,
+    "file_backend_state": "ACTIVATED",
+    "scheduler_hook_pid": 3612975,
+    "scheduler_hook_state": "COLLECTED",
+    "restart_performed": false
+  },
+  "native_reload_verified_query_helper": "review_action_projection",
+  "changed_query_source_sha256": {
+    "workflow_query.py": "1f659f5fdede0fc3a9caf2e8b8e5716759a7b96d435c695563359a3db295a2ed",
+    "workflow_reports.py": "eb78eb34259dfe562bf7a1bf06add398b54ed4f0a3d4a68504137d1e4eef176d"
+  },
+  "progress_query": {
+    "checked_at": "2026-10-30T17:56:38+08:00",
+    "event_high_water": 14187,
+    "query_bytes": 7840,
+    "action_projection": {
+      "current_ocr_candidate_count": 5,
+      "current_ocr_pass_count": 5,
+      "historical_incomplete_by_task": {
+        "MN-03": 2,
+        "MN-04": 3
+      },
+      "historical_incomplete_count": 5,
+      "history_policy": "旧候选INCOMPLETE保留原状态和证据，不自动关闭，不作为当前候选待裁决；历史在途/未知仍保留全局围栏。"
+    },
+    "historical_actions_reactivated": false,
+    "report_has_exception_risk_and_coordinator_next_step": true
+  },
+  "current_review_attention_count": 0,
+  "verification_exception": {
+    "observation_event_id": 14173,
+    "state": "REPAIR_QUEUED",
+    "result": "UNVERIFIED",
+    "responsible_role": "COORDINATOR"
+  },
+  "native_repair_adoption": {
+    "checked_at": "2026-10-30T17:56:58+08:00",
+    "event_high_water": 14187,
+    "disposition_event_id": 14184,
+    "repair_queued_event_id": 14185,
+    "task": {
+      "task_id": "MN-04",
+      "phase": "DEVELOPING",
+      "attempt": 8,
+      "role": "A"
+    }
+  },
+  "maintenance_boundaries": {
+    "business_verdicts_written": false,
+    "group_message_sent": false,
+    "raw_production_state_exported": false,
+    "business_exception_closed": false
+  }
+}

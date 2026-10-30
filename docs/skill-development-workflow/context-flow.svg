@@ -13,7 +13,7 @@
 <text x="653" y="104" class="heading">② 参考材料：canonical路径 + SHA</text>
 <text x="653" y="130" class="line">role_decision_context：合同 / 对象 / 完整引用</text>
 <text x="653" y="153" class="line">账本同源；Git与原文件单独采样</text>
-<text x="653" y="176" class="line">历史记忆核依赖；未变 ≠ 当前核验</text>
+<text x="653" y="176" class="line">历史记忆核依赖；旧单检查点不冒充当前</text>
 <polyline points="565,140 635,140" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
 <polyline points="300,210 300,260" fill="none" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
 <rect x="35" y="260" width="530" height="160" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>

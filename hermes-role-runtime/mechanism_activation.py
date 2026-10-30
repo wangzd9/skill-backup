@@ -59,7 +59,7 @@ TARGETS={
         'publish_receipt','_project'),
     'report_contract.py':('_runtime_items','_role_next','_role_items'),
     'manual_access.py':('readonly_tool_decision',),
-    'workflow_query.py':('history','checkpoint_history','progress_context','_artifact','_paged_artifact',
+    'workflow_query.py':('history','checkpoint_history','review_action_projection','progress_context','_artifact','_paged_artifact',
         '_history_index','_task_summary','_role_summary','_bounded','live_progress','repo_state','ocr_gate_state'),
     'delivery_evidence.py':('preflight_test_request','_candidate_test_command','execute_candidate_tests','check_candidate_test_evidence','parse_test_results'),
     'workflow_dispatch.py':('_intent','request_role_wakeup','_persist'),

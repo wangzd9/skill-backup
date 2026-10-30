@@ -883,6 +883,10 @@ def render_live_progress_fallback(packet, role):
         if not text:
             return []
         date = str(saved.get('recorded_at') or '时间未知')
+        current_work_id=(roles.get(who) or {}).get('current_work_id')
+        if saved.get('work_id') and saved['work_id']!=current_work_id:
+            return [_live_bullet('前一工作单记录',
+                f'{who} · {date} · event:{saved.get("event_id")}；属于已退出或已切换工作单，原文保留在历史附件，不作为当前进展。')]
         return [_live_bullet('历史检查点' if field == 'summary' else '已记录的接续计划',
             f'{who} · {date} · event:{saved.get("event_id")}：{text}（仅反映保存时判断）')]
     title_role = role_names.get(role, '角色')
@@ -946,11 +950,38 @@ def render_live_progress_fallback(packet, role):
         lines += ['', '**OCR情况和后续计划**', '',
                   _live_bullet('OCR串行门', f"{'占用或状态未知' if serial.get('blocked') else '当前未见活动占用'}；在途计数 {serial.get('blocking_count', '未知')}。"),
                   _live_bullet('OCR版本门', f"状态 {version.get('state', '待核实')}；以当前安装版本准入记录为准。")]
-        own_actions = [action for action in (packet.get('external_actions') or [])
-                       if action.get('kind') == 'ocr' and action.get('run_id') == run.get('run_id')]
-        for action in own_actions[:3]:
-            label = '待处置审查' if action.get('state') == 'INCOMPLETE' else '当前审查'
-            lines.append(_live_bullet(label, f"{action.get('task_id')}：{action.get('state')}，动作 {action.get('action_id')}；结果落账后由协调者裁决。"))
+        activity=context.get('review_activity') or {}
+        own_actions = [action for action in (activity.get('attention',packet.get('external_actions') or []))
+                       if action.get('kind') == 'ocr' and action.get('run_id') == run.get('run_id')
+                       and (action.get('current_candidate') is not False or action.get('state') in ('SUBMITTED','UNKNOWN'))]
+        for action in own_actions[:4]:
+            state=action.get('state')
+            if action.get('current_candidate') is False and state not in ('SUBMITTED','UNKNOWN'):continue
+            instructions={'RESULT_READY':('审查待裁决','结果已落账；协调者核原报告后裁决'),
+                'INCOMPLETE':('审查未完成','缺少可裁决的完整结果；协调者核原因并决定恢复、重审或其他处置，不直接判PASS/FAIL'),
+                'FAILED':('审查执行失败','保留执行失败事实；协调者核证处置，不等同代码FAIL'),
+                'CANCELLED':('审查已取消','保留取消事实；当前检查仍按有效合同核验'),
+                'SUBMITTED':('当前审查','原生执行尚在途，等待原回执，不重复提交'),
+                'UNKNOWN':('审查状态待核验','原生结果未知，保留串行围栏，不自动重试')}
+            label,next_step=instructions.get(state,('审查状态待核验','核对原动作与固定候选'))
+            if 'current_candidate' not in action and state not in ('SUBMITTED','UNKNOWN'):
+                label,next_step='审查对象待核验','本回包缺少候选版本绑定，不能断言属于当前待办'
+            target=f"{action.get('task_id')}"
+            if action.get('attempt') is not None:target+=f" a{action['attempt']}"
+            lines.append(_live_bullet(label,f"{target}：{state}，动作 {action.get('action_id')}；{next_step}。"))
+        if len(own_actions)>4:
+            remaining={state:sum(a['state']==state for a in own_actions[4:])
+                for state in dict.fromkeys(a['state'] for a in own_actions[4:])}
+            lines.append(_live_bullet('其他审查待办',
+                f'另有 {len(own_actions)-4} 项：'+ '、'.join(f'{state} {count} 项' for state,count in remaining.items())+
+                '；完整对象和原始状态见本次查询附件，不表示已处理。'))
+        if activity:
+            lines.append(_live_bullet('当前候选 OCR 记录',
+                f"{activity.get('current_ocr_pass_count',0)}/{activity.get('current_ocr_candidate_count',0)} 个当前候选已登记 PASS；不替代最终集成验收。"))
+        historical=activity.get('historical_incomplete_count',(packet.get('external_action_summary') or {}).get('historical_incomplete_count',0))
+        if historical:
+            lines.append(_live_bullet('旧候选遗留记录',
+                f'{historical} 条历史 INCOMPLETE 保留原记录与证据，不作为当前候选待裁决；历史在途/未知动作仍受原串行门约束。'))
         for task in tasks:
             missing = [name for name, values in (task.get('recorded_checks') or {}).items()
                        if name == 'ocr' and 'PASS' not in values]
@@ -964,24 +995,39 @@ def render_live_progress_fallback(packet, role):
         review_status += '；审查结论需以已落账结果为准。'
         if context and not review:
             actions = context.get('strong_review_actions') or []
-            review_status = ('本需求账本未登记强审动作；是否需要仍按有效合同，不新增审查要求。' if not actions
+            history_count=context.get('strong_review_history_count',0)
+            review_status = (('当前没有待处置或在途强审动作；历史共 '+str(history_count)+' 项，按原合同核验。' if history_count else
+                '本需求账本未登记强审动作；是否需要仍按有效合同，不新增审查要求。') if not actions
                 else '本需求已登记 '+str(len(actions))+' 项审查动作；状态 '+ '、'.join(str(a['state']) for a in actions[-3:]))
         lines += ['', '**强审查情况**', '', _live_bullet('强审查', review_status)]
         gates = packet.get('open_gates') or []
         lines += ['', '**风险**', '']
-        lines.append(_live_bullet('未关闭门禁', '当前门禁：'+'；'.join(str(gate.get('code') or gate) for gate in gates[:3])
+        gate_labels={'VERIFICATION_EXCEPTION_HANDOFF_REQUIRED':'补验异常待协调者核证处置',
+            'VERIFICATION_EXCEPTION_REPAIR_PENDING':'补验异常返修/复验待落实',
+            'OCR_SERIAL_ACTION_STILL_ACTIVE_OR_UNKNOWN':'OCR仍在途或状态未知',
+            'OCR_VERSION_GATE_BLOCKED':'当前OCR版本尚未准入'}
+        lines.append(_live_bullet('未关闭门禁', '当前门禁：'+'；'.join(gate_labels.get(gate.get('code'),str(gate.get('code') or gate)) for gate in gates[:3])
             + (f'；另有 {len(gates)-3} 项' if len(gates) > 3 else '') if gates
             else '本次账本快照未列出打开门禁；验收结果仍以各项回执为准。'))
         for issue in completion.get('issues', [])[:3]:
             lines.append(_live_bullet('验收问题 '+str(issue.get('id')),
                 '最近回执 event:'+str(completion.get('event_id'))+' · '+str(issue.get('task_id'))+'：'+str(issue.get('summary'))))
-        for item in [i for i in (context or {}).get('verification_exceptions',[]) if i['blocking']][:3]:
+        open_exceptions=[i for i in (context or {}).get('verification_exceptions',[]) if i['blocking']]
+        for item in open_exceptions[:3]:
             lines.append(_live_bullet('补验异常处置',str(item['task_id'])+' 补验保留未验证结果；协调者负责核证处置并落实返修/调查，'
                 '状态 '+item['state']+'；不等待用户重复授权，不能据执行退出判完成。'))
         pending = [task for task in tasks if task.get('phase') not in ('COMPLETED', 'CANCELLED')]
         if not pending and final.get('state') not in (None,'NOT_PLANNED','COMPLETED'):
             pending=[{'task_id':final.get('validation_task_id') or '最终验收','phase':final_labels.get(final['state'],final['state'])}]
         lines += ['', '**下一步计划**', '']
+        for item in open_exceptions[:3]:
+            steps={'AWAITING_COORDINATOR_DISPOSITION':'核补验原始证据，用异常处置入口登记返修或调查；不等最终集成先失败',
+                'WAITING_SAFE_EXIT':'核原writer安全退出，再确认原生新attempt派单',
+                'REPAIR_QUEUED':'跟进已落账返修及后续固定候选独立复验，取得真实PASS后显式关闭异常',
+                'INVESTIGATING':'按已登记下一行动调查并到期复核，保留UNVERIFIED',
+                'BLOCKED_REFRESH_REQUIRED':'核机制阻断原因、刷新前提后重新处置，不重复同因提交'}
+            lines.append(_live_bullet('协调者异常处置',str(item['task_id'])+' · event:'+str(item['observation_event_id'])+'：'+
+                steps.get(item['state'],'核对异常回执及后续责任')+'。'))
         lines.append(_live_bullet('接续', '；'.join(f"{task.get('task_id')}：{_LIVE_PHASE_LABELS.get(task.get('phase'), task.get('phase', '待核实'))}" for task in pending[:3])
             + (f'；另有 {len(pending)-3} 项' if len(pending) > 3 else '') if pending
             else '依据当前已接受计划核对收尾条件；没有未完成任务记录。'))
