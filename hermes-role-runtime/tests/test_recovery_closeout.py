@@ -66,6 +66,9 @@ class RecoveryTests(unittest.TestCase):
             'frozen':{'candidate':candidate},'request':{'background_text':'Original accepted AC and independent PASS evidence.'},
             'preflight_rejection':{'schema':'ocr.preflight-rejection/v1','stage':'preflight','operation':'prepare',
                 'side_effects':0,'dispatch_performed':False,'code':code}}
+        if code=='OCR_REVIEW_COVERAGE_UNAVAILABLE':
+            value['preflight_rejection']['coverage']={'base':'a','head':'b','selected_file_count':0,
+                'excluded_files':[{'path':'tests/test_fixture.py','exclude_reason':'default_path'}]}
         (folder/'invocation.json').write_text(json.dumps(value))
         (folder/'background.md').write_text(value['request']['background_text'])
         return types.SimpleNamespace(path=Path(root)/'business.sqlite3'),candidate,[action],folder,value
@@ -85,6 +88,8 @@ class RecoveryTests(unittest.TestCase):
                 self.assertNotIn('path',result['current_preview']['selection'])
                 self.assertEqual('tests/test_fixture.py',result['current_preview']['files'][0]['repository_path'])
                 self.assertNotIn('path',result['current_preview']['files'][0])
+                if code=='OCR_REVIEW_COVERAGE_UNAVAILABLE':
+                    self.assertEqual('tests/test_fixture.py',result['coverage']['excluded_files'][0]['repository_path'])
                 # Exercise the real decision material walk: metadata must not
                 # become a false unhashed evidence source; bad evidence must
                 # still fail closed.

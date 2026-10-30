@@ -4,7 +4,7 @@
 
 ## 2026-10-30 机制快照
 
-本次维护源、字节数及哈希见 [MECHANISM-SNAPSHOT.json](MECHANISM-SNAPSHOT.json)，插件提交 `260450a39bb927228702e8c0162c60d74c6c1c5f`，core 提交 `c3901f5f8606b6449abd5442d866e28c5015f295`。`hermes-core/local-changes.patch`、`hermes-core/SNAPSHOT.json` 与完整文件已一并更新；使用下面的累计补丁即可还原记录的 core 版本，无需叠加旧覆盖层。
+本次维护源、字节数及哈希见 [MECHANISM-SNAPSHOT.json](MECHANISM-SNAPSHOT.json)，插件提交 `e7269dc3e1fec2be8905d2fc834519fadba8b26d`，core 提交 `c3901f5f8606b6449abd5442d866e28c5015f295`。`hermes-core/local-changes.patch`、`hermes-core/SNAPSHOT.json` 与完整文件已一并更新；使用下面的累计补丁即可还原记录的 core 版本，无需叠加旧覆盖层。
 
 本次包含六个角色/显示 Skill、展开后的共享脚本、运行时全部 Git 跟踪文件、用户指南及流程图。凭据、群绑定、数据库、outbox、锁和运行证据未导出；配置模板保持原采样，仅供字段参考。源码复制或 GitHub 推送不代表 Gateway 已加载，亦不清理旧通知。启用后应核对常驻 Gateway 自身的激活回执和源码哈希。
 

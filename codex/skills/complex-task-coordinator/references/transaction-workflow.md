@@ -73,3 +73,5 @@ ACK、checkpoint、worker退出分别不代表业务完成。核最近真实状�
 0.16.3：预览中的repository_path是固定base/head的Git相对路径元数据；path/sha256才是不可变证据引用。准备材料不因前者缺文件哈希而误报UNVERIFIED，真实证据缺失、变化或缺哈希仍阻断；FOUND不表示模型已读或业务通过。
 
 0.16.4：related_decision_ids同时覆盖按candidate_id提交与按action_id收集/裁决的动作；后者仅沿原生external_action的候选归属关联，结果返回后继续跟进当前返修，不借旧异常重开返修或串到其他候选。
+
+0.16.5：旧覆盖拒绝回执的excluded_files仅在已知path/exclude_reason元数据结构下转为repository_path；原回执及哈希保留，含其他字段的引用不免除证据校验。

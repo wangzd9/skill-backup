@@ -104,9 +104,19 @@ def coverage_recovery(ledger, candidate, actions):
                 return {'status':'UNVERIFIED','code':'OCR_REJECTION_PROOF_UNVERIFIED',
                     'owner':'COORDINATOR','action_id':action['action_id'],'gate_satisfied':False,
                     'next':'拒绝证明或固定身份未核实；先核原生派发及证据，不提交新审查。'}
+            coverage=receipt.get('coverage')
+            if isinstance(coverage,dict) and isinstance(coverage.get('excluded_files'),list):
+                # Older coverage refusals used path for Git-relative excluded
+                # files as well. Keep the immutable original receipt above,
+                # but type this known preview metadata consistently in views.
+                coverage={**coverage,'excluded_files':[
+                    {'repository_path':row['path'],**{k:v for k,v in row.items() if k!='path'}}
+                    if isinstance(row,dict) and isinstance(row.get('path'),str)
+                    and set(row)<={'path','exclude_reason'} else row
+                    for row in coverage['excluded_files']]}
             recovery={'code':receipt['code'],'owner':'COORDINATOR',
                 'action_id':action['action_id'],'candidate_id':candidate['candidate_id'],
-                'coverage':receipt.get('coverage'),'gate_satisfied':False,'dispatch_performed':False,
+                'coverage':coverage,'gate_satisfied':False,'dispatch_performed':False,
                 'zero_dispatch_proven':True,'status':'UNVERIFIED',
                 'source':{'path':str(path),'sha256':hashlib.sha256(raw).hexdigest()},
                 'next':'核原合同及排除依据，先修复审查适配并提供新预览；不因test-only自动豁免，不对空覆盖判PASS。'}

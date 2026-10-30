@@ -1,6 +1,6 @@
 # OCR 拒绝与异常返修接续修复
 
-日期：2026-10-30，Asia/Shanghai（+08:00）。当前运行时 **0.16.4**，提交 `260450a39bb927228702e8c0162c60d74c6c1c5f`；主要接续修复为0.16.2 / `ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa`。
+日期：2026-10-30，Asia/Shanghai（+08:00）。当前运行时 **0.16.5**，提交 `e7269dc3e1fec2be8905d2fc834519fadba8b26d`；主要接续修复为0.16.2 / `ba0ccbec684e93a5e16f7e7016e3d21ad3c0abfa`。
 
 **机制有缺陷，但不是“REJECTED 永久锁住 REVIEW”或“根本没有快照刷新”。** 本次先修复通用接续缺口，再由原生角色执行实际业务动作；不修改业务数据库状态来制造完成。
 
@@ -63,3 +63,9 @@
 20:59后的原生账本水位升至 **e14254**，新OCR被自动收集为 RESULT_READY。21:01:25只读 results 核实覆盖完整、READY_FOR_ADJUDICATION、findings=[]，没有错误；仍为 NOT_EVALUATED，不自动登记PASS。当前目录明确给出 service_decide。
 
 追加发现：异常提示关联只按目标candidate_id匹配，结果返回后的service_decide只带action_id，导致related_decision_ids为空。0.16.4改为沿原生external_action归属解析候选，补齐收集/裁决阶段，排除其他候选；不改变命令身份、授权或裁决。接续10项、决策28项共38项回归通过；21:01:10网关热加载68项源码哈希一致，21:01:25生产材料FOUND，e14173提示已正确关联新OCR的service_decide。当前原协调者仍负责阅读原件并实际裁决，后续门禁未被伪造完成。
+
+## 历史覆盖拒绝路径的同类回归
+
+继续核代码发现新式 OCR_REVIEW_COVERAGE_UNAVAILABLE 的旧回执还包含 excluded_files[].path。为覆盖当前旧式拒绝之外的通用路径，0.16.5 将已知path/exclude_reason结构在恢复视图中同样表示为repository_path；原拒绝回执及哈希保留。回归夹具加入原生生成的excluded_files结构，并实际经过完整decision prepare：修复覆盖FOUND、真实缺哈希证据仍UNVERIFIED，10项通过。21:06:06网关热加载68项源码哈希一致，生产当前审查裁决材料仍FOUND。
+
+原协调者于e14256/e14257正常核退，21:05:01原生自动绑定下一执行 `afa9a10695b94912811dfdb87a9bbe31` / PID731080（e14258），仍是原work；没有新增接管owner，也没有重启或中断在途OCR。当前其职责是读取已完成审查的真实结果并裁决，不能以提交回合的历史checkpoint覆盖已经RESULT_READY的当前状态。
