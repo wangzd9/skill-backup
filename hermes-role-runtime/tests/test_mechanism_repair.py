@@ -233,7 +233,8 @@ class ActivationRepairTests(LedgerFixture):
         from workflow_reports import render_live_progress_fallback, _progress_report_format_error
         worker,identity=self.bind('A')
         before=self.ledger.snapshot()
-        missing=('_paged_artifact','_history_index','_task_summary','_role_summary')
+        missing=('_paged_artifact','_history_index','_task_summary','_role_summary',
+                 '_live_progress_envelope','expand_live_progress')
         previous={name:getattr(workflow_query,name) for name in missing}
         pool=self.root/'isolated.json'
         pool.write_text('{}')

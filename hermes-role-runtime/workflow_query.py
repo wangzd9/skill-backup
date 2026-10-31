@@ -165,7 +165,7 @@ def _paged_artifact(ledger, name, value, *, max_bytes=6144):
     page_target = 2000  # Data is JSON-escaped inside a page envelope.
     chunks, current, current_bytes = [], [], 0
     for character in serialized:
-        width = len(character.encode('utf-8'))
+        width = len(json.dumps(character, ensure_ascii=False)[1:-1].encode('utf-8'))
         if current and current_bytes + width > page_target:
             chunks.append(''.join(current))
             current, current_bytes = [], 0
@@ -192,12 +192,109 @@ def _paged_artifact(ledger, name, value, *, max_bytes=6144):
         if index_ref['bytes'] > max_bytes:
             raise ValueError('QUERY_ARTIFACT_INDEX_EXCEEDS_BYTE_BUDGET')
         index_refs.append(index_ref)
-    return _artifact(ledger, name+'-manifest', {
+    # Bound the root too: a long-lived run can need more than one index level.
+    level = 0
+    while len(json.dumps(index_refs, ensure_ascii=False, indent=2).encode()) > max_bytes - 1024:
+        level += 1
+        index_refs = [_artifact(ledger, f'{name}-level-{level}-{start:03d}', {
+            'schema_version': 1, 'kind': name+'-index', 'indexes': index_refs[start:start+16]})
+            for start in range(0, len(index_refs), 16)]
+    manifest = _artifact(ledger, name+'-manifest', {
         'schema_version': 1, 'kind': name+'-manifest',
         'document_bytes': len(serialized.encode('utf-8')),
         'page_count': len(page_refs), 'index_count': len(index_refs),
         'indexes': index_refs, 'page_limit_bytes': max_bytes,
-        'reassembly': '按index与page顺序连接每页data，再JSON解析；内容完整保留。'})
+        'reassembly': '递归按indexes与pages顺序读取，连接每页data再JSON解析；先核每份引用的bytes/sha256。'})
+    if manifest['bytes'] > max_bytes:
+        raise ValueError('QUERY_ARTIFACT_MANIFEST_EXCEEDS_BYTE_BUDGET')
+    return manifest
+
+
+def _live_progress_envelope(ledger, role, packet, *, limit=8192):
+    """Keep a bounded index over a lossless, same-waterline progress snapshot."""
+    def size():
+        # Match RuntimePlugin.live_tool's serialization, including whitespace.
+        return len(json.dumps(packet, ensure_ascii=False).encode())
+    if size() < limit:
+        return packet
+    detail = _paged_artifact(ledger, role+'-live-progress-detail', packet)
+    packet['projection'] = {'detail_manifest': detail, 'task_detail_fields': [],
+        'paged_fields': {}, 'notice': '这是摘要；完整同水位快照按分页引用核哈希读取。未展开不表示无任务、无风险或门禁已解除。'}
+    # Contracts are input to development, not small status metadata. Preserve
+    # every task identity, phase, check and dependency gate in the first tier.
+    long_fields = ('dependency_contracts', 'provided_contracts', 'minimum_reading_set',
+                   'risk_scenarios', 'test_environment', 'escalation_conditions')
+    for key in long_fields:
+        if any(key in row for row in packet['tasks']):
+            for row in packet['tasks']:
+                row.pop(key, None)
+            packet['projection']['task_detail_fields'].append(key)
+    # Keep the first attention action for compatibility; full attention and
+    # immutable gates remain available to both the model and fallback renderer.
+    while size() >= limit and len(packet.get('external_actions', [])) > 1:
+        packet['external_actions'].pop()
+        counts = packet.setdefault('omitted_counts', {})
+        counts['external_actions'] = counts.get('external_actions', 0) + 1
+    # Bound growth in *any* collection, including task/gate counts. Never return
+    # an empty list meaning "none": absent fields are explicitly paged, with
+    # their exact counts; consumers must expand before drawing conclusions.
+    pageable = set(packet) - {'kind', 'checked_at', 'event_high_water', 'source',
+        'role', 'mode', 'run', 'ocr_serial_gate', 'projection', 'omitted_counts'}
+    while size() >= limit:
+        key = max(pageable, key=lambda k: len(json.dumps(packet[k], ensure_ascii=False).encode()), default=None)
+        if key is None:
+            raise ValueError('QUERY_CORE_METADATA_EXCEEDS_BYTE_BUDGET')
+        value = packet.pop(key)
+        packet['projection']['paged_fields'][key] = {
+            'count': len(value) if isinstance(value, (list, dict)) else None,
+            'pointer': '/'+key, 'state': 'NOT_EXPANDED'}
+        pageable.remove(key)
+    return packet
+
+
+def expand_live_progress(packet):
+    """Reassemble verified pages for local report consumers; never query again."""
+    projection = packet.get('projection') or {}
+    if not projection:
+        return packet
+    import hashlib
+    seen, pages, total = set(), [], 0
+    def read(ref):
+        path = Path(ref['path'])
+        if path.stat().st_size > 6144:
+            raise ValueError('QUERY_DETAIL_REFERENCE_TOO_LARGE')
+        raw = path.read_bytes()
+        if len(raw) != ref['bytes'] or hashlib.sha256(raw).hexdigest() != ref['sha256']:
+            raise ValueError('QUERY_DETAIL_HASH_MISMATCH')
+        return json.loads(raw)
+    manifest = read(projection['detail_manifest'])
+    if manifest['document_bytes'] > 16 * 1024 * 1024:
+        raise ValueError('QUERY_DETAIL_DOCUMENT_TOO_LARGE')
+    def visit(ref, depth=0):
+        nonlocal total
+        if depth > 12 or ref['path'] in seen:
+            raise ValueError('QUERY_DETAIL_INDEX_INVALID')
+        seen.add(ref['path'])
+        node = read(ref)
+        if 'data' in node:
+            if node['page'] != len(pages)+1:
+                raise ValueError('QUERY_DETAIL_PAGE_ORDER_INVALID')
+            total += len(node['data'].encode())
+            if total > manifest['document_bytes']:
+                raise ValueError('QUERY_DETAIL_DOCUMENT_SIZE_MISMATCH')
+            pages.append(node['data'])
+        else:
+            for child in node.get('indexes', node.get('pages', [])):
+                visit(child, depth+1)
+    for ref in manifest['indexes']:
+        visit(ref)
+    if total != manifest['document_bytes'] or len(pages) != manifest['page_count']:
+        raise ValueError('QUERY_DETAIL_DOCUMENT_SIZE_MISMATCH')
+    complete = json.loads(''.join(pages))
+    for key in ('kind', 'checked_at', 'event_high_water', 'source', 'role', 'mode', 'run'):
+        if complete.get(key) != packet.get(key):
+            raise ValueError('QUERY_DETAIL_WATERLINE_MISMATCH')
+    return complete
 
 
 def _history_index(works, details_ref):
@@ -504,11 +601,7 @@ def live_progress(pool_path, role):
     artifact_refs = packet['artifacts']
     artifact_manifest = _artifact(ledger, role+'-live-progress-artifacts', artifact_refs)
     packet['artifacts'] = {'manifest': artifact_manifest}
-    # Core rows are already reduced to bounded summaries. Keep them intact and
-    # trim only optional action history; this guarantees the tool never drops a
-    # task or role merely because repository metadata grew.
-    return _bounded(packet, ('external_actions',), limit=8192,
-                    preserve=('open_gates', 'tasks', 'roles'))
+    return _live_progress_envelope(ledger, role, packet)
 
 
 def repo_state(pool_path, role):

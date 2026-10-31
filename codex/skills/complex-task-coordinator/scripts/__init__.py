@@ -34,6 +34,7 @@ def _manual_progress_instruction(role):
             '测试者单独说明范围、固定版本、已完成验证和缺项；OCR与强审查分别说明当前状态、覆盖/结论及接续条件。'
             '不能只列任务编号与阶段充当汇报；从只读查询artifacts.manifest中的report_context核对已有交付说明、'
             '带时间的个人检查点、最终验证结果与问题ID，再解释具体完成了什么、为何返修、谁来接续。'
+            '查询若含projection，先按detail_manifest递归核哈希读取同水位分页；paged_fields为未展开，不能按缺省值说无任务或无风险。'
             '每区用单层短bullet；每条正文都要把字段名、角色状态、结论、阻塞/风险、下一动作和关键字段使用Markdown粗体突出。'
             '即使没有新增事实或只读工具不可用，仍保留七区；只将受影响的事实标为“待核实”，写明可用证据来源，'
             '旧checkpoint须标明时间且不能冒充当前状态。工具异常仅用“当次进度核验未完成”概括，不复述错误码、预算、字节数、实现限制或原始日志；'
@@ -1173,7 +1174,7 @@ def register(ctx):
     ctx.register_hook('transform_cron_result',plugin.transform_cron_report)
     ctx.register_hook('post_cron_delivery',plugin.acknowledge_cron_report)
     ctx.register_tool('role_live_progress','role_workflow',
-        {'name':'role_live_progress','description':'只读查询当前账本时间、水位、任务和全局OCR门；历史叙述及诊断按哈希引用，不领取或执行任务。回答协调者进度时保留完整七区，执行者/测试者保留本人四区；工具缺口不删区。',
+        {'name':'role_live_progress','description':'只读查询当前账本时间、水位、任务和全局OCR门；若含projection，完整同水位内容按detail_manifest递归核哈希读取，paged_fields未展开不能视为无任务/无风险。历史叙述及诊断按哈希引用，不领取或执行任务。回答协调者进度时保留完整七区，执行者/测试者保留本人四区；工具缺口不删区。',
          'parameters':{'type':'object','properties':{},'additionalProperties':False}},plugin.live_tool)
     ctx.register_tool('role_repo_state','role_workflow',
         {'name':'role_repo_state','description':'只读核验当前选中需求代码仓的branch/head/dirty/ahead_behind/worktrees；无需全权，不接受路径或shell。',

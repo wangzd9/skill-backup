@@ -870,6 +870,8 @@ def _read_progress_context(packet):
 
 def render_live_progress_fallback(packet, role):
     """Render a concise evidence-only fallback when a manual progress answer fails format checks."""
+    from workflow_query import expand_live_progress
+    packet = expand_live_progress(packet)
     from datetime import datetime
     from zoneinfo import ZoneInfo
     checked = packet.get('checked_at')
@@ -971,8 +973,8 @@ def render_live_progress_fallback(packet, role):
         serial = packet.get('ocr_serial_gate') or {}
         version = packet.get('ocr_version_gate') or {}
         lines += ['', '**OCR情况和后续计划**', '',
-                  _live_bullet('OCR串行门', f"{'占用或状态未知' if serial.get('blocked') else '当前未见活动占用'}；在途计数 {serial.get('blocking_count', '未知')}。"),
-                  _live_bullet('OCR版本门', f"状态 {version.get('state', '待核实')}；以当前安装版本准入记录为准。")]
+                  _live_bullet('OCR门禁', f"串行门{'占用或状态未知' if serial.get('blocked') else '当前未见活动占用'}；在途计数 {serial.get('blocking_count', '未知')}；"
+                      f"版本门状态 {version.get('state', '待核实')}，以当前安装版本准入记录为准。")]
         activity=context.get('review_activity') or {}
         own_actions = [action for action in (activity.get('attention',packet.get('external_actions') or []))
                        if action.get('kind') == 'ocr' and action.get('run_id') == run.get('run_id')
@@ -998,18 +1000,21 @@ def render_live_progress_fallback(packet, role):
             lines.append(_live_bullet('其他审查待办',
                 f'另有 {len(own_actions)-4} 项：'+ '、'.join(f'{state} {count} 项' for state,count in remaining.items())+
                 '；完整对象和原始状态见本次查询附件，不表示已处理。'))
+        candidate_record = ''
         if activity:
-            lines.append(_live_bullet('当前候选 OCR 记录',
-                f"{activity.get('current_ocr_pass_count',0)}/{activity.get('current_ocr_candidate_count',0)} 个当前候选已登记 PASS；不替代最终集成验收。"))
+            candidate_record = f"{activity.get('current_ocr_pass_count',0)}/{activity.get('current_ocr_candidate_count',0)} 个当前候选已登记 PASS；不替代最终集成验收。"
         historical=activity.get('historical_incomplete_count',(packet.get('external_action_summary') or {}).get('historical_incomplete_count',0))
         if historical:
-            lines.append(_live_bullet('旧候选遗留记录',
-                f'{historical} 条历史 INCOMPLETE 保留原记录与证据，不作为当前候选待裁决；历史在途/未知动作仍受原串行门约束。'))
-        for task in tasks:
-            missing = [name for name, values in (task.get('recorded_checks') or {}).items()
-                       if name == 'ocr' and 'PASS' not in values]
-            if missing:
-                lines.append(_live_bullet('待满足的候选检查', task['task_id']+' 的当前候选尚无 OCR PASS；仍按原门禁取得审查与裁决。'))
+            candidate_record += f'旧候选遗留记录：{historical} 条历史 INCOMPLETE 保留原记录与证据，不作为当前候选待裁决；历史在途/未知动作仍受原串行门约束。'
+        if candidate_record:
+            lines.append(_live_bullet('候选审查记录', candidate_record))
+        missing_ocr = [task['task_id'] for task in tasks if task.get('candidate_id')
+            and 'ocr' in (task.get('recorded_checks') or {})
+            and 'PASS' not in task['recorded_checks']['ocr']]
+        if missing_ocr:
+            lines.append(_live_bullet('待满足的候选检查',
+                '、'.join(missing_ocr[:3]) + (f' 等 {len(missing_ocr)} 项' if len(missing_ocr)>3 else '')+
+                '的当前候选尚无 OCR PASS；完整对象见查询附件，仍按原门禁取得审查与裁决。'))
         review = packet.get('strong_review') or {}
         authorization = review.get('authorization') or review.get('state') or '待核实'
         active_reviews = review.get('active_calls')

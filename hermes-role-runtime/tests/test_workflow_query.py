@@ -1,5 +1,6 @@
 """Regress the real preflight failure with isolated Git, ledger and plugin calls."""
 import hashlib
+import copy
 import importlib.util
 import json
 from pathlib import Path
@@ -12,7 +13,7 @@ from tests.test_business_ledger import LedgerFixture
 from tests.test_report_contract import fixture
 import workflow_runtime as workflow
 from workflow_query import (live_progress, repo_state, HISTORY_NOTICE,
-    report_presentation_contract, _paged_artifact)
+    report_presentation_contract, _paged_artifact, _live_progress_envelope, expand_live_progress)
 
 
 class WorkflowQueryTests(LedgerFixture):
@@ -104,6 +105,100 @@ class WorkflowQueryTests(LedgerFixture):
         self.assertEqual({'python':'3.11','command':'unittest'},task['test_environment'])
         self.assertEqual(['provider contract changes'],task['escalation_conditions'])
         self.close(worker,coord)
+
+    def test_native_callback_pages_large_development_contracts_and_renders_current_facts(self):
+        worker, coord = self.bind('COORDINATOR')
+        large = {**self.plan[0], 'minimum_reading_set': ['docs/contract.md'] * 30,
+            'risk_scenarios': [{'id': 'R1', 'scenario': '超时重试' * 300,
+                'invariant': '不重复执行' * 300, 'verification': '隔离测试' * 300}],
+            'test_environment': {'description': '本地隔离数据库' * 300},
+            'escalation_conditions': ['接口发生变化' * 300]}
+        self.assertCommitted(self.ledger.publish_plan('run-one', 2, [large, self.plan[1]],
+            identity=coord, command_id='large-contract'))
+        self.close(worker, coord)
+        worker, owner = self.bind('A')
+        before = self.ledger.snapshot()
+        root = Path(__file__).resolve().parents[1]
+        spec = importlib.util.spec_from_file_location('large_contract_plugin_test', root/'__init__.py')
+        module = importlib.util.module_from_spec(spec); sys.modules[spec.name] = module
+        self.addCleanup(sys.modules.pop, spec.name, None); spec.loader.exec_module(module)
+        registry = self.root/'registry.json'; registry.write_text('{"projects":[]}')
+        plugin = module.RuntimePlugin(registry=registry, metrics_url='unused', home=self.root, pool_path=self.pool)
+        plugin.manual_turns[('group', 'turn')] = {'role': 'COORDINATOR', 'project': str(self.root),
+            'session_kind': 'group_chat'}
+        raw = plugin.live_tool({}, session_id='group', turn_id='turn')
+        self.assertLess(len(raw.encode()), 8192)
+        packet = json.loads(raw)
+        self.assertEqual(2, len(packet['tasks']))
+        self.assertIn('risk_scenarios', packet['projection']['task_detail_fields'])
+        full = expand_live_progress(packet)
+        self.assertEqual(large['risk_scenarios'], full['tasks'][0]['risk_scenarios'])
+        self.assertEqual(owner['execution_id'], next(r for r in full['roles'] if r['role']=='A')['writer_execution_id'])
+        from workflow_reports import render_live_progress_fallback, _coordinator_progress_format_error
+        report = render_live_progress_fallback(packet, 'COORDINATOR')
+        self.assertIsNone(_coordinator_progress_format_error(report))
+        self.assertIn('执行者 A（工作中）', report)
+        self.assertIn('T1 attempt 1 开发中', report)
+        self.assertEqual(before, self.ledger.snapshot())
+        self.assertIsNone(worker.poll())
+
+    def test_many_tasks_gates_and_other_metadata_remain_lossless_with_explicit_paging(self):
+        packet = live_progress(self.pool, 'COORDINATOR')
+        packet['tasks'] = [{**packet['tasks'][0], 'task_id': 'task-'+str(i)} for i in range(240)]
+        packet['open_gates'] = [{'code': 'TASK_UNRESOLVED', 'task_id': 'task-'+str(i),
+            'owner': 'COORDINATOR', 'reason': '需保留未核验状态' * 30} for i in range(240)]
+        packet['future_metadata'] = {'entries': ['新增字段' * 200] * 80}
+        expected = copy.deepcopy(packet)
+        envelope = _live_progress_envelope(self.ledger, 'COORDINATOR', packet)
+        self.assertLess(len(json.dumps(envelope, ensure_ascii=False).encode()), 8192)
+        self.assertEqual(240, envelope['projection']['paged_fields']['tasks']['count'])
+        self.assertEqual('NOT_EXPANDED', envelope['projection']['paged_fields']['open_gates']['state'])
+        self.assertNotIn('tasks', envelope)
+        self.assertEqual(expected, expand_live_progress(envelope))
+        from workflow_reports import render_live_progress_fallback
+        self.assertIn('0/240 项', render_live_progress_fallback(envelope, 'COORDINATOR'))
+
+    def test_page_integrity_and_waterline_fail_closed_without_using_missing_as_empty(self):
+        packet = live_progress(self.pool, 'COORDINATOR')
+        packet['long_field'] = '合同' * 6000
+        envelope = _live_progress_envelope(self.ledger, 'COORDINATOR', packet)
+        wrong = copy.deepcopy(envelope); wrong['event_high_water'] += 1
+        with self.assertRaisesRegex(ValueError, 'WATERLINE_MISMATCH'):
+            expand_live_progress(wrong)
+        manifest_ref = envelope['projection']['detail_manifest']
+        manifest = json.loads(Path(manifest_ref['path']).read_text())
+        index = json.loads(Path(manifest['indexes'][0]['path']).read_text())
+        Path(index['pages'][0]['path']).write_text('{}')
+        with self.assertRaisesRegex(ValueError, 'HASH_MISMATCH'):
+            expand_live_progress(envelope)
+
+    def test_paging_bounds_escaped_text_and_recursive_index_manifest(self):
+        packet = live_progress(self.pool, 'COORDINATOR')
+        packet['long_field'] = '\x00\\\n中文' * 90000
+        expected = copy.deepcopy(packet)
+        envelope = _live_progress_envelope(self.ledger, 'COORDINATOR', packet)
+        self.assertEqual(expected, expand_live_progress(envelope))
+        manifest_ref = envelope['projection']['detail_manifest']
+        self.assertLessEqual(manifest_ref['bytes'], 6144)
+        manifest = json.loads(Path(manifest_ref['path']).read_text())
+        first = json.loads(Path(manifest['indexes'][0]['path']).read_text())
+        self.assertIn('indexes', first)
+
+    def test_fallback_groups_candidate_ocr_checks_without_claiming_uncreated_candidates(self):
+        from workflow_reports import render_live_progress_fallback, _coordinator_progress_format_error
+        packet = live_progress(self.pool, 'COORDINATOR')
+        packet['tasks'] = [{**packet['tasks'][0], 'task_id': 'TASK-'+str(i),
+            'candidate_id': 'candidate-'+str(i), 'recorded_checks': {'ocr': []}} for i in range(12)]
+        packet['tasks'].append({'task_id': 'NOT-DELIVERED', 'role': 'B', 'phase': 'PENDING',
+            'attempt': 1, 'recorded_checks': {'ocr': []}})
+        packet['external_actions'] = [{'kind': 'ocr', 'task_id': 'TASK-'+str(i), 'attempt': 1,
+            'run_id': 'run-one', 'state': 'SUBMITTED', 'current_candidate': True,
+            'action_id': 'action-'+str(i)} for i in range(8)]
+        report = render_live_progress_fallback(packet, 'COORDINATOR')
+        self.assertIsNone(_coordinator_progress_format_error(report))
+        self.assertIn('等 12 项', report)
+        ocr = report.split('**OCR情况和后续计划**')[1].split('**强审查情况**')[0]
+        self.assertNotIn('NOT-DELIVERED', ocr)
 
     def test_live_query_carries_complete_role_specific_presentation_contract(self):
         self.assertEqual(['整体目标与进度','执行者进度','测试者进度','OCR情况和后续计划',
