@@ -43,3 +43,7 @@ completion.json核同Gateway PID3612975、70个激活源码哈希一致，无重
 主run05febce8d9d843959789d6993eae1235的b01四文件触发3900秒HARD_DEADLINE，service已退出；b02六文件覆盖完整、可读comments0。整体results仍INSUFFICIENT_EVIDENCE，问题总数未知，不接受整个机制审查，也不将未知critical/high写成不存在。固定流程失败停链，followup-v2（run e3c91b81ea3a44b481d8710912a90fcd，31cd7a5..6c7df78的7文件）仍PREPARED、未start；2b9f3fd与6c7df78的独立OCR未执行，原因是主审硬截止后停止新准入。两个单独prepare同样零调用、由合并材料取代，不另启动。
 
 证据：.local/final-delivery-recovery-20261031/ocr-results-final.json和review-decisions.json；原始会话不进Git。下一步先定位主四文件批次未完成原因，再有实质处理后按固定入口补齐审查；同代码/参数/截止仅补reason不能重跑，不改冻结材料、不延长预算。业务最终交付已经COMPLETED，不因OCR证据缺口重放merge/push/本地栈或改旧回执。外部TODO保持[~]，不得宣称全项完成。
+
+## 双专题准备链闭环（0.17.6）
+
+前次0.17.5未提供后台合同准备能力，故两个包仍未开工。新增持久准备请求、带CAS和文件意图日志的prepare_requirement、重新登记后复用原生来源接纳及activate_requirement安全交接；B只记待关联答复，不新增权限。原始问题、回归和真实采用分别见[准备链修复记录](REQUIREMENT-PREPARATION-REPAIR-20261031.md)，不以机制测试代替业务开工证据。

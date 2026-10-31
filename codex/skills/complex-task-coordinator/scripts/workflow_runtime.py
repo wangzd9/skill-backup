@@ -667,7 +667,7 @@ def command(scope, action, payload, *, command_id):
 def _execute_command(scope, action, payload, *, command_id):
     guard(scope, allow_drain=action in {'checkpoint', 'safe_release','ack_events'})
     identity = identity_from_scope(scope)
-    extra=({'extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','complete_requirement','finalize_delivery','append_development_log','commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception'}
+    extra=({'extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','complete_requirement','finalize_delivery','append_development_log','commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception','prepare_requirement','activate_requirement'}
            if scope['role']=='COORDINATOR' else {'verify_supplemental','verify_integration','deliver_integration'} if scope['role']=='TESTER' else set())
     if action not in COMMANDS[scope['role']] and action not in extra and action!='ack_events':
         raise ValueError('COMMAND_NOT_ALLOWED_FOR_ROLE')
@@ -690,6 +690,9 @@ def _execute_command(scope, action, payload, *, command_id):
 
 def _validated_command(scope, action, payload, identity, *, command_id):
     ledger = open_ledger(scope['pool_path'], readonly=False)
+    if action in ('prepare_requirement','activate_requirement'):
+        from workflow_preparation import prepare,activate
+        return (prepare if action=='prepare_requirement' else activate)(ledger,identity,payload,command_id=command_id)
     if action=='finalize_delivery':
         from workflow_final_delivery import execute
         return execute(ledger,identity,payload,command_id=command_id)
@@ -890,7 +893,12 @@ def submit_control(pool_path, role, action, target, provenance):
         # retries for a package identical, while isolating the other packages;
         # do not hash the whole target (changed arguments must still conflict).
         command_id=command_identity(ledger,command_id,target)
-        return accept(ledger,target,provenance,command_id=command_id)
+        try:
+            return accept(ledger,target,provenance,command_id=command_id)
+        except ValueError as exc:
+            from workflow_preparation import PREPARABLE,enqueue
+            if str(exc) not in PREPARABLE:raise
+            return enqueue(ledger,target,provenance,command_id=command_id,rejection=str(exc))
     if action in {'authorize_service','authorize_merge','revoke_authorization'}:
         if role != 'COORDINATOR':
             raise ValueError('COORDINATOR_REQUIRED')

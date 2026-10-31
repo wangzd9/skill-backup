@@ -260,12 +260,12 @@ class RuntimePlugin:
                                '不需要全部权限口令。明确的新需求开发指令也用 accept_requirement 接入；'
                                '无文档时 use_native_requirement=true 冻结用户原文，并分配任务身份，后台协调者做计划。'
                                '已有登记包先核对正式合同/任务与冻结快照；按native_source_verified和code区分来源、措辞与合同拒绝，'
-                               '不能仅凭接纳错误断言身份缺失或让用户换通道重发。'
+                               '不能仅凭接纳错误断言身份缺失或让用户换通道重发。合同未准备时COMMITTED/QUEUED仅表示准备工作单入账；后台prepare_requirement完成合同增补、重新登记及接纳，activate_requirement安全接续原run；不能称QUEUED为已接纳或已开工。'
                                '用户说自动推进时使用默认有界审查预算；合入分支须用户明确，生产权限单独确认。')
                     language+=(' 进展先调用 role_live_progress，仓库核验用 role_repo_state，均无需全权。'
                                'MySQL补验归属用request_supplemental_verification入账，target={task_id:"MN-01",profile:"mysql_migration"}；'
                                '明确原文即可登记到既有TESTER，不要求全部权限口令。最终git交付用request_final_delivery登记source_branch/target_branch=main/remote及本地栈授权，由后台finalize_delivery执行；不使用authorize_merge代替。用户裁决用record_user_decision登记原文；'
-                               '按解读b等短答复可target={}入账，由后台核对原提问关联，不要求重发明确对象或全权口令。'
+                               'B或按解读b等短答复可target={}入账，由后台核对原提问关联，不要求重发明确对象或全权口令。'
                                '只有COMMITTED/DUPLICATE回执才可称后台已收到。'
                                '以当次 checked_at 和 event_high_water 为准；checkpoint 是历史叙述，'
                                'invocation.json 是提交记录，不得据此宣称当前门禁阻塞。详情按带哈希的 artifact 分段读取。')
@@ -1018,7 +1018,7 @@ class RuntimePlugin:
                       '由同一后台owner执行，不领取人工业务租约、不直接开发、派单、测试或审查。'
                       '明确的新需求开发指令用role_control_request(action=accept_requirement)接入，不需全部权限口令；'
                       '已有登记包先核对contract_files/task_ids与冻结快照，新增专题必须先完成正式合同准备与登记，'
-                      '不能拿候选提案直接替换既有合同，也不能把合同未准备误报为身份缺失。'
+                      '合同未准备时accept_requirement会持久排队准备工作单，由后台prepare_requirement增补正式合同、重登再接纳；QUEUED回执不等于接纳或开工。不能拿候选提案替换既有合同，也不能把合同未准备误报为身份缺失。'
                       '除上述范围明确的控制请求外只查询解释。夜间主动通知静默，用户问答照常。\n'
                       '用户原文及附件/引用如下：\n'+(event.text or ''))
             return {'action':'rewrite','text':note,'reason':'role-runtime-native-role'}
@@ -1205,7 +1205,7 @@ def register(ctx):
              'required':['action'],'additionalProperties':False}},plugin.control_tool,disclosure='direct')
     for name,toolset,actions in (
             ('role_coordination_command','role_coordination',['publish_plan','decide','checkpoint','ack_events','safe_release',
-                'service_submit','service_collect','service_decide','service_resume','service_reject','extend_task_scope','refresh_task_base','refresh_development_base','merge','complete','complete_requirement','finalize_delivery','append_development_log','commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception']),
+                'service_submit','service_collect','service_decide','service_resume','service_reject','extend_task_scope','refresh_task_base','refresh_development_base','merge','complete','complete_requirement','finalize_delivery','append_development_log','commit_documentation','prepare_requirement','activate_requirement','resolve_user_decision','environment_recovered','resolve_verification_exception']),
             ('role_development_command','role_development',['deliver','checkpoint','ack_events','safe_release']),
             ('role_test_command','role_testing',['verify','verify_supplemental','verify_integration','deliver_integration','close_verification','checkpoint','ack_events','safe_release'])):
         from workflow_contracts import command_schema

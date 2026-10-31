@@ -99,6 +99,8 @@ def _basis(packet, snapshot, action):
             if d['request_id']==action.get('request_id')],
         'verification_exceptions':packet.get('verification_exceptions',[]),
         'request_id':action.get('request_id'),
+        'preparation_events':[e for e in snapshot['events'] if action.get('request_id') and
+            e['kind'].startswith('REQUIREMENT_PREPARATION_') and e['payload'].get('request_id')==action['request_id']],
         'user_answer':[e for e in snapshot['events'] if action.get('request_id') and
             e['kind'] in ('USER_DECISION_RECORDED','USER_DECISION_RESOLVED') and
             e['payload'].get('request_id')==action['request_id']],
@@ -219,7 +221,7 @@ def _contract(role, action):
             'notice':'这是状态/责任提示，不是command。按prepare中的当前任务、前置条件及关联目录项执行真实命令；不得把提示名提交为动作。'}
     extra={'COORDINATOR':{'service_resume','service_reject','extend_task_scope','refresh_task_base',
         'refresh_development_base','complete','complete_requirement','finalize_delivery','append_development_log',
-        'commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception'},
+        'commit_documentation','prepare_requirement','activate_requirement','resolve_user_decision','environment_recovered','resolve_verification_exception'},
         'TESTER':{'verify_supplemental','verify_integration','deliver_integration'}}
     if action not in COMMANDS[role] | extra.get(role,set()) | {'ack_events'}:
         raise ValueError('COMMAND_NOT_ALLOWED_FOR_ROLE')
@@ -323,7 +325,14 @@ def prepare(packet, snapshot, item):
         if action.get('retry_block'):facts['retry_block']=action['retry_block']
     elif item['target'].get('task_id'):
         facts['task']=next((t for t in packet['tasks'] if t['task_id']==item['target']['task_id']),None)
-    if action.get('request_id'):
+    if action['action'] in ('prepare_requirement','activate_requirement'):
+        from workflow_preparation import requests
+        request=requests(snapshot)[action['request_id']]
+        facts['preparation_request']={key:value for key,value in request.items() if key!='REQUIREMENT_PREPARATION_STAGED'}
+        journal=request.get('REQUIREMENT_PREPARATION_STAGED')
+        if journal:
+            facts['preparation_request']['staged_review']={key:journal[key] for key in ('event_id','review_artifact') if key in journal}
+    elif action.get('request_id'):
         facts['user_answer']=next(e for e in snapshot['events'] if e['kind']=='USER_DECISION_RECORDED'
             and e['payload']['request_id']==action['request_id'])
         facts['question_link_state']='COORDINATOR_MUST_VERIFY_ORIGINAL_QUESTION_AND_OPTIONS'

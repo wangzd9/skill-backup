@@ -37,7 +37,7 @@ def explicit_development(primary):
                 or coordinated and re.search(r'开发|实现|交付|修复|缺陷|补齐',first_clause))
 
 
-def accept(ledger, target, provenance, *, command_id):
+def accept(ledger, target, provenance, *, command_id, preparation_event_id=None, select_after_accept=True):
     from business_ledger import _deny, _json
     from manual_access import full_permission_action
     if (provenance.get('authenticated') is not True or not provenance.get('message_id') or not provenance.get('user_id')
@@ -111,8 +111,19 @@ def accept(ledger, target, provenance, *, command_id):
             raise ValueError('REQUIREMENT_MERGE_BRANCH_MUST_MATCH_CURRENT_DESTINATION')
     from workflow_registration import prepared_package
     registered=prepared_package(ledger,target)
-    if registered and registered.get('requires_explicit_task_ids') and any(
-            not re.search(r'(?<![A-Za-z0-9_-])'+re.escape(task)+r'(?![A-Za-z0-9_-])',primary) for task in tasks):
+    from workflow_preparation import task_in_source
+    prepared_scope=False
+    if preparation_event_id is not None:
+        from workflow_preparation import requests
+        for item in requests(ledger.snapshot()).values():
+            prepared=item.get('REQUIREMENT_PREPARATION_COMPLETED',{})
+            if (prepared.get('event_id')==preparation_event_id and prepared.get('task_ids')==tasks
+                    and item['provenance']==provenance
+                    and item['target']['requirement_id']==target['requirement_id']):
+                prepared_scope=True
+        if not prepared_scope:raise ValueError('FROZEN_PREPARATION_SCOPE_REQUIRED')
+    if registered and registered.get('requires_explicit_task_ids') and not prepared_scope and any(
+            not task_in_source(task,primary) for task in tasks):
         raise ValueError('HISTORICAL_REQUIREMENT_NEEDS_EXPLICIT_CURRENT_TASK_SCOPE')
     identifier=(registered or {}).get('run_id') or target.get('run_id') or 'accepted-'+hashlib.sha256(command_id.encode()).hexdigest()[:24]
     if not registered:
@@ -149,6 +160,9 @@ def accept(ledger, target, provenance, *, command_id):
     if re.search(r'自动推进|自动交付|全流程|按默认流程',primary):
         result['review_policy']=requirement_review_policy(ledger,identifier,result['event_id'],provenance,
                                                          command_id=command_id+':ocr-policy')
+        if not select_after_accept:
+            result['next_action']='ACTIVATE_ACCEPTED_REQUIREMENT_AFTER_SAFE_HANDOFF'
+            return result
         def select(db):
             # This run is exactly the immutable package just accepted above.
             # _select keeps old owners draining; never force-clears a writer.

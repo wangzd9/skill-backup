@@ -15,6 +15,8 @@ def answer_source(text):
     # broadens semantic recognition after that verification.
     if re.search(r'[?？`\n]|^(?:引用|如果|假如|不要|暂不|是否|能否)', primary):
         return None
+    if re.fullmatch(r'[A-Za-z][。！!]?', primary):
+        return {'answer':primary,'choice':primary[0].lower(),'decision_id':None}
     short = re.fullmatch(r'(?:请)?(?:按|采用|选择)(?:解读|方案|选项)\s*([a-zA-Z0-9])\s*[。！!]?', primary)
     if short:
         return {'answer': primary, 'choice': short[1].lower(), 'decision_id': None}

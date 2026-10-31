@@ -557,7 +557,9 @@ class BusinessLedger:
                 pending=[v for v in pending if v['kind'] not in mechanical
                          and not (last and v['work_id']==last['work_id'] and v['kind'] in ('PLAN_PUBLISHED','CANDIDATE_DECIDED','WORK_RELEASED'))]
                 services=db.execute("SELECT 1 FROM external_actions a JOIN candidates c USING(candidate_id) WHERE c.run_id=? AND a.state IN ('SUBMITTED','UNKNOWN','RESULT_READY') LIMIT 1",(run_id,)).fetchone()
-                available=bool(pending or services)
+                from workflow_preparation import requests as preparation_requests
+                preparation_pending=any(item['state']!='ACTIVATED' for item in preparation_requests(self.snapshot()).values())
+                available=bool(pending or services or preparation_pending)
                 return {'can_start_model':available,'reason':'PENDING_TERMINAL_RUN_BUSINESS_EVENT' if available else 'RUN_TERMINAL_WITHOUT_NEW_BUSINESS_EVENT'}
             if role=='TESTER':
                 pending=db.execute("SELECT work_id FROM works WHERE run_id=? AND role='TESTER' "

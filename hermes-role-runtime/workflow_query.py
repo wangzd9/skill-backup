@@ -87,9 +87,15 @@ def progress_context(snapshot, run_id, role):
     def excerpt(value, limit=800):
         text = str(value or '').strip()
         return text if len(text) <= limit else text[:limit] + '…（节选）'
+    from workflow_preparation import requests as preparation_requests
     roles = ('A', 'B', 'C', 'TESTER') if role == 'COORDINATOR' else (role,)
     result = {'run_id': run_id, 'event_high_water': snapshot['event_high_water'],
               'roles': {}, 'tasks': {}, 'history_policy': HISTORY_NOTICE}
+    result['requirement_preparations']=[{'request_id':item['request_id'],'state':item['state'],
+        'run_id':item['target']['run_id'],'request_event_id':item['event_id'],
+        'acceptance_event_id':item.get('REQUIREMENT_PREPARATION_ACCEPTED',{}).get('acceptance_event_id'),
+        'notice':'QUEUED/STAGED/PREPARED均不表示已接纳或已派单；只引用账本真实回执。'}
+        for item in preparation_requests(snapshot).values()]
     for who in roles:
         works = [w for w in snapshot['works'] if w['run_id'] == run_id and w['role'] == who]
         records = [(checkpoint_history(w, snapshot['events']), w) for w in works if w.get('checkpoint')]

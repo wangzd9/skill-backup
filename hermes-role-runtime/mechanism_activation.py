@@ -94,6 +94,7 @@ TARGETS={
         'request_from_resolved_decision','apply_resolved_decisions','request_for_candidate','reconcile','facts'),
     'workflow_development_policy.py':('record','enable','default_for_request','policies','derive','facts'),
     'workflow_integration_workspace.py':('select',),
+    'workflow_preparation.py':('digest','committed','task_in_source','requests','_request','_paused','enqueue','_path','_owner','prepare','activate','next_actions','recover_native_request'),
     'workflow_intake.py':('command_identity','explicit_development','accept','scoped_control'),
     'workflow_user_decisions.py':('answer_source','record','pending','resolve','recover_native_answer'),
     'workflow_supplemental.py':('_context_from_event','source_task','request','queue_repairs','permits_closure','summary','docker','mysql_session','verify'),

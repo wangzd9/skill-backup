@@ -89,6 +89,10 @@ def next_actions(packet, ledger, *, snapshot=None):
             'reason': '当前 work 属于已切换的旧 run；保存必要检查点后用本角色 safe_release 安全收口并结束回合。'
                       '等待原生 writer 核验清零后，新 tick 领取新 run 工作；不得继续发布旧 run 计划或只读空转等待。',
             'payload': {'reason': 'RUN_SWITCHED：安全释放旧 run 工作，保留历史与未决证据'}}]
+    if role=='COORDINATOR':
+        from workflow_preparation import next_actions as preparation_actions
+        snapshot=ledger.snapshot() if snapshot is None else snapshot
+        result.extend(preparation_actions(snapshot))
     from workflow_completion import next_actions as completion_actions
     if role=='COORDINATOR':
         for event in packet.get('verification_retry_blocks',[])[-4:]:

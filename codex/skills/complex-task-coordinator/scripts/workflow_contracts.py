@@ -86,6 +86,20 @@ CONTROL_TARGET = {'oneOf': [
 
 
 def payload_schema(action):
+    if action=='activate_requirement':
+        return obj({'request_id':TEXT,'reason':TEXT},['request_id','reason'])
+    if action=='prepare_requirement':
+        sha={'type':'string','pattern':'^[0-9a-f]{64}$'}
+        return obj({'request_id':TEXT,'summary':{**TEXT,'maxLength':8000},
+            'task_ids':{'type':'array','minItems':1,'maxItems':100,'uniqueItems':True,
+                'items':{'type':'string','pattern':'^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$'}},
+            'additional_task_sources':{'type':'object','maxProperties':100,'additionalProperties':
+                obj({'path':TEXT,'quote':{**TEXT,'minLength':8,'maxLength':4000}},['path','quote'])},
+            'changes':{'type':'array','minItems':1,'maxItems':20,'items':obj({
+                'path':TEXT,'sha256':sha,'content':{'type':'string','minLength':1,'maxLength':1048576},
+                'append':{'type':'string','minLength':1,'maxLength':65536}},
+                ['path','sha256']) | {'oneOf':[{'required':['content'],'not':{'required':['append']}},
+                                              {'required':['append'],'not':{'required':['content']}}]}}},['request_id','summary','task_ids','changes'])
     if action=='verify':
         return {**PAYLOADS[action],'properties':{**PAYLOADS[action]['properties'],**test_execution_fields()}}
     if action=='resolve_verification_exception':
@@ -209,7 +223,7 @@ def validate_payload(action, payload):
         errors=list(Draft202012Validator(payload_schema(action)).iter_errors(payload))
         if errors:raise ValueError('INVALID_ACK_PAYLOAD: through 必须是已发行的连续前缀水位')
         return
-    if action not in PAYLOADS and action not in ('resolve_verification_exception','extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','finalize_delivery','append_development_log','commit_documentation','verify_supplemental','resolve_user_decision','verify_integration','deliver_integration','complete_requirement'):
+    if action not in PAYLOADS and action not in ('prepare_requirement','activate_requirement','resolve_verification_exception','extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','finalize_delivery','append_development_log','commit_documentation','verify_supplemental','resolve_user_decision','verify_integration','deliver_integration','complete_requirement'):
         raise ValueError('COMMAND_UNSUPPORTED')
     errors = sorted(Draft202012Validator(payload_schema(action)).iter_errors(payload),
                     key=lambda error: list(map(str, error.absolute_path)))

@@ -18,7 +18,7 @@ class NativeCommandSchemaTests(unittest.TestCase):
     def test_all_three_role_commands_remain_discoverable_after_native_sanitizer(self):
         for name, actions in (
             ('role_coordination_command', ['publish_plan','decide','checkpoint','safe_release',
-                'service_submit','service_collect','service_decide','refresh_development_base','merge','append_development_log','commit_documentation','resolve_user_decision']),
+                'service_submit','service_collect','service_decide','refresh_development_base','merge','append_development_log','commit_documentation','prepare_requirement','activate_requirement','resolve_user_decision']),
             ('role_development_command', ['deliver','checkpoint','safe_release']),
             ('role_test_command', ['verify','verify_supplemental','close_verification','checkpoint','safe_release'])):
             with self.subTest(name=name):
