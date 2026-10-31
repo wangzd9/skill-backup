@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "snapshot_at": "2026-10-31T13:22:40+08:00",
-  "plugin_commit": "734c3a8851cfbd7769867efb4c3dd46c43155f32",
+  "snapshot_at": "2026-10-31T13:36:27+08:00",
+  "plugin_commit": "09532396444bb8c80fd1d6e8042d5f485fb75929",
   "core_commit": "c3901f5f8606b6449abd5442d866e28c5015f295",
   "core_base_commit": "5f47c35d37a40fb651e4a00571d03e12b23d11f9",
   "gateway_activation_performed": false,
@@ -13,21 +13,21 @@
       "path": "README.md",
       "source": "/home/wang/work/skill-backup/README.md",
       "bytes": 6686,
-      "sha256": "582e5a53c67ac90c700bd6d1dccb7496ab1a28bd44fb66a3a84fcaa46c8d11b0",
+      "sha256": "71ed49c6b4da51d712665c6dcfeb934d7b16f5380a0dcfffecd17a2c8380b227",
       "static_backup_metadata": true
     },
     {
       "path": "RESTORE.md",
       "source": "/home/wang/work/skill-backup/RESTORE.md",
       "bytes": 4384,
-      "sha256": "5f8fc05326c9ffe44b94cc1c24793684ad7571aa5ae6f1c5faaf469630685ffd",
+      "sha256": "e674be7934c8eb0d9c6786181238cc1ca7222383b30cfbe3accf67f1bd9740d9",
       "static_backup_metadata": true
     },
     {
       "path": "SOURCE-REVISIONS.json",
       "source": "/home/wang/work/hermes-role-runtime",
       "bytes": 496,
-      "sha256": "ca18aedf48e83a38fd47e7a321810616496633b9362c2349e507efd63f0323d0"
+      "sha256": "922e85f46b73100f8bad72ff3559b9f2324809497d902a3ec65a36ffc8e24100"
     },
     {
       "path": "codex/skills/complex-task-coordinator/SKILL.md",
@@ -1174,8 +1174,8 @@
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/FINAL-DELIVERY-RECOVERY-20261031.md",
       "source": "/home/wang/work/doc/analysis/coordinator-health-audit-20261030/FINAL-DELIVERY-RECOVERY-20261031.md",
-      "bytes": 9485,
-      "sha256": "50a49722313d47b80985dbf060600619839d2012be6839bf3b2cf1da283f329e"
+      "bytes": 11816,
+      "sha256": "b85d216de3174fd652b6b28c8299d556c6832cd5ef7b222d58060e219ec0f07b"
     },
     {
       "path": "docs/analysis/coordinator-health-audit-20261030/FINAL-GIT-DELIVERY-REPAIR-20261031.md",
@@ -1433,7 +1433,7 @@
       "path": "hermes-core/SNAPSHOT.json",
       "source": "/home/wang/.hermes/hermes-agent",
       "bytes": 2885,
-      "sha256": "6743ef730230e0729db01a3ad2197ea90ece8bb590a2e4be177f22d057c77598"
+      "sha256": "3ed51745cc54cdcf8a559e7b364f44c83a8049b45ecf2cae9ce00a91df115e60"
     },
     {
       "path": "hermes-core/files/agent/agent_runtime_helpers.py",
@@ -1847,8 +1847,8 @@
     {
       "path": "hermes-role-runtime/HANDOFF.md",
       "source": "/home/wang/work/hermes-role-runtime/HANDOFF.md",
-      "bytes": 5100,
-      "sha256": "fdcc90ebb98485c65b170d477608df6646d13eb6047aa751209b0cb48978adc5"
+      "bytes": 6657,
+      "sha256": "5dcaceb7bf9918f06aef99b8636af188e3de728440653e00d770da643d6c295f"
     },
     {
       "path": "hermes-role-runtime/MIGRATION.md",

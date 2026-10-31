@@ -64,3 +64,17 @@
 业务main与GitHub main均为`aba3ac89efedfd93a693fcdd943e802271c44d1f`，工作区干净。12份原阶段文件不变，第一次环境污染失败与第二次成功分别保留；原验收快照e82af002未改。Gateway同PID3612975，70激活源码哈希一致，无重启/接管。当前核心8052B，报告七区及正式处置/真实阶段义务核验通过。20项real_nodes/production义务仍NOT_AUTHORIZED_NOT_COMPLETED。
 
 本轮机制OCR尚在收口，不能把运行中问题总数写成0。后续两个仅PREPARED、零调用的分开材料（python-env/cli-progress）不分别启动，按`31cd7a5..6c7df78`合为7个代码/测试/配置文件的一批完整范围审查（followup-v2）；主修复在途快照不动。最终审查裁决和机制GitHub同步记录待下方补齐。
+
+### 机制GitHub同步
+
+2026-10-31 13:23，既有仓`git@github.com:wangzd9/skill-backup.git`已执行`git push origin HEAD:main`，提交`7009b9cc7db115a7fec4f4a9b29293c836ea8cca`，远端回读同SHA。包含canonical快照734c3a8（代码6c7df78）、core c3901f5累计补丁、六个Skill、指南和本报告；1204项清单按拟提交核SHA，累计补丁隔离还原通过，18个变化Python文件编译及差异/秘密模式检查通过。保护预存未跟踪文件，不导出业务DB、凭据或原始会话。该次同步如实保留OCR进行中，不能把源码备份当审查接受；最终裁决继续补录。
+
+### OCR真实终态与剩余阻塞（13:34）
+
+主run `05febce8d9d843959789d6993eae1235` 已于13:34:55达到外层3900秒硬截止，状态HARD_DEADLINE，service已inactive/dead、MainPID=0。b02的六个文件覆盖完整、可读comments为0，已结合当前源码/跨模块合同、回归和原生报告验证核对；b01的四个文件没有完整manifest/结果，不能把它或整个run判为PASS。整体results为INSUFFICIENT_EVIDENCE，问题总数未知；没有可读critical/high条目可逐项判定，不代表它们不存在。
+
+按固定OCR“失败停链、不原样重跑”条件，**没有启动后续补丁run** `e3c91b81ea3a44b481d8710912a90fcd`（`reviews/followup-v2`，31cd7a5..6c7df78，7个实际代码/测试/配置文件）。它及此前两个被合并的prepare均零模型调用；因此2b9f3fd和6c7df78的独立OCR尚未执行，原因是主审硬截止后停止新准入，不得将prepare写成已审。
+
+剩余工作是恢复独立审查的有效覆盖与裁决，**不是重跑业务交付**。后续先读`ocr-results-final.json`、`review-decisions.json`和固定run状态，定位四文件批次为何在3900秒内未形成完整结果；同代码/参数/截止只补retry_reason不能重跑，不延长预算、不改冻结材料。范围或执行策略需有实质、可验证的处理后再按固定入口审查；不得借新task名或新目录重复调用。
+
+业务终态和上线证据不回退：原生最终交付COMPLETED、e15189完整门禁2166 passed /20 skipped、main/GitHub同aba3ac8、旧失败文件不变。整体机制审查**尚未接受**，TODO保持[~]，明确保留该证据债。原始会话只留本地，不导出到GitHub。
