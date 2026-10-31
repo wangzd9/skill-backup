@@ -42,6 +42,11 @@ class RunSwitchHandoffTests(LedgerFixture):
         self.assertEqual('run-two', packet['selected_run_id'])
         self.assertEqual('run-one', packet['run']['run_id'])
         self.assertEqual(['safe_release'], [a['action'] for a in packet['next_actions']])
+        page=self.assertCommitted(self.ledger.work_inputs(old,command_id='old-scope-event-page'))
+        self.assertTrue(page['scope_transition']['required'])
+        self.assertEqual('run-one',page['scope_transition']['bound_run_id'])
+        self.assertEqual('run-two',page['scope_transition']['selected_run_id'])
+        self.assertEqual('safe_release',page['scope_transition']['next_action']['action'])
         from workflow_query import live_progress
         view = live_progress(self.root/'isolated.json', 'COORDINATOR')
         self.assertIn('RUN_SWITCH_HANDOFF_REQUIRED', [g['code'] for g in view['open_gates']])

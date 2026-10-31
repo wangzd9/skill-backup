@@ -2,6 +2,10 @@
 
 本文件记录本轮维护流水，不替代原生只读账本。
 
+## 激活后的原生scope交接（0.17.8）
+
+两专题已真实接纳（Foundation e15416、Spray e15423），Foundation选中e15432、旧work释放e15434。激活回执和events_only页补明确的safe_release→结束回合→原生重绑指引，避免旧scope继续筹划新run；不强清writer，不越权派单。业务正式计划及代码开工仍另看真实回执，见[专项记录](REQUIREMENT-PREPARATION-REPAIR-20261031.md)。
+
 ## 准备提交的引用兼容（0.17.7）
 
 16:00原生owner真正提交两包prepare_requirement，但因给原指令任务附了冗余来源映射被整单拒绝（state.db行380531/380532）。修复接受并验证本次任务集合内的附加证据、需求根内精确冻结source的绝对路径，工具schema补明确说明；不接受未知任务、跨根/..、伪造引用、无源提供方或历史重启。测试及现场后续见[专项记录](REQUIREMENT-PREPARATION-REPAIR-20261031.md)。尚无真实接纳/计划/领单前不得称业务开工。

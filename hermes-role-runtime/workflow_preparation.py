@@ -298,7 +298,7 @@ def activate(ledger, identity, payload, *, command_id):
     item = _request(ledger, payload['request_id'])
     target = item['target']['run_id']
     def operation(db):
-        ledger._identity(db, identity)
+        work, _ = ledger._identity(db, identity)
         if not db.execute("SELECT 1 FROM events WHERE run_id=? AND kind='REQUIREMENT_ACCEPTED'",(target,)).fetchone():
             _deny('REGISTERED_REQUIREMENT_NOT_ACCEPTED')
         # Selection uses the existing safe-drain protocol; no force clear,
@@ -309,7 +309,14 @@ def activate(ledger, identity, payload, *, command_id):
         result = ledger._select(db,target)
         event = ledger._event(db,'REQUIREMENT_PREPARATION_ACTIVATED',{
             'request_id':item['request_id'],'reason':payload['reason'],'run_id':target}, role='COORDINATOR')
-        return dict(result,event_id=event,request_id=item['request_id'])
+        handoff = work['run_id'] != target
+        return dict(result,event_id=event,request_id=item['request_id'],
+            scope_handoff_required=handoff,
+            next_action=({'action':'safe_release','payload':{'reason':'RUN_SWITCHED：保存必要检查点后释放旧run工作；原生新会话接续新run'}}
+                if handoff else {'action':'publish_plan'}),
+            continuation=('选中已成功，但当前原生会话仍绑定旧run。先保存必要检查点，再safe_release并结束本回合；'
+                '等待旧writer退出与核验清零，原生新tick绑定目标run后才可publish_plan。不要在旧scope继续为新run查材料、派单或激活其他run。'
+                if handoff else '当前原生scope已属于目标run；按冻结合同发布正式计划。'))
     return ledger._command('activate_prepared_requirement',command_id,[identity,payload],operation)
 
 

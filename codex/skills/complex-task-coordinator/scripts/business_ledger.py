@@ -1111,10 +1111,16 @@ class BusinessLedger:
             db.execute('UPDATE works SET issued_through=MAX(issued_through,?) WHERE work_id=?',(issued,work['work_id']))
             more=bool(db.execute('SELECT 1 FROM events WHERE event_id>? AND event_id<=? AND (run_id=? OR run_id IS NULL) LIMIT 1',
                                  (issued,upper,work['run_id'])).fetchone())
+            selected=self._authority(db)['current_run_id']
+            transition=({'required':True,'bound_run_id':work['run_id'],'selected_run_id':selected,
+                'next_action':{'action':'safe_release','payload':{'reason':'RUN_SWITCHED：释放旧run工作并结束回合，等待新原生scope接续'}},
+                'notice':'当前会话仍绑定旧run；不得在旧scope发布新run计划。保存必要检查点后safe_release并结束本回合。'}
+                if work['kind']=='coordination' and work['run_id']!=selected else {'required':False})
             return {'events':rows,'through':issued,'issued_through':max(issued,work['issued_through']),
                 'frozen_through':upper,'has_more':more,'processed_through':work['processed_through'],
                 'next_after':issued,'can_ack':True,'page_limit_bytes':65536,
                 'ack_action':{'action':'ack_events','payload':{'through':issued}},
+                'scope_transition':transition,
                 'notice':'读取不等于处理；核对完整事件后显式确认已发行的连续前缀。'}
         payload=[identity,limit,after,through]
         if compact_mechanical:payload.append({'compact_mechanical':True,'scan_limit':512})

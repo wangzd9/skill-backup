@@ -50,3 +50,11 @@ test_requirement_runtime test_mechanism_repair.ActivationRepairTests test_native
 0.17.7允许本次任务集合内的冗余引用，绝对路径仅在其明确属于需求根、且精确匹配已冻结source时接受；相对路径规则相同。每份引用仍验证非正式可编辑文件、冻结原文和长度，不读用户引用指向的实时文件；未知任务key、跨根路径、..、伪造引用、缺少额外提供方来源、历史任务复活均拒绝。工具schema明确这些语义。隔离回归新增模型实际提交形式的成功用例，以及上述失败不得产生文件/事件副作用的检查。
 
 143项隔离回归通过（38.981s，regression-citation-compat.log）；现场八条任务引用只读比对均确实匹配已冻结proposal原文。此验证不调用真实业务prepare、不代替原生owner提交，也不代表已接纳或开工。
+
+## 实际接纳与切换接续（0.17.8）
+
+16:24原生owner真实完成两包合同增补、重新登记和接纳：Foundation注册e15414、接纳e15416，任务为TASK-FND-SRC-01、TASK-FND-REC-01及TASK-BR-00～03；Spray注册e15421、接纳e15423，任务为TASK-SR-00～03。提供方拆分有冻结来源，历史任务未重启。随后e15427保存检查点安全交接，16:31原生owner选中Foundation（e15431/e15432）。
+
+激活回执原先只说COMMITTED，没有明确说明调用者仍绑定旧run；只读events_only页也未显示选中run已改变，模型在旧身份下继续查新需求材料，容易多走一轮并碰发布门。0.17.8在激活回执与事件页追加明确的scope_transition/安全释放指引；旧owner先checkpoint、safe_release并结束，旧writer自然退出且核验清零后，下一原生tick才绑定新run。保留全部身份、ACK、串行和安全退出校验，不自动接管或强清进程。16:35旧work已真实释放（e15434）。此处仍没有正式任务计划或开发者开工证据，不能把自动生成的COMPLETION_PLAN_PUBLISHED当作PLAN_PUBLISHED。
+
+151项隔离回归通过（44.208s，regression-handoff-full.log），包含真实存活旧writer仍不能向新run发布计划、事件页指向安全释放、旧进程退出后新身份可正常发布并领取任务。定向21项回归亦通过。

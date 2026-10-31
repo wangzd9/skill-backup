@@ -64,8 +64,14 @@ class PreparationTests(LedgerFixture):
         self.assertEqual('activate_requirement',actions[0]['action'])
         self.assertTrue((self.package/'TODO.md').read_text().startswith('OLD-01 historical'))
         self.assertEqual('DUPLICATE',prepare(self.ledger,owner,review,command_id='retry')['status'])
-        self.assertCommitted(activate(self.ledger,owner,{'request_id':queued['request_id'],
+        activated=self.assertCommitted(activate(self.ledger,owner,{'request_id':queued['request_id'],
             'reason':'Provider first; old business work retained.'},command_id='activate-new'))
+        self.assertTrue(activated['scope_handoff_required'])
+        self.assertEqual('safe_release',activated['next_action']['action'])
+        stale=self.ledger.publish_plan('prepared-new-package',1,[self.task('TASK-BR-00','A')],
+            identity=owner,command_id='old-scope-cannot-plan')
+        self.assertEqual('REJECTED',stale['status'])
+        self.assertEqual([], [t for t in self.ledger.snapshot()['tasks'] if t['run_id']=='prepared-new-package'])
         self.assertCommitted(self.ledger.release_work(owner,reason='RUN_SWITCHED',command_id='release-old'))
         self.close(worker,owner)
         new_worker,new_owner=self.bind('COORDINATOR')
