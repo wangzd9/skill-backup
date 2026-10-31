@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "snapshot_at": "2026-10-31T18:24:21+08:00",
-  "plugin_commit": "d3002434adc748e4c41988f9256944fbd2a5b76d",
+  "snapshot_at": "2026-10-31T18:24:56+08:00",
+  "plugin_commit": "e681e055bbf24ef6e55352abb5d4534428d20f51",
   "core_commit": "c3901f5f8606b6449abd5442d866e28c5015f295",
   "core_base_commit": "5f47c35d37a40fb651e4a00571d03e12b23d11f9",
   "gateway_activation_performed": false,
@@ -27,7 +27,7 @@
       "path": "SOURCE-REVISIONS.json",
       "source": "/home/wang/work/hermes-role-runtime",
       "bytes": 496,
-      "sha256": "e91df04c6a1b219c0d29bb8b6fb4970c005265f150cbdc971a82f9f4fbcb59e8"
+      "sha256": "bd7c4735f189c6a426fec8b1416a307d71bb0af5c159f505e1d9b28d82c6d335"
     },
     {
       "path": "codex/skills/complex-task-coordinator/SKILL.md",
@@ -1847,8 +1847,8 @@
     {
       "path": "hermes-role-runtime/HANDOFF.md",
       "source": "/home/wang/work/hermes-role-runtime/HANDOFF.md",
-      "bytes": 13071,
-      "sha256": "2797585d8cc58e4deb69e8f4bc011952176952012f4e4023b24f093f2bd87d6c"
+      "bytes": 13502,
+      "sha256": "e6ccb6fd282124483b778ec7d7ef87639e085083c63ac2aae5e626ae669313ab"
     },
     {
       "path": "hermes-role-runtime/MIGRATION.md",
@@ -3727,8 +3727,8 @@
     {
       "path": "hermes-role-runtime/REPORT-CONTRACT-REPAIR-20261031.md",
       "source": "/home/wang/work/hermes-role-runtime/REPORT-CONTRACT-REPAIR-20261031.md",
-      "bytes": 4986,
-      "sha256": "a4fc6ff187d3fe7b02363d72fd57774d4808ef16201ef76bf07839619f62f3d7"
+      "bytes": 5704,
+      "sha256": "f7007a856e51ba5b92394ec9b6deab1f5cf69df0e35094fb8e7464bf991bc7bd"
     },
     {
       "path": "hermes-role-runtime/tests/test_report_analysis.py",

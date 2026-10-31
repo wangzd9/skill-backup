@@ -1,12 +1,12 @@
 {
-  "snapshot_at": "2026-10-31T18:24:21+08:00",
+  "snapshot_at": "2026-10-31T18:24:56+08:00",
   "timezone": "Asia/Shanghai",
   "files": [
     {
       "path": "MECHANISM-SNAPSHOT.json",
       "source": "/home/wang/work/skill-backup/MECHANISM-SNAPSHOT.json",
       "bytes": 180359,
-      "sha256": "e5d295461157804fd097d5302358e4c5178204294a690abac3ec571dbb1ddd51",
+      "sha256": "85584c52ebdda965e3740524f2d0821108235c1a9d602de7c3c86b21d3d9d2e4",
       "static_backup_metadata": true
     },
     {
@@ -27,7 +27,7 @@
       "path": "SOURCE-REVISIONS.json",
       "source": "/home/wang/work/hermes-role-runtime",
       "bytes": 496,
-      "sha256": "e91df04c6a1b219c0d29bb8b6fb4970c005265f150cbdc971a82f9f4fbcb59e8"
+      "sha256": "bd7c4735f189c6a426fec8b1416a307d71bb0af5c159f505e1d9b28d82c6d335"
     },
     {
       "path": "codex/plugins/agent-skills/LICENSE",
@@ -2470,8 +2470,8 @@
     {
       "path": "hermes-role-runtime/HANDOFF.md",
       "source": "/home/wang/work/hermes-role-runtime/HANDOFF.md",
-      "bytes": 13071,
-      "sha256": "2797585d8cc58e4deb69e8f4bc011952176952012f4e4023b24f093f2bd87d6c"
+      "bytes": 13502,
+      "sha256": "e6ccb6fd282124483b778ec7d7ef87639e085083c63ac2aae5e626ae669313ab"
     },
     {
       "path": "hermes-role-runtime/MIGRATION.md",
@@ -7410,8 +7410,8 @@
     {
       "path": "hermes-role-runtime/REPORT-CONTRACT-REPAIR-20261031.md",
       "source": "/home/wang/work/hermes-role-runtime/REPORT-CONTRACT-REPAIR-20261031.md",
-      "bytes": 4986,
-      "sha256": "a4fc6ff187d3fe7b02363d72fd57774d4808ef16201ef76bf07839619f62f3d7"
+      "bytes": 5704,
+      "sha256": "f7007a856e51ba5b92394ec9b6deab1f5cf69df0e35094fb8e7464bf991bc7bd"
     },
     {
       "path": "hermes-role-runtime/tests/test_report_analysis.py",
