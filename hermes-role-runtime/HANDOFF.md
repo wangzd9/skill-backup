@@ -2,6 +2,10 @@
 
 本文件记录本轮维护流水，不替代原生只读账本。
 
+## 发布计划合同及预检（0.17.9）
+
+Foundation新scope已原生绑定e15437，连续四版计划因缺验收字段、依赖并集、晚期提供方引用和阶段单调性逐项被拒；期间改参复用冻结command_id还触发冲突。工具schema原先没有完整声明这些既有要求。现补条件字段、依赖关系和scope文件路径说明，汇总无状态合同错误，并明确未启动校验可沿用ID、事务门拒绝改参必须换ID。实际业务依赖和提供方接口仍由原生协调者冻结，不代填、不降低账本校验。详见[专项记录](REQUIREMENT-PREPARATION-REPAIR-20261031.md)。
+
 ## 激活后的原生scope交接（0.17.8）
 
 两专题已真实接纳（Foundation e15416、Spray e15423），Foundation选中e15432、旧work释放e15434。激活回执和events_only页补明确的safe_release→结束回合→原生重绑指引，避免旧scope继续筹划新run；不强清writer，不越权派单。业务正式计划及代码开工仍另看真实回执，见[专项记录](REQUIREMENT-PREPARATION-REPAIR-20261031.md)。

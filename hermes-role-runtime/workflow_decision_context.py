@@ -231,6 +231,12 @@ def _contract(role, action):
     if action in ('verify','verify_integration'):
         from workflow_contracts import test_execution_rules
         result['execution_rules']=test_execution_rules()
+    if action=='publish_plan':
+        result['execution_rules']={
+            'scope':'仓库相对文件路径/glob，不是实现叙述；scope会成为执行者真实写入边界。',
+            'staged_required':['ac','acceptance','inputs','stop_conditions','minimum_reading_set','risk_scenarios','test_environment','escalation_conditions'],
+            'staged_dependencies':'development_start ⊆ integration ⊆ acceptance；三个集合并集必须恰好等于dependencies。晚期依赖必须有dependency_contracts，逐项匹配同计划提供方的contract_id/version/interface，并给替身simulation。',
+            'retry':'INVALID_NOT_STARTED可修正同ID；TRANSACTION_GATE已拒绝的冻结ID不得改参重放，修正后使用新command_id。验收标准由协调者填写，不自动生成PASS。'}
     return result
 
 

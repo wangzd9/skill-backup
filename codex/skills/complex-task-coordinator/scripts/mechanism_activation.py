@@ -74,7 +74,7 @@ TARGETS={
     'workflow_services.py':('_background_bytes','_freeze_background','NativeServices._cli','NativeServices.preflight',
         'NativeServices.recover_reference','NativeServices.submit','submit_service','collect_service_result',
         '_request_inputs','validate_native_action'),
-    'workflow_contracts.py':('test_execution_fields','test_execution_rules','payload_schema','command_schema','validate_payload','control_target_schema'),
+    'workflow_contracts.py':('test_execution_fields','test_execution_rules','payload_schema','command_schema','plan_contract_errors','validate_payload','control_target_schema'),
     'workflow_progression.py':('next_actions','event_view','approval_state','merge_permission'),
     'workflow_merge_policy.py':('authorization',),
     'workflow_task_merge_policy.py':('boundary','broad_source','register','reconcile','live','policies','derive'),

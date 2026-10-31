@@ -231,22 +231,27 @@ class ActivationRepairTests(LedgerFixture):
         previous_task=workflow_contracts.TASK
         previous_payloads=workflow_contracts.PAYLOADS
         previous_target=workflow_contracts.CONTROL_TARGET
+        previous_preflight=workflow_contracts.plan_contract_errors
         previous_paged=getattr(workflow_query,'_paged_artifact',None)
         try:
             workflow_contracts.TASK={'stale':True}
             workflow_contracts.PAYLOADS={'publish_plan':{'stale':True}}
             workflow_contracts.CONTROL_TARGET={'stale':True}
+            delattr(workflow_contracts,'plan_contract_errors')
             delattr(workflow_query,'_paged_artifact')
             result=mechanism_activation.activate()
             self.assertEqual('ACTIVATED',result['state'])
             self.assertIn('stage_dependencies',workflow_contracts.TASK['properties'])
             self.assertIn('provided_contracts',workflow_contracts.TASK['properties'])
             self.assertIn('stage_dependencies',workflow_contracts.PAYLOADS['publish_plan']['properties']['tasks']['items']['properties'])
+            self.assertIn('acceptance',workflow_contracts.TASK['allOf'][0]['then']['required'])
+            self.assertEqual([],workflow_contracts.plan_contract_errors([]))
             self.assertTrue(callable(workflow_query._paged_artifact))
         finally:
             workflow_contracts.TASK=previous_task
             workflow_contracts.PAYLOADS=previous_payloads
             workflow_contracts.CONTROL_TARGET=previous_target
+            workflow_contracts.plan_contract_errors=previous_preflight
             if previous_paged is not None:
                 workflow_query._paged_artifact=previous_paged
 

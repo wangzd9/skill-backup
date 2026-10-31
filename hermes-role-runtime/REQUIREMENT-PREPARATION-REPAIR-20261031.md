@@ -58,3 +58,13 @@ test_requirement_runtime test_mechanism_repair.ActivationRepairTests test_native
 激活回执原先只说COMMITTED，没有明确说明调用者仍绑定旧run；只读events_only页也未显示选中run已改变，模型在旧身份下继续查新需求材料，容易多走一轮并碰发布门。0.17.8在激活回执与事件页追加明确的scope_transition/安全释放指引；旧owner先checkpoint、safe_release并结束，旧writer自然退出且核验清零后，下一原生tick才绑定新run。保留全部身份、ACK、串行和安全退出校验，不自动接管或强清进程。16:35旧work已真实释放（e15434）。此处仍没有正式任务计划或开发者开工证据，不能把自动生成的COMPLETION_PLAN_PUBLISHED当作PLAN_PUBLISHED。
 
 151项隔离回归通过（44.208s，regression-handoff-full.log），包含真实存活旧writer仍不能向新run发布计划、事件页指向安全释放、旧进程退出后新身份可正常发布并领取任务。定向21项回归亦通过。
+
+## 计划发布的合同可发现性与预检（0.17.9）
+
+16:37 Foundation原生执行绑定e15437。该owner连续提交四版完整计划，依次触发STAGED_TASK_CONTRACT_INCOMPLETE、STAGED_DEPENDENCIES_MUST_COVER_DEPENDENCIES、PRESTART_DEPENDENCY_CONTRACT_REQUIRED及STAGED_DEPENDENCY_GATES_NOT_MONOTONIC（state.db工具结果380700、380711、380713、380715）。第一次改参重试还复用了已冻结command_id，产生COMMAND_ID_CONFLICT。没有PLAN_PUBLISHED或开发者领单事件。
+
+这些依赖拒绝符合账本要求；缺陷在于工具合同未完整声明既有条件字段及集合关系，且每次只在事务门报告首项错误。修复在schema声明分阶段任务的八项必填合同字段，预检一次汇总依赖并集、阶段单调性和晚期提供方精确引用错误；接口和simulation仍由协调者按正式合同提供，不自动推断业务依赖。scope说明明确其是仓库相对文件路径/glob，任务叙述应填入ac/inputs。账本权限、依赖、验收和共享文件约束不变。
+
+恢复指引区分两种情形：INVALID_NOT_STARTED未启动、无副作用，可修正后用同ID；TRANSACTION_GATE已拒绝的命令ID绑定原输入和回执，改参或前提变化需新ID，保留原拒绝记录。UNKNOWN仍不得盲重放。热激活同步更新schema常量和无状态预检函数；当前在途执行不接管、不重启，预算交接规则保持不变。
+
+定向34项回归通过（11.428s，regression-plan-preflight.log），涵盖原生schema裁剪后的条件仍有效、多项错误同时报告、提供方精确匹配、拒绝/未启动ID恢复语义。完整179项隔离回归通过（53.867s，regression-plan-preflight-full.log），包括既有账本、准备接纳、安全交接、派单、验收和恢复。旧模块缺少新预检函数时的热激活亦有专门检查。现场实际采用证据待核验后追加；工具修复不等于业务开工。

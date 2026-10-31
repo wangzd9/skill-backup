@@ -12,9 +12,11 @@ def obj(properties, required=()):
 TEXT = {'type': 'string', 'minLength': 1}
 STRINGS = {'type': 'array', 'items': TEXT}
 EVIDENCE = obj({'path': {**TEXT,'description':'持久证据文件的绝对路径；不相对candidate.repo或工具cwd猜测。自测输出使用输入包delivery_evidence.directory，避免弄脏候选。'}, 'sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'}}, ['path'])
-TASK = obj({'task_id': TEXT, 'role': {'enum': ['A', 'B', 'C']}, 'dependencies': STRINGS,
-            'stage_dependencies': obj({'development_start':STRINGS,'integration':STRINGS,'acceptance':STRINGS},
+TASK = obj({'task_id': TEXT, 'role': {'enum': ['A', 'B', 'C']},
+            'dependencies':{**STRINGS,'description':'完整依赖任务集合；使用stage_dependencies时必须恰好等于三个阶段依赖的并集。'},
+            'stage_dependencies': {**obj({'development_start':STRINGS,'integration':STRINGS,'acceptance':STRINGS},
                                       ['development_start','integration','acceptance']),
+                'description':'仅需提前开发时使用；development_start ⊆ integration ⊆ acceptance。出现本字段时ac/acceptance/inputs/stop_conditions及四项风险环境字段均必填；晚于开发阶段才满足的每个依赖须有精确匹配提供方的dependency_contracts。'},
             'dependency_contracts': {'type':'array','items':obj({'task_id':TEXT,'version':TEXT,
                 'contract_id':TEXT,
                 'interface':{'type':'object','minProperties':1},
@@ -26,11 +28,18 @@ TASK = obj({'task_id': TEXT, 'role': {'enum': ['A', 'B', 'C']}, 'dependencies': 
                 ['id','scenario','invariant','verification'])},
             'test_environment': {'type':'object','minProperties':1},
             'escalation_conditions': {'type':'array','minItems':1,'items':TEXT},
-            'scope': {'type': 'array', 'minItems': 1, 'items': TEXT},
+            'scope': {'type': 'array', 'minItems': 1,
+                'description':'唯一可写文件范围：填写仓库相对路径或glob（如app/services/source_service.py、tests/test_source_*.py），不要填写任务叙述、API行为或验收说明；实现目标填ac/inputs，范围过窄会阻止开发写入。',
+                'items': TEXT},
             'base': {'type': 'string', 'pattern': '^[0-9a-f]{40}$'}, 'ac_version': TEXT,
             'required_checks': {'type': 'array', 'items': {'enum': ['independent_test', 'ocr', 'strong_review']}},
-            'priority': {'type': 'integer'}, 'ac': {}, 'acceptance': {}, 'inputs': {},
-            'stop_conditions': {}, 'worktree': TEXT}, ['task_id', 'role', 'scope', 'base', 'ac_version'])
+            'priority': {'type': 'integer'}, 'ac': {},
+            'acceptance': {'description':'任务验收标准及逐项取证要求；不是PASS结论。使用stage_dependencies时必填且不得为null、空数组或空对象。'}, 'inputs': {},
+            'stop_conditions': {}, 'worktree': TEXT}, ['task_id', 'role', 'scope', 'base', 'ac_version']) | {
+    'allOf':[{'if':{'required':['stage_dependencies']},'then':{
+    'required':['ac','acceptance','inputs','stop_conditions','minimum_reading_set',
+                'risk_scenarios','test_environment','escalation_conditions'],
+    'properties':{key:{'not':{'enum':[None,[],{}]}} for key in ('ac','acceptance','inputs','stop_conditions')}}}]}
 AUTHORIZATION = obj({'authorization_id': TEXT}, ['authorization_id'])
 
 PAYLOADS = {
@@ -219,6 +228,36 @@ def control_target_schema():
     return {'oneOf':[intake,run_policy,supplemental,decision,delivery,recovery,*base]}
 
 
+def plan_contract_errors(tasks):
+    """All state-independent staged-contract errors; never choose dependencies."""
+    errors=[]
+    providers={t.get('task_id'):t for t in tasks if isinstance(t,dict) and isinstance(t.get('task_id'),str)}
+    for index,task in enumerate(tasks):
+        if not isinstance(task,dict):continue
+        stages=task.get('stage_dependencies');dependencies=task.get('dependencies',[])
+        names=('development_start','integration','acceptance')
+        if (not isinstance(stages,dict) or set(stages)!=set(names)
+                or not all(isinstance(stages[n],list) and all(isinstance(v,str) for v in stages[n]) for n in names)
+                or not isinstance(dependencies,list) or not all(isinstance(v,str) for v in dependencies)):continue
+        development,integration,acceptance=(set(stages[n]) for n in names)
+        path='tasks.'+str(index)
+        if not development<=integration<=acceptance:
+            errors.append({'path':path+'.stage_dependencies','message':'STAGED_DEPENDENCY_GATES_NOT_MONOTONIC: development_start ⊆ integration ⊆ acceptance'})
+        if (development|integration|acceptance)!=set(dependencies):
+            errors.append({'path':path+'.dependencies','message':'STAGED_DEPENDENCIES_MUST_COVER_DEPENDENCIES: 必须等于三个阶段依赖的并集'})
+        references=task.get('dependency_contracts',[])
+        if not isinstance(references,list) or not all(isinstance(r,dict) and isinstance(r.get('task_id'),str) for r in references):continue
+        expected=(set(dependencies)&(integration|acceptance))-development
+        if {r['task_id'] for r in references}!=expected:
+            errors.append({'path':path+'.dependency_contracts','message':'PRESTART_DEPENDENCY_CONTRACT_REQUIRED: 提前开发须逐项匹配晚期依赖 '+json.dumps(sorted(expected),ensure_ascii=False)})
+        for reference in references:
+            provided=providers.get(reference['task_id'],{}).get('provided_contracts',[])
+            if not isinstance(provided,list) or not any(isinstance(p,dict) and all(p.get(k)==reference.get(k)
+                    for k in ('contract_id','version','interface')) for p in provided):
+                errors.append({'path':path+'.dependency_contracts','message':'DEPENDENCY_INTERFACE_CONTRACT_MISMATCH: '+reference['task_id']})
+    return errors
+
+
 def validate_payload(action, payload):
     from jsonschema import Draft202012Validator
     if action in ('ack_events','environment_recovered'):
@@ -229,7 +268,9 @@ def validate_payload(action, payload):
         raise ValueError('COMMAND_UNSUPPORTED')
     errors = sorted(Draft202012Validator(payload_schema(action)).iter_errors(payload),
                     key=lambda error: list(map(str, error.absolute_path)))
-    if errors:
-        details = [{'path': '.'.join(map(str, error.absolute_path)), 'message': error.message}
-                   for error in errors]
+    details = [{'path': '.'.join(map(str, error.absolute_path)), 'message': error.message}
+               for error in errors]
+    if action=='publish_plan' and isinstance(payload,dict) and isinstance(payload.get('tasks'),list):
+        details.extend(plan_contract_errors(payload['tasks']))
+    if details:
         raise ValueError('INVALID_COMMAND_PAYLOAD: ' + json.dumps(details, ensure_ascii=False))
