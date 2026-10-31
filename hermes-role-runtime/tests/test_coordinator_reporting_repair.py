@@ -215,6 +215,16 @@ class CoordinatorNoticeTests(LedgerFixture):
         self.assertTrue(transform_coordinator_notice(scope,'isolated-business',text,self.root,
                                                    kind='STATUS_BRIEF')['suppress'])
 
+    def test_native_failure_notice_has_reason_even_without_input_artifact(self):
+        scope={**self.scope,'kind':'report'}
+        result=transform_coordinator_notice(scope,'isolated-business','本次定时报告执行失败。',
+            self.root,kind='REPORT_FAILURE')
+        self.assertFalse(result['suppress'])
+        generation=self.ledger.notification(result['metadata']['notification_id'])['payload']['generation']
+        self.assertEqual('FAILED',generation['state'])
+        self.assertEqual('REPORT_NATIVE_EXECUTION_FAILED',generation['reason_code'])
+        self.assertEqual('native_execution',generation['failure_stage'])
+
     def test_oversize_history_moves_to_verified_artifact_without_losing_current_gates(self):
         current={'checkpoint':{'open_gates':['未关闭 FAIL，不能合入'],
                                'waiting_external':['仍需真实覆盖']}}

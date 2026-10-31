@@ -235,8 +235,15 @@ def prepare_report(job, *, pool_path, execution, home, session_id):
            'runtime_version_digest':code_version()['digest'],
            'drain_only':False}
     from workflow_toolsets import configure
-    return dict(job,workdir=run['requirement_root'],_role_pool_scope=scope,
+    scoped=dict(job,workdir=run['requirement_root'],_role_pool_scope=scope,
                 _role_pool_session_id=session_id,enabled_toolsets=configure(role,readonly=True))
+    if not job.get('no_agent'):
+        # ACTIVE report finals are analysis objects consumed by the renderer.
+        # The stored legacy cron prompt instead asked for a finished Markdown
+        # report; preserve the job/configuration but remove that contradiction.
+        from report_analysis import contract
+        scoped['prompt']=contract(role)
+    return scoped
 
 
 def recover_executions(pool_path):

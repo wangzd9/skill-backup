@@ -213,6 +213,8 @@ def _analysis(value, facts):
     # Native report callers may return the analysis object directly; keep the
     # wrapped form for older providers and fixtures.
     analysis = value.get('analysis') if isinstance(value.get('analysis'), dict) else value
+    from report_analysis import normalize
+    analysis = normalize(analysis, facts['role'])
     allowed = {*ANALYSIS_FIELDS, 'evidence_ids', 'sections'}
     if set(analysis) - allowed:
         raise ValueError('UNKNOWN_REPORT_ANALYSIS_FIELD')
@@ -317,7 +319,7 @@ def render_periodic(facts, analysis, *, generated_at=None):
         references += f'等{len(evidence_ids)}项'
     title = {'COORDINATOR': '协调者', 'TESTER': '测试者'}.get(role, '执行者' + role)
     generated = datetime.fromtimestamp(epoch(generated_at), ZONE) if generated_at is not None else datetime.now(ZONE)
-    lines = [f'**{title}（{label}）时段总结 · {generated:%Y-%m-%d %H:%M} +08:00**',
+    lines = [f'**{title}（{label}）时段总结 · {generated:%Y-%m-%d %H:%M} +08:00**', '',
              f'- **报告窗口：** {start} 至 {end}（北京时间）；运行 `{facts["run_id"]}`。']
     coverage=facts.get('input_coverage',{})
     observation = facts.get('observation') or {}
@@ -336,7 +338,7 @@ def render_periodic(facts, analysis, *, generated_at=None):
             '测试者进度':'测试状态','OCR情况和后续计划':'OCR状态',
             '强审查情况':'强审查状态','风险':'风险','下一步计划':'下一步'}
         for heading in COORDINATOR_SECTIONS:
-            lines += ['', '**' + heading + '**']
+            lines += ['', '**' + heading + '**', '']
             lines += ['- ' + item for item in _analysis_bullets(sections[heading], labels[heading])]
             roles = ('A', 'B', 'C') if heading == '执行者进度' else ('TESTER',) if heading == '测试者进度' else ()
             for item in roles:
@@ -365,7 +367,7 @@ def render_periodic(facts, analysis, *, generated_at=None):
         else:
             current_facts.append('**业务工作单：** 当前没有占用业务工作单。')
         for heading in PERSONAL_SECTIONS:
-            lines += ['', '**' + heading + '**']
+            lines += ['', '**' + heading + '**', '']
             if heading == '当前工作':
                 items = current_facts + [timing_text] + sections[heading]
             elif heading == '本次完成':
@@ -373,7 +375,7 @@ def render_periodic(facts, analysis, *, generated_at=None):
                     '**证据引用：** ' + references + '；事实包 `' + facts['facts_sha256'][:16] +
                     '`；核验时间 ' + facts['checked_at']]
             elif heading == '阻塞与依赖':
-                items = sections[heading]
+                items = list(sections[heading])
                 if observation:
                     observed_at = observation.get('observed_at', observation.get('last_verified_at'))
                     sample_time = iso(observed_at) if observed_at is not None else '待核实'
@@ -508,7 +510,9 @@ def _periodic_render_format_error(text, role):
         if (len(line[2:])>240 or not chinese or english_words>max(10,chinese*2)
                 or len(re.findall(r'[。！？]',body))>4):
             return 'PERIODIC_REPORT_BULLET_INVALID'
-    if '[SILENT]' in text or '[NO_REPLY]' in text:
+    # Only standalone tokens have control semantics. A report can legitimately
+    # explain a later poll's silence rule without suppressing this summary.
+    if re.search(r'(?m)^\s*\[(?:SILENT|NO_REPLY)\]\s*$', text):
         return 'PERIODIC_REPORT_SILENT_MIXED'
     return None
 
@@ -526,16 +530,21 @@ def generate_periodic(ledger, role, start, end, *, usage_index, project, analyze
         facts = build_facts(ledger, role, start, end, usage_index=usage_index, project=project, pool_path=pool_path)
         started = ledger.clock()
         generation = {'state': 'FAILED', 'started_at': iso(started), 'facts_sha256': facts['facts_sha256']}
+        stage = 'model_request'
         try:
             response = analyze(facts)
+            if isinstance(response,dict):
+                generation.update({key:response[key] for key in ('model_request_id','model','route') if key in response})
+            stage = 'analysis_validation'
             analysis = _analysis(response, facts)
-            generation.update(state='GENERATED', model_request_id=response['model_request_id'],
-                model=response['model'], route=response['route'], analysis_sha256=_hash(analysis))
+            stage = 'render_validation'
             text = render_periodic(facts, analysis, generated_at=ledger.clock())
+            generation.update(state='GENERATED', analysis_sha256=_hash(analysis))
         except Exception as exc:
             # Record a bounded error class; provider exception text can contain
             # request data and credentials, and is never copied into group text.
-            generation.update(error=type(exc).__name__, reason='本次总结未生成')
+            from report_analysis import failure_details
+            generation.update(failure_details(exc,stage), state='FAILED', reason='本次总结未生成')
             text = failed_periodic_report(facts, generated_at=ledger.clock())
         generation['ended_at'] = iso(ledger.clock())
         payload = {'text': text, 'generation': generation, 'facts': facts,
@@ -1098,7 +1107,7 @@ def render_live_progress_fallback(packet, role):
     return '\n'.join(lines)
 
 
-def transform_coordinator_notice(scope, execution_id, text, home, *, kind):
+def transform_coordinator_notice(scope, execution_id, text, home, *, kind, failure=None):
     """协调者实质进展走同源发件箱；定时短报保留原 cron 投递与回执。"""
     from workflow_runtime import open_ledger
     expected_kind='business' if kind=='COORDINATOR_PROGRESS' else 'report'
@@ -1147,9 +1156,18 @@ def transform_coordinator_notice(scope, execution_id, text, home, *, kind):
                     return {'content':'','suppress':True,'metadata':{
                         'reason':'DUPLICATE_COORDINATOR_PROGRESS','notification_id':duplicate[0],
                         'state':duplicate[1]}}
+            generation={'state':'FAILED' if kind=='REPORT_FAILURE' else 'SCRIPT_GENERATED' if kind=='STATUS_BRIEF' else 'MODEL_FINAL',
+                        'rendered_sha256':digest}
+            if kind=='REPORT_FAILURE':
+                generation.update(reason='原生定时报告执行失败，未形成有效总结',
+                    reason_code='REPORT_NATIVE_EXECUTION_FAILED', failure_stage='native_execution')
+                if isinstance(failure,dict):
+                    # Failure data comes from our exact-execution input receipt,
+                    # never from an untrusted model's explanation of a failure.
+                    generation.update({key:failure[key] for key in
+                        ('reason_code','failure_stage','error','reason_section','parse_error') if key in failure})
             queued=ledger.queue_notification(kind,{'text':text,'execution_id':execution_id,
-                'generation':{'state':'FAILED' if kind=='REPORT_FAILURE' else 'SCRIPT_GENERATED' if kind=='STATUS_BRIEF' else 'MODEL_FINAL',
-                              'rendered_sha256':digest}},command_id='coordinator-notice:'+execution_id,
+                'generation':generation},command_id='coordinator-notice:'+execution_id,
                 source_event_id=source,run_id=scope['run_id'],role='COORDINATOR',notification_id=identifier)
             if queued.get('status') not in ('COMMITTED','DUPLICATE'):
                 raise ValueError('COORDINATOR_NOTIFICATION_NOT_QUEUED')

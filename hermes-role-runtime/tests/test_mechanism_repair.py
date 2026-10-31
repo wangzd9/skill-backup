@@ -180,6 +180,26 @@ class SessionAttributionTests(unittest.TestCase):
 
 
 class ActivationRepairTests(LedgerFixture):
+    def test_report_activation_restores_new_helpers_in_old_namespaces(self):
+        import mechanism_activation
+        import report_summary
+        import report_analysis
+        previous={name:getattr(report_summary,name) for name in ('_build_summary_input','input_failure')}
+        old_decode=report_analysis.decode
+        try:
+            for name in previous:delattr(report_summary,name)
+            delattr(report_analysis,'decode')
+            result=mechanism_activation.activate()
+            self.assertEqual('ACTIVATED',result['state'])
+            self.assertTrue(callable(report_summary._build_summary_input))
+            self.assertTrue(callable(report_summary.input_failure))
+            self.assertEqual(({},'json_fence'),report_analysis.decode('```json\n{}\n```'))
+            self.assertIn('RuntimePlugin.transform_cron_report',mechanism_activation.TARGETS['__init__.py'])
+            self.assertIn('report_analysis.py',result['source_sha256'])
+        finally:
+            for name,value in previous.items():setattr(report_summary,name,value)
+            report_analysis.decode=old_decode
+
     def test_requirement_intake_activation_updates_the_leading_directive_matcher(self):
         import mechanism_activation
         import workflow_intake

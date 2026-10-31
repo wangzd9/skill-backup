@@ -139,6 +139,101 @@ class NativeWorkflowReports(unittest.TestCase):
         self.assertEqual('FAILED',result['generation']['state'])
         self.assertEqual('UNKNOWN_REPORT_ANALYSIS_FIELD',result['generation']['reason_code'])
 
+    def test_valid_fenced_native_output_is_rendered_without_business_changes(self):
+        packet=self.build();before=self.ledger.snapshot()
+        result=transform_native_report(self.scope,self.execution,'```json\n'+self.output(packet)+'\n```',self.identity)
+        self.assertFalse(result['suppress'])
+        generation=report_summary.summary_status(packet['artifact'])['generation']
+        self.assertEqual('GENERATED',generation['state'])
+        self.assertEqual('json_fence',generation['output_transport'])
+        for field in ('works','executions','tasks','event_high_water'):
+            self.assertEqual(before[field],self.ledger.snapshot()[field])
+        duplicate=transform_native_report(self.scope,self.execution,self.output(packet),self.identity)
+        self.assertTrue(duplicate['suppress'])
+
+    def test_typed_native_output_and_inline_silence_rule_are_valid(self):
+        packet=self.build()
+        value={'evidence_ids':packet['facts']['facts']['evidence_ids'],
+            'sections':{name:[{'label':'核验范围','text':'本窗口无新增成果。'}] for name in PERSONAL_SECTIONS}}
+        value['sections']['下一步计划']=[{'label':'静默策略','text':'后续poll无新事实时输出 [SILENT]，等待有效派单。'}]
+        result=report_summary.complete_native_summary(packet['artifact'],json.dumps(value,ensure_ascii=False),
+            model_request_id='typed-native',model='isolated-model',route='local')
+        self.assertEqual('GENERATED',result['generation']['state'])
+        self.assertIn('- **静默策略：** 后续poll无新事实时输出 [SILENT]',result['text'])
+
+    def test_rendering_preserves_analysis_and_is_repeatable(self):
+        import copy
+        from workflow_reports import _analysis, render_periodic
+        packet=self.build();facts=packet['facts']['facts']
+        facts['observation']={'state':'UNVERIFIED','reason_codes':['READ_GAP']}
+        analysis=_analysis({'analysis':json.loads(self.output(packet)),
+            'model_request_id':'render-isolated','model':'isolated','route':'unknown'},facts)
+        before=copy.deepcopy(analysis)
+        first=render_periodic(facts,analysis,generated_at=self.at)
+        self.assertEqual(before,analysis)
+        self.assertEqual(first,render_periodic(facts,analysis,generated_at=self.at))
+        self.assertIn('**当前工作**\n\n- ',first)
+
+    def test_broken_native_json_has_parse_diagnostics_and_remains_failed(self):
+        packet=self.build()
+        result=report_summary.complete_native_summary(packet['artifact'],self.output(packet)[:-1]+')}',
+            model_request_id='broken-native',model='isolated-model')
+        generation=result['generation']
+        self.assertEqual('FAILED',generation['state'])
+        self.assertEqual('json_parse',generation['failure_stage'])
+        self.assertIn('position',generation['parse_error'])
+        self.assertIn('本次总结未生成',result['text'])
+
+    def test_summary_hook_uses_analysis_contract_instead_of_manual_markdown(self):
+        spec=importlib.util.spec_from_file_location('summary_contract_plugin_test',ROOT/'__init__.py')
+        module=importlib.util.module_from_spec(spec)
+        sys.modules[spec.name]=module;spec.loader.exec_module(module)
+        plugin=module.RuntimePlugin(registry=self.root/'registry',home=self.home,metrics_url='http://unused',pool_path=self.pool)
+        identity={'role':'A','session_kind':'summary'}
+        with mock.patch.object(plugin,'bind_manual_turn',return_value=identity), \
+             mock.patch.object(plugin,'_frozen_scope',return_value=self.scope), \
+             mock.patch.object(module,'_manual_progress_instruction',side_effect=AssertionError('summary is not manual progress')):
+            text=plugin.on_llm(session_id='isolated-summary')
+        from report_analysis import contract
+        self.assertEqual(contract('A'),text)
+        self.assertIn(contract('A'),self.build()['prompt'])
+        prepared=workflow.prepare_report({'id':'A-report','role_pool':{'role':'A'},
+            'prompt':'旧格式：final直接输出Markdown四区正文。'},pool_path=self.pool,
+            execution={'execution_id':self.execution},home=self.home,session_id='isolated-summary')
+        self.assertEqual(contract('A'),prepared['prompt'])
+        self.assertEqual(self.execution,prepared['_role_pool_scope']['execution_id'])
+
+    def test_collection_failure_keeps_exact_execution_diagnostics(self):
+        folder=self.home/'runtime/role-pool-executions';folder.mkdir(parents=True)
+        scope={**self.scope,'role':'COORDINATOR','job_id':'COORDINATOR-morning'}
+        (folder/(self.execution+'.json')).write_text(json.dumps(scope))
+        self.connection.execute('UPDATE executions SET job_id=?',('COORDINATOR-morning',));self.connection.commit()
+        before=self.ledger.snapshot()
+        with mock.patch('workflow_reports.build_facts',side_effect=ValueError('REPORT_CURRENT_FACTS_EXCEED_BUDGET: private details')):
+            with self.assertRaisesRegex(ValueError,'REPORT_CURRENT_FACTS_EXCEED_BUDGET'):
+                self.build('COORDINATOR','morning')
+        failure=report_summary.input_failure(scope,self.execution,self.home)
+        self.assertEqual('REPORT_CURRENT_FACTS_EXCEED_BUDGET',failure['reason_code'])
+        self.assertEqual('input_collection',failure['failure_stage'])
+        self.assertNotIn('private details',json.dumps(failure))
+        self.assertEqual({},report_summary.input_failure({**scope,'run_id':'other'},self.execution,self.home))
+        self.assertEqual({},report_summary.input_failure(scope,'different-execution',self.home))
+        self.assertEqual(before,self.ledger.snapshot())
+        self.assertFalse(list((self.ledger.path.parent/'reports').glob('*.input.json')))
+        spec=importlib.util.spec_from_file_location('summary_failure_plugin_test',ROOT/'__init__.py')
+        module=importlib.util.module_from_spec(spec)
+        sys.modules[spec.name]=module;spec.loader.exec_module(module)
+        plugin=module.RuntimePlugin(registry=self.root/'registry',home=self.home,metrics_url='http://unused',pool_path=self.pool)
+        with mock.patch.object(plugin,'_frozen_scope',return_value=scope):
+            result=plugin.transform_cron_report(job={'role_pool':{'kind':'report'}},
+                execution_id=self.execution,agent_identity=self.identity,success=False,
+                final_response='untrusted raw error must not be copied')
+        self.assertFalse(result['suppress'])
+        notification=self.ledger.notification(result['metadata']['notification_id'])
+        self.assertEqual(failure['reason_code'],notification['payload']['generation']['reason_code'])
+        self.assertEqual('FAILED',notification['payload']['generation']['state'])
+        self.assertNotIn('untrusted raw error',notification['payload']['text'])
+
     def test_chinese_section_of_validation_failure_is_kept_in_receipt(self):
         packet = self.build()
         value = json.loads(self.output(packet))

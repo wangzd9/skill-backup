@@ -143,6 +143,16 @@ class WorkflowReportTests(unittest.TestCase):
         deliver_notification(self.ledger, result['notification_id'], send, command_id='new-send')
         self.assertEqual(1, len(attempted))
 
+    def test_render_rejection_cannot_leave_a_failed_fallback_marked_generated(self):
+        from unittest.mock import patch
+        with patch('workflow_reports.render_periodic',side_effect=ValueError('PERIODIC_REPORT_BULLET_INVALID')):
+            result=self.generate()
+        self.assertEqual('FAILED',result['generation']['state'])
+        self.assertEqual('render_validation',result['generation']['failure_stage'])
+        self.assertEqual('PERIODIC_REPORT_BULLET_INVALID',result['generation']['reason_code'])
+        self.assertNotIn('analysis_sha256',result['generation'])
+        self.assertIn('本次总结未生成',self.ledger.notification(result['notification_id'])['payload']['text'])
+
     def test_successful_generation_keeps_model_report_and_failure_fallback_is_structured(self):
         result = self.generate()
         item = next(row for row in self.ledger.outbox_items() if row['notification_id'] == result['notification_id'])

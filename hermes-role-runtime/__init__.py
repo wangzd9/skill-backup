@@ -248,6 +248,9 @@ class RuntimePlugin:
                         collector(self.home,scope,at=time.time())
                     except Exception:
                         logger.warning('角色生命周期覆盖未能开始',exc_info=True)
+            if identity['session_kind']=='summary' and scope and scope.get('workflow_version'):
+                from report_analysis import contract
+                return contract(identity['role'])
             language='面向用户的答复、cron final、完成和定时汇报默认使用简体中文；技术标识、命令、路径和必要错误原文可保留。直接给结论、证据、阻塞和下一步，不输出英文工作草稿或逐步自问自答。'
             progress_format=_manual_progress_instruction(identity['role'])
             if progress_format:
@@ -601,9 +604,11 @@ class RuntimePlugin:
                     return {'content':'','suppress':True,'metadata':{'reason':'REPORT_SCOPE_UNVERIFIED'}}
                 return None
             if kwargs.get('success') is False and scope.get('role')=='COORDINATOR':
+                from report_summary import input_failure
                 return transform_coordinator_notice(scope,execution_id,
                     '本次定时报告生成失败，未形成有效进展总结。请核对本次原生执行日志；原验收门禁保持。'
-                    +'\n执行：'+execution_id,self.home,kind='REPORT_FAILURE')
+                    +'\n执行：'+execution_id,self.home,kind='REPORT_FAILURE',
+                    failure=input_failure(scope,execution_id,self.home))
             return transform_native_report(scope,execution_id,final_response,identity)
         except Exception:
             logger.warning('报告产物核验失败，已阻止未经排版的原始模型输出',exc_info=True)
