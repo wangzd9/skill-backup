@@ -95,6 +95,8 @@ def _basis(packet, snapshot, action):
         'authorizations':[g for g in snapshot.get('authorizations',[]) if g.get('spec',{}).get('run_id') in (None,(packet.get('run') or {}).get('run_id'))
             and (not task_id or g.get('spec',{}).get('task_id') in (None,task_id))],
         'completion':packet.get('completion'),'controls':packet.get('controls'),
+        'final_deliveries':[d for d in packet.get('final_deliveries',[])
+            if d['request_id']==action.get('request_id')],
         'verification_exceptions':packet.get('verification_exceptions',[]),
         'request_id':action.get('request_id'),
         'user_answer':[e for e in snapshot['events'] if action.get('request_id') and
@@ -158,6 +160,8 @@ def directory(packet, snapshot):
         'mechanism_blockers':packet.get('mechanism_blockers',[])}
     blockers['verification_retry_blocks']=packet.get('verification_retry_blocks',[])
     blockers['completion_refresh']=(packet.get('completion') or {}).get('refresh_readiness')
+    from workflow_final_delivery import summary as delivery_summary
+    blockers['final_deliveries']=delivery_summary(snapshot,run_id)
     return {'version':1,'items':items,'blocker_index':blockers,
         'fingerprint':digest([items,blockers]),'authority':'preparation only; no verdict or permission',
         'sampling':sampling(snapshot,packet)}
@@ -204,6 +208,7 @@ def _contract(role, action):
         'wait_for_verification_exit':['checkpoint'],
         'investigate_test_prerequisites':['checkpoint'],
         'investigate_completion_prerequisites':['checkpoint'],
+        'investigate_final_delivery':['checkpoint'],
         'review_coverage_required':['service_submit'],
         'review_documentation':['commit_documentation'],
         'authorization_required':['checkpoint'],

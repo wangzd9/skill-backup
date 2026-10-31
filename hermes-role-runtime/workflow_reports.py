@@ -908,7 +908,17 @@ def render_live_progress_fallback(packet, role):
         for delivery in packet.get('final_deliveries',[]):
             stage=delivery.get('stage','待执行')
             last=delivery if 'head' in delivery or 'code' in delivery else (delivery.get('stages') or [{}])[-1]
-            lines.append(_live_bullet('最终Git交付', f"{delivery['state']} · {stage}；main {str(last.get('head','待核实'))[:12]}；{last.get('code','逐步回执见原生交付记录')}"))
+            state_label={'PENDING':'待执行','READY':'可接续','RUNNING':'进行中','BLOCKED':'阻塞',
+                'UNVERIFIED':'执行待核验','COMPLETED':'已完成'}.get(delivery['state'],'状态待核实')
+            stage_label={'fetch':'拉取','merge':'合入main','push':'推送核验','reconcile':'版本对账',
+                'local_up':'本地栈更新','local_test':'本地栈验证','quality_gate':'本地质量门禁'}.get(stage,stage)
+            lines.append(_live_bullet('最终Git交付', f"{state_label}（{delivery['state']}） · {stage_label}；回执版本 {str(last.get('head','待核实'))[:12]}；{last.get('code','逐步回执见原生交付记录')}"))
+        repository=packet.get('repository') or {}
+        if packet.get('final_deliveries') and repository.get('state')=='OBSERVED':
+            lines.append(_live_bullet('当次仓库',str(repository.get('branch') or '分支待核实')+' '+
+                str(repository.get('head') or '版本待核实')[:12]+'；工作区'+
+                ('干净' if repository.get('dirty') is False else '有改动' if repository.get('dirty') is True else '待核实')+
+                '；交付完成仍以原生验证回执为准。'))
         if completion.get('head'):
             lines.append(_live_bullet('固定验证版本', str(completion['head'])[:12]+'；结果及返修按本次账本快照核对。'))
         lines += ['', '**执行者进度**', '']
@@ -1004,18 +1014,31 @@ def render_live_progress_fallback(packet, role):
                 '本需求账本未登记强审动作；是否需要仍按有效合同，不新增审查要求。') if not actions
                 else '本需求已登记 '+str(len(actions))+' 项审查动作；状态 '+ '、'.join(str(a['state']) for a in actions[-3:]))
         lines += ['', '**强审查情况**', '', _live_bullet('强审查', review_status)]
-        gates = packet.get('open_gates') or []
+        gates = list(packet.get('open_gates') or [])
+        if any(d['state'] in ('BLOCKED','UNVERIFIED') for d in packet.get('final_deliveries',[])):
+            gates.insert(0,{'code':'FINAL_DELIVERY_INCOMPLETE'})
         lines += ['', '**风险**', '']
         gate_labels={'VERIFICATION_EXCEPTION_HANDOFF_REQUIRED':'补验异常待协调者核证处置',
+            'FINAL_DELIVERY_INCOMPLETE':'最终Git交付阻塞或未核验，协调者负责接续',
             'VERIFICATION_EXCEPTION_REPAIR_PENDING':'补验异常返修/复验待落实',
             'OCR_SERIAL_ACTION_STILL_ACTIVE_OR_UNKNOWN':'OCR仍在途或状态未知',
             'OCR_VERSION_GATE_BLOCKED':'当前OCR版本尚未准入'}
         lines.append(_live_bullet('未关闭门禁', '当前门禁：'+'；'.join(gate_labels.get(gate.get('code'),str(gate.get('code') or gate)) for gate in gates[:3])
             + (f'；另有 {len(gates)-3} 项' if len(gates) > 3 else '') if gates
             else '本次账本快照未列出打开门禁；验收结果仍以各项回执为准。'))
+        deferred=completion.get('deferred_obligations') or {}
+        if deferred.get('count'):
+            lines.append(_live_bullet('真实阶段义务',str(deferred['count'])+' 项 · '+
+                '、'.join(deferred['phases'])+'；状态 '+'、'.join(deferred['states'])+'；本地交付不替代这些验证。'))
+        dispositions={r['issue_id']:r for r in completion.get('issue_dispositions',[])}
         for issue in completion.get('issues', [])[:3]:
-            lines.append(_live_bullet('验收问题 '+str(issue.get('id')),
-                '最近回执 event:'+str(completion.get('event_id'))+' · '+str(issue.get('task_id'))+'：'+str(issue.get('summary'))))
+            disposition=dispositions.get(issue.get('id')) if final.get('state')=='COMPLETED' else None
+            if disposition:
+                lines.append(_live_bullet('验收处置 '+str(issue.get('id')),
+                    '已登记 · event:'+str(completion.get('disposition_event_id'))+'：'+disposition['reason']))
+            else:
+                lines.append(_live_bullet('验收问题 '+str(issue.get('id')),
+                    '最近回执 event:'+str(completion.get('event_id'))+' · '+str(issue.get('task_id') or '环境/范围核验')+'：'+str(issue.get('summary'))))
         open_exceptions=[i for i in (context or {}).get('verification_exceptions',[]) if i['blocking']]
         for item in open_exceptions[:3]:
             lines.append(_live_bullet('补验异常处置',str(item['task_id'])+' 补验保留未验证结果；协调者负责核证处置并落实返修/调查，'
@@ -1024,6 +1047,11 @@ def render_live_progress_fallback(packet, role):
         if not pending and final.get('state') not in (None,'NOT_PLANNED','COMPLETED'):
             pending=[{'task_id':final.get('validation_task_id') or '最终验收','phase':final_labels.get(final['state'],final['state'])}]
         lines += ['', '**下一步计划**', '']
+        unfinished_deliveries=[d for d in packet.get('final_deliveries',[]) if d['state']!='COMPLETED']
+        for delivery in unfinished_deliveries[:2]:
+            action=('协调者按原生finalize_delivery接续已授权步骤' if delivery['state'] in ('PENDING','READY','RUNNING') else
+                '协调者核失败回执与真实main；本地验证修复后登记精确版本恢复，未知执行先对账，不重放merge/push')
+            lines.append(_live_bullet('最终交付接续',delivery['state']+' · '+delivery.get('stage','待执行')+'；'+action+'。'))
         for item in open_exceptions[:3]:
             steps={'AWAITING_COORDINATOR_DISPOSITION':'核补验原始证据，用异常处置入口登记返修或调查；不等最终集成先失败',
                 'WAITING_SAFE_EXIT':'核原writer安全退出，再确认原生新attempt派单',
@@ -1034,6 +1062,7 @@ def render_live_progress_fallback(packet, role):
                 steps.get(item['state'],'核对异常回执及后续责任')+'。'))
         lines.append(_live_bullet('接续', '；'.join(f"{task.get('task_id')}：{_LIVE_PHASE_LABELS.get(task.get('phase'), task.get('phase', '待核实'))}" for task in pending[:3])
             + (f'；另有 {len(pending)-3} 项' if len(pending) > 3 else '') if pending
+            else '开发任务已完成，最终交付仍待上述接续。' if unfinished_deliveries
             else '依据当前已接受计划核对收尾条件；没有未完成任务记录。'))
         for task in pending[:3]:
             if task.get('phase') == 'REVIEW':

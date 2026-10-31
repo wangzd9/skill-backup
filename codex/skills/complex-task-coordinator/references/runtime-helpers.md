@@ -29,10 +29,10 @@ python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/runtime_tools.
 模型使用无参数专用只读工具`role_live_progress`，由运行时自动绑定当前role/project，不需要terminal，也不能通过参数改目标或转成业务执行。模型工具不可用时明确缺口，不能自行执行shell补查。脚本和`/progress`的底层入口为：
 
 ```text
-python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/runtime_tools.py live-progress --project ROOT --role ROLE
+python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/runtime_tools.py live-progress --pool /home/wang/.hermes/role-pool.json --project ROOT --role ROLE
 ```
 
-以上CLI供已部署的脚本入口使用，不要求只读群模型自行运行。人工“我要进度”等询问与显式`/progress`都当次核验；自然语言由模型分析，`/progress`直接渲染脚本核验结果。执行者使用绑定的A/B/C，测试者使用TESTER，协调者使用COORDINATOR。入口重新核验有效派单/ACK/checkpoint、owner PID/start、操作/OCR/强审service及实际worktree HEAD/dirty。结合当前核验与有效回执，逐角色说清本次核验、最近业务checkpoint原时间和具体缺失/冲突，无法确认即待核实；不机械复述缓存sections，不用“非生产实时探测”一句兜底。
+ACTIVE模式必须明确传入`--pool`或继承已绑定的`HERMES_ROLE_POOL_PATH`；入口核对当前run的requirement_root与ROOT一致，使用同一原生账本和报告渲染，不读取旧派单投影。池非ACTIVE、项目错配或读取中run改变均报错，不回退历史视图。未指定池的CLI仅兼容LEGACY项目。以上CLI供已部署的脚本入口使用，不要求只读群模型自行运行。人工“我要进度”等询问与显式`/progress`都当次核验；自然语言由模型分析，`/progress`直接渲染脚本核验结果。执行者使用绑定的A/B/C，测试者使用TESTER，协调者使用COORDINATOR。入口重新核验有效派单/ACK/checkpoint、owner PID/start、操作/OCR/强审service及实际worktree HEAD/dirty。结合当前核验与有效回执，逐角色说清本次核验、最近业务checkpoint原时间和具体缺失/冲突，无法确认即待核实；不机械复述缓存sections，不用“非生产实时探测”一句兜底。
 
 文档承载验收与历史阶段；读取时间、PID存活或dirty都不证明新增完成。长操作后、最终答复前重新核验相关变化。生产任务只查已有只读观察器及其来源时间，未配置/失联/陈旧具体说明，不自行新增生产探测或测试。报告不领取业务租约、不ACK pending、不写任务状态或门禁。
 
@@ -152,7 +152,7 @@ python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/role_runtime.p
 
 `role-record`输入可带`pending_actions`、`open_gates`、`references`，分别维护checkpoint的未完成动作、门禁和证据定位；每项列表最多100个非空短字符串，同task/attempt省略字段则继承，显式`[]`清空，更换身份不继承。checkpoint的`process_identity`自动取自有效租约，排除token；不手工拼造旧进程身份。
 
-业务恢复（cron或本回合全权并已取得租约）使用`context-input --project ROOT --role ROLE`，人工当前进度调用只读工具`role_live_progress`，`/progress`脚本使用`live-progress --project ROOT --role ROLE`，事件业务基稿使用`report-input`，20分钟状态短报使用`role-status --project ROOT`；时段统计先由`summary-input --project ROOT --role ROLE --kind phase|morning`冻结本时段事实和原生用量，再由独立短只读模型整理（kind按本次类型选择一个值）。报告模型不领取业务租约、不确认pending、不写业务事件；报告失败/送达未知分别留证，不能冒充完成。每份报告模型用量覆盖本人全部绑定群/业务cron/总结/辅助会话，协调者晨报只计协调者本人；独立OCR/Codex不混入。实际provider/模型与usage逐请求记，费用未知不估成已知。角色状态统一为空闲、工作中、等待、阻塞、暂停、待核实。
+业务恢复（cron或本回合全权并已取得租约）使用`context-input --project ROOT --role ROLE`，人工当前进度调用只读工具`role_live_progress`，`/progress`脚本使用`live-progress --pool POOL --project ROOT --role ROLE`，事件业务基稿使用`report-input`，20分钟状态短报使用`role-status --project ROOT`；时段统计先由`summary-input --project ROOT --role ROLE --kind phase|morning`冻结本时段事实和原生用量，再由独立短只读模型整理（kind按本次类型选择一个值）。报告模型不领取业务租约、不确认pending、不写业务事件；报告失败/送达未知分别留证，不能冒充完成。每份报告模型用量覆盖本人全部绑定群/业务cron/总结/辅助会话，协调者晨报只计协调者本人；独立OCR/Codex不混入。实际provider/模型与usage逐请求记，费用未知不估成已知。角色状态统一为空闲、工作中、等待、阻塞、暂停、待核实。
 
 无工具报告输入由脚本按引用自动展开当前证据并核路径/指纹/来源哈希，事实JSON≤80KiB；正文省略标`PARTIAL`和逐项定位，陈旧/无法核来源标`UNVERIFIED`/gap。关键证据不能为凑预算删掉，报告不作接受/授权裁决。`INPUT_READY`仅脚本准备好；`NATIVE_COMPLETED`仅原生回合已结束、正文尚未独立核实，不能当`GENERATED`或已送达。
 
@@ -163,3 +163,15 @@ python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/role_runtime.p
 TODO语义替换可在`source/replacement/expected_sha256`外提供`obligations`（未完成task ID→已核当前动作、门禁、恢复引用列表），每任务≤100条、每条≤4096字节且必须保留在当前任务材料。缺省保留未完成原叙述；明确清单允许缩短已关闭过程，仍保留task/state/title/owner、deps、REQ/AC及variants。先语义核查，原文完整归档，源哈希变化拒绝覆盖；仅协调者可写，HANDOFF不接受该参数。
 
 授权拒绝、跨项目改绑、`acceptance-check`与TESTER `verification`、接续恢复或重复命令错误时，按需读[运行稳定性与改绑](stability-and-migration.md)。Skill scripts指向同一份runtime源码，不维护旧副本。
+
+
+## ACTIVE 最终 Git 交付恢复（0.17.3）
+
+适用于原最终交付的本地 up/test/quality_gate 已有明确失败回执、修复后 main 已显式授权的情况，不用于未知执行重试或生产部署。可信精确消息经 `role_control_request(action="request_final_delivery", target={request_id, expected_head, reason})` 登记，expected_head 必须是完整 main SHA；维护者仅可引用实际用户授权并保留原文哈希，不伪造群来源。
+
+原 owner 按 next_actions 使用既有 `finalize_delivery(request_id)`：核验当前验收未变、main 包含原验收及此前交付版本、工作区干净、remote 身份及 GitHub main 一致、脚本为已提交内容，再执行 mock up/test/quality_gate。恢复只读对账 Git，不重新 merge/push。缺远端同步、版本漂移、脚本变化时保留阻断；只修显示或导入旧 PASS 不能收口。
+
+原失败回执不覆盖，每次恢复独立事件/结果目录；同 head 不重复创建失败恢复，预检未启动可在新版本授权后重绑，UNKNOWN/中断先对账不盲启动。最后必须通过当次只读入口核对实际状态、目标 SHA、原生退出回执和未完成真实阶段。BLOCKED/UNVERIFIED 的交付纳入协调者接续责任；验收处置按正式收口事件显示，不把本地收口等同实机或生产验收。
+
+
+0.17.4：本地固定命令清理继承的 PYTHON*/PYTEST_*，避免宿主 tests 包污染业务门禁。恢复绑定业务 head+执行器源码 SHA，相同输入不重放；执行器经真实修复可显式授权同业务版本的新恢复，执行器再次漂移则阻断，旧恢复完整保留。不能用随意改元数据绕过同前提重复保护。

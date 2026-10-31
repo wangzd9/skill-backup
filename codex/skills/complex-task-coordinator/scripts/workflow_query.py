@@ -121,6 +121,8 @@ def progress_context(snapshot, run_id, role):
     result['final_deliveries']=final_delivery_summary(snapshot,run_id)
     report = final.get('report') or {}
     payload = report.get('payload') or {}
+    closure=next((e for e in snapshot['events'] if e['event_id']==final.get('completion_event_id')),None)
+    deferred=(closure or {}).get('payload',{}).get('deferred_obligations',[])
     result['completion'] = {'state': final['state'],
         'head': (final.get('target') or {}).get('head'),
         'event_id': report.get('event_id'), 'recorded_at': report.get('created_at'),
@@ -128,7 +130,12 @@ def progress_context(snapshot, run_id, role):
         'checks': [{key: check[key] for key in ('id', 'result') if key in check}
                    for check in payload.get('checks', [])],
         'issues': [{key: excerpt(issue[key]) for key in ('id', 'task_id', 'kind', 'summary') if key in issue}
-                   for issue in payload.get('issues', [])]}
+                   for issue in payload.get('issues', [])],
+        'disposition_event_id':final.get('completion_event_id'),
+        'deferred_obligations':{'count':len(deferred),'phases':sorted({o['phase'] for o in deferred}),
+            'states':sorted({o['state'] for o in deferred})},
+        'issue_dispositions':[{'issue_id':r['issue_id'],'reason':excerpt(r['reason'],420)}
+            for r in (closure or {}).get('payload',{}).get('issue_dispositions',[])]}
     candidate_ids = {c['candidate_id'] for c in snapshot['candidates'] if c['run_id'] == run_id}
     reviews=review_action_projection(snapshot,run_id)
     result['review_activity']={key:value for key,value in reviews.items() if key!='actions'}
@@ -442,7 +449,7 @@ def live_progress(pool_path, role):
     delivery_rows=final_delivery_states(snapshot,run_id)
     packet['final_deliveries']=[{**{k:r[k] for k in ('request_id','state','stage') if k in r},
         'completed_stage_count':len(r.get('completed_stages',[])),
-        'push_verified':'push' in r.get('completed_stages',[]),
+        'push_verified':r['push_verified'],
         **{k:v for k,v in (r.get('stages') or [{}])[-1].items() if k in ('head','exit_code','code')}}
         for r in delivery_rows]
     from workflow_final_delivery import states as final_delivery_details

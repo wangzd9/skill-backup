@@ -4,7 +4,7 @@
 
 ## 2026-10-30 机制快照
 
-本次维护源、字节数及哈希见 [MECHANISM-SNAPSHOT.json](MECHANISM-SNAPSHOT.json)，插件提交 `a784b48252aed84cc964967c11b833905aaec772`，core 提交 `c3901f5f8606b6449abd5442d866e28c5015f295`。`hermes-core/local-changes.patch`、`hermes-core/SNAPSHOT.json` 与完整文件已一并更新；使用下面的累计补丁即可还原记录的 core 版本，无需叠加旧覆盖层。
+本次维护源、字节数及哈希见 [MECHANISM-SNAPSHOT.json](MECHANISM-SNAPSHOT.json)，插件提交 `734c3a8851cfbd7769867efb4c3dd46c43155f32`，core 提交 `c3901f5f8606b6449abd5442d866e28c5015f295`。`hermes-core/local-changes.patch`、`hermes-core/SNAPSHOT.json` 与完整文件已一并更新；使用下面的累计补丁即可还原记录的 core 版本，无需叠加旧覆盖层。
 
 本次包含六个角色/显示 Skill、展开后的共享脚本、运行时全部 Git 跟踪文件、用户指南及流程图。凭据、群绑定、数据库、outbox、锁和运行证据未导出；配置模板保持原采样，仅供字段参考。源码复制或 GitHub 推送不代表 Gateway 已加载，亦不清理旧通知。启用后应核对常驻 Gateway 自身的激活回执和源码哈希。
 
@@ -25,7 +25,7 @@ git apply /path/to/skill-backup/hermes-core/local-changes.patch
 
 将 `hermes-role-runtime/` 恢复到维护目录，按原插件方式将 `~/.hermes/plugins/role-workflow-runtime` 链接到该目录。依照其 README 安装依赖与配置；自定义角色 Skill 从 `codex/skills/` 恢复，普通 Hermes Skill 从 `hermes/skills/` 恢复，保留目录分类。
 
-原软链接在技能快照中展开为实际文件，原目标在 `BACKUP-MANIFEST.json` 的 `materialized_symlink` 中。恢复完成后将插件共享脚本重新链接到插件的维护源，避免长期修改两份副本。OCR固定执行器的维护源仍在协调者 Skill 的 `scripts/`。
+原软链接在技能快照中展开为实际文件，原目标在 `BACKUP-MANIFEST.json` 的 `materialized_symlink` 中。恢复完成后将插件共享脚本重新链接到插件的维护源，避免长期修改两份副本。OCR固定执行入口仍是协调者 Skill 的 `scripts/ocr_runtime.py`；当前共享实现位于 canonical `hermes-role-runtime/`，按清单重建软链接，不维护独立副本。
 
 ## 路由、OCR与本机配置
 

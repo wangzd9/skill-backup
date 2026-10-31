@@ -83,6 +83,8 @@ def main():
     p=sub.add_parser('acceptance-check'); p.add_argument('--project',required=True); p.add_argument('--input',required=True)
     p=sub.add_parser('live-progress'); p.add_argument('--project',required=True)
     p.add_argument('--role',required=True,choices=('COORDINATOR','A','B','C','TESTER'))
+    p.add_argument('--pool',default=os.environ.get('HERMES_ROLE_POOL_PATH'),
+                   help='ACTIVE模式的明确角色池；未指定时保留旧项目报告')
     p=sub.add_parser('role-status'); p.add_argument('--project',required=True)
     p.add_argument('--role',choices=('A','B','C','TESTER')); p.add_argument('--json',action='store_true')
     p=sub.add_parser('context-input'); p.add_argument('--project',required=True); p.add_argument('--role',required=True)
@@ -163,8 +165,23 @@ def main():
             from document_maintenance import archive_role_document
             value=archive_role_document(args.project,args.role,read_json(Path(args.input)),args.token_file)
         elif args.action=='live-progress':
-            from progress_query import live_progress_report
-            value=live_progress_report(args.project,args.role)
+            if args.pool:
+                import workflow_runtime as workflow
+                from workflow_query import live_progress
+                from workflow_reports import render_live_progress_fallback
+                if not workflow.active(args.pool):
+                    raise ValueError('WORKFLOW_NOT_ACTIVE')
+                snapshot=workflow.open_ledger(args.pool).snapshot()
+                run=next((r for r in snapshot['runs'] if r['run_id']==snapshot['current_run_id']),None)
+                if not run or Path(run['requirement_root']).resolve()!=Path(args.project).resolve():
+                    raise ValueError('LIVE_PROGRESS_PROJECT_SCOPE_MISMATCH')
+                value=live_progress(args.pool,args.role)
+                if (value.get('run') or {}).get('run_id')!=run['run_id']:
+                    raise ValueError('LIVE_PROGRESS_RUN_CHANGED')
+                value['markdown']=render_live_progress_fallback(value,args.role)
+            else:
+                from progress_query import live_progress_report
+                value=live_progress_report(args.project,args.role)
         elif args.action=='report-input':
             from report_contract import build_report, render_report
             packet=refresh_progress_facts(args.project)

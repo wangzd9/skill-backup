@@ -101,7 +101,8 @@ def preflight(ledger, target):
 
 def request(ledger, target, provenance, *, command_id, operator=False):
     from business_ledger import _deny
-    if not isinstance(target,dict) or set(target)-{'run_id','source_branch','target_branch','remote'}:
+    if not isinstance(target,dict) or (set(target)-{'run_id','source_branch','target_branch','remote'}
+            and set(target)!={'request_id','expected_head','reason'}):
         raise ValueError('EXACT_FINAL_DELIVERY_TARGET_REQUIRED')
     if operator:
         if provenance.get('platform')!='codex' or provenance.get('source_kind')!='direct_user_maintenance':
@@ -113,7 +114,11 @@ def request(ledger, target, provenance, *, command_id, operator=False):
         if (provenance.get('authenticated') is not True or
                 any(not provenance.get(k) for k in ('chat_id','message_id','user_id'))):
             raise ValueError('NATIVE_FINAL_DELIVERY_SOURCE_REQUIRED')
-        source(provenance.get('primary_text',''),target)
+        if 'request_id' not in target:
+            source(provenance.get('primary_text',''),target)
+    if 'request_id' in target:
+        from workflow_delivery_recovery import request_recovery
+        return request_recovery(ledger,target,provenance,command_id=command_id,operator=operator)
     # Idempotence depends on the original source/target, not mutable Git HEAD.
     def operation(db):
         frozen=preflight(ledger,target)
@@ -138,6 +143,8 @@ def states(snapshot, run_id):
             if result['kind']=='FINAL_DELIVERY_STAGE_STARTED':item.update(state='RUNNING',stage=result['payload']['stage'])
             if result['kind']=='FINAL_DELIVERY_STAGE_RECORDED':
                 item['stages'].append(result['payload']);item.update(state=result['payload']['state'],stage=result['payload']['stage'])
+        from workflow_delivery_recovery import project
+        project(item,snapshot['events'],run_id)
         output.append(item)
     return output
 
@@ -146,16 +153,32 @@ def summary(snapshot, run_id):
     # 完整逐步证据留在artifact；固定预算入口只内联当前事实与成功步骤。
     return [{**{k:s[k] for k in ('request_id','state','stage') if k in s},
         'stage_count':len(s['stages']),
-        'completed_stages':[v['stage'] for v in s['stages'] if v['state'] in ('READY','COMPLETED')],
+        'completed_stages':_completed(s),
+        'push_verified':('reconcile' in {v['stage'] for v in s.get('recovery_stages',[]) if v['state'] in ('READY','COMPLETED')}
+            if s.get('recovery') else 'push' in _completed(s)),
         'stages':[{k:v[k] for k in ('stage','state','head','exit_code','code') if k in v}
-                  for v in s['stages'][-1:]]}
+                  for v in (s.get('recovery_stages') or ([{'stage':'reconcile','state':'PENDING',
+                      'head':s['recovery']['validation_head']}] if s.get('recovery') else s['stages']))[-1:]]}
         for s in states(snapshot,run_id)]
+
+
+def _completed(row):
+    done={v['stage'] for v in row['stages'] if v['state'] in ('READY','COMPLETED')}
+    if row.get('recovery'):
+        done-={'local_up','local_test','quality_gate'}
+        done.update(v['stage'] for v in row.get('recovery_stages',[]) if v['state'] in ('READY','COMPLETED'))
+    return [stage for stage in STAGES if stage in done]
 
 
 def next_actions(snapshot, run_id):
     return [{'action':'finalize_delivery','payload':{'request_id':s['request_id']},
         'reason':'最终交付已获精确授权；使用原生固定入口逐步合入main、push和本地mock栈验证。失败/未知保留证据，不重放副作用。'}
-        for s in states(snapshot,run_id) if s['state'] in ('PENDING','READY','RUNNING')]
+        for s in states(snapshot,run_id) if s['state'] in ('PENDING','READY','RUNNING')]+[
+        {'action':'investigate_final_delivery','request_id':s['request_id'],'state':s['state'],
+         'reason':'最终交付尚未完成，由协调者核对失败回执和真实仓库。已明确失败的本地验证修复后，'
+            '用request_final_delivery(request_id, expected_head, reason)登记精确版本恢复；'
+            '不重放merge/push，不将需求验收完成等同于交付完成；未知执行先对账。'}
+        for s in states(snapshot,run_id) if s['state'] in ('BLOCKED','UNVERIFIED')]
 
 
 def _record(ledger,identity,request_id,stage,payload,*,started=False):
@@ -188,6 +211,9 @@ def execute(ledger, identity, payload, *, command_id):
     resource=ledger.path.parent/'merge-locks'/hashlib.sha256(str(repo.resolve()).encode()).hexdigest()
     with locked(resource.with_suffix('.lock')):
         row=next(s for s in states(ledger.snapshot(),work['run_id']) if s['request_id']==request_id)
+        if row.get('recovery'):
+            from workflow_delivery_recovery import execute_recovery
+            return execute_recovery(ledger,identity,row,directory)
         if row['state'] in ('COMPLETED','BLOCKED','UNVERIFIED'):
             return {'status':row['state'],'request_id':request_id,'stages':row['stages'],'replay_allowed':False}
         done={s['stage']:s for s in row['stages'] if s['state'] in ('READY','COMPLETED')}
@@ -253,7 +279,7 @@ def execute(ledger, identity, payload, *, command_id):
                          'LOCAL_NAS_PATH':str(repo/'.local/nas'),'LOCAL_TEST_MODE':'mock',
                          'DOCKER_HOST':'unix:///var/run/docker.sock','DOCKER_CONTEXT':'default'}
                     persisted=execute_plan({'operation_id':request_id+'-'+stage,'role':'COORDINATOR','cwd':str(repo),
-                        'steps':[{'argv':['env',*[v for k in os.environ if k.startswith(('GIT_','LOCAL_','DOCKER_')) or k in ('COMPOSE_FILE','COMPOSE_PROJECT_NAME','PYTHON_BIN','RUFF_BIN','DATABASE_URL','TEST_MYSQL_URL','MYSQL_TEST_URL','MN_TEST_MYSQL_URL') for v in ('-u',k)],*[k+'='+v for k,v in env.items()],*a]} for a in argv[stage]],'timeout_seconds':3600 if stage in ('local_up','local_test','quality_gate') else 120},result_path,process_hook=process_hook)
+                        'steps':[{'argv':['env',*[v for k in os.environ if k.startswith(('GIT_','LOCAL_','DOCKER_','PYTHON','PYTEST_')) or k in ('COMPOSE_FILE','COMPOSE_PROJECT_NAME','PYTHON_BIN','RUFF_BIN','DATABASE_URL','TEST_MYSQL_URL','MYSQL_TEST_URL','MN_TEST_MYSQL_URL') for v in ('-u',k)],*[k+'='+v for k,v in env.items()],*a]} for a in argv[stage]],'timeout_seconds':3600 if stage in ('local_up','local_test','quality_gate') else 120},result_path,process_hook=process_hook)
                 head=git(repo,'rev-parse','refs/heads/main')
                 if persisted['status']!='SUCCEEDED' or persisted.get('exit_code')!=0:
                     raise ValueError('FINAL_DELIVERY_'+stage.upper()+'_FAILED')

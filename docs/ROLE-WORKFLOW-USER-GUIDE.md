@@ -1,6 +1,6 @@
 # 角色工作流使用指南：需求接入、开发、最终验收与恢复
 
-**校正日期：2026-10-31，时间统一为 Asia/Shanghai（+08:00）。适用于已启用业务账本的 ACTIVE 模式。裁决材料版 3.35。观察修复：长测试按受控期限派生宽限期；写权诊断异常/恢复各稳定 120 秒后通知。**
+**校正日期：2026-10-31，时间统一为 Asia/Shanghai（+08:00）。适用于已启用业务账本的 ACTIVE 模式。裁决材料版 3.37。观察修复：长测试按受控期限派生宽限期；写权诊断异常/恢复各稳定 120 秒后通知。**
 
 日常操作在既有协调者飞书群完成；A、B、C 和 TESTER 群用于查看各自工作及控制本角色。固定五角色复用于不同需求，不需要为每个需求重新建群。规划者仍由用户按需手动触发，不是第六个常驻角色。
 
@@ -561,6 +561,8 @@ test-only 候选在 OCR 无入选文件时，可用 OCR 公开的精确 include 
 
 ### 只读核查
 
+ACTIVE维护CLI使用`runtime_tools.py live-progress --pool /home/wang/.hermes/role-pool.json --project <当前需求根> --role COORDINATOR`，也可由原生回合继承`HERMES_ROLE_POOL_PATH`。入口校验当前需求根并读取原生账本；错配或非ACTIVE直接报错。未指定池的旧CLI仅供LEGACY项目，不是当前事务工作流的事实来源。群模型继续使用无参数`role_live_progress`，无需shell。
+
 日常操作不需要登录服务器。维护人员可以读取 ACTIVE 权威的有界摘要；不要用历史 JSON 租约、文档目录或缓存报告替代账本。以下示例不调用模型、不发送通知、不执行对账修复：
 
 ```sh
@@ -646,7 +648,7 @@ OCR 提交前被拒不算审查通过，也不必永久停在 REVIEW。当前入
 SNAPSHOT_STALE 的 refresh_readiness 给出当前提供方、责任人及冻结失败码。提供方全部完成、旧验证及 writer 核退后，原生 reconcile 自动刷新。会话达到原安全交接阈值后只允许保存 yield_execution 检查点或 safe_release；继续只读翻历史也须交接。群查询与报告会话不受此后台限制。详见[修复与上线核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md)。
 
 
-### 13.6 最终 Git 交付（0.17.0–0.17.2）
+### 13.6 最终 Git 交付（0.17.0–0.17.3）
 
 需求 `COMPLETED` 表示已在冻结特性分支完成本地验收；不表示已合入 main、push 或更新本地栈。原 `authorize_merge` 专用于候选合入，不能作为最终交付授权。
 
@@ -663,3 +665,28 @@ SNAPSHOT_STALE 的 refresh_readiness 给出当前提供方、责任人及冻结�
 每步有 START、真实退出结果与哈希证据，失败显示 BLOCKED，执行中断且结果不明显示 UNVERIFIED。已成功步骤不因新回合或更换 command_id 再执行；已有成功操作回执可对账接续，缺回执不盲重试。push 成功但本地验证失败仍是未完成交付。当前进度入口的 `final_deliveries` 分开显示这些事实，不用历史 checkpoint 代替当前结果。
 
 0.17.1–0.17.2：逐步完整回执移入哈希artifact，进度核心只保留当前状态、步骤、已完成数量、push核验与失败码，避免新增交付记录撑爆8KiB只读入口。当前结果与历史检查点分开；真实质量门禁失败不因push成功而转为完成。
+
+
+0.17.3：明确失败的本地验证修复后，沿用原请求恢复，不换 ID 重放已完成的合并和推送。群消息需要明确“恢复最终交付 <request_id> main <完整 SHA> 并验证本地栈”，原生控制登记：
+
+```json
+{"action":"request_final_delivery","target":{"request_id":"<原请求 ID>","expected_head":"<40 位 main SHA>","reason":"已核实的修复与重验原因"}}
+```
+
+维护者也可引用本会话真实用户授权，经已有维护入口登记同样的精确版本，保留来源证据哈希，不伪造飞书消息身份。登记不代表恢复完成；由原后台 owner 执行 `finalize_delivery`，核实 main 是原验收及前次交付的后代、工作区干净、remote 未变、GitHub SHA 一致且脚本已提交，再依次执行本地 mock up/test/quality_gate。恢复不重新 merge 或 push，远端尚未同步时明确阻断，不能将历史验证直接改成新版本 PASS。
+
+旧失败日志和阶段事件永久保留，新恢复使用独立版本/事件/结果目录。执行未知或中断先对账，不允许盲重启；同一 main SHA 不原样反复创建恢复。无副作用预检拒绝可在新前提和新版本授权下重新登记。报告“下一步”必须包含未完成最终交付，不能仅因开发任务为空显示无事可做。验收问题按正式处置事件显示，真实阶段未授权未完成的义务仍保留，不把缺失 task_id 显示为 None。
+
+```mermaid
+flowchart LR
+    A[本地验证明确失败] --> B[修复并冻结精确 main 版本]
+    B --> C[登记原请求恢复授权]
+    C --> D[原 owner 对账 Git 与脚本]
+    D --> E[mock up / test / quality gate]
+    E -->|全部真实通过| F[交付完成并保留旧失败]
+    D -->|版本漂移或远端不一致| G[保留阻断与责任]
+    E -->|失败或执行未知| G
+```
+
+
+0.17.4：固定本地子进程清理继承的 `PYTHON*` 与 `PYTEST_*` 覆盖变量，防止 Hermes 的 Python 搜索路径污染业务仓测试，不改测试断言或缩小门禁。恢复身份同时冻结业务 main 和执行器源码 SHA：相同 head+执行器不能原样重试；执行器真实修复后可引用有效授权显式重验相同业务 head，旧恢复的失败与证据保留在历史 artifact。执行器在登记后再次变化时停止，不能悄悄用新实现消费旧授权。

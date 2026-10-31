@@ -198,7 +198,9 @@ def control_target_schema():
     decision=obj({'run_id':TEXT,'decision_id':TEXT},['decision_id'])
     delivery=obj({'run_id':TEXT,'source_branch':TEXT,'target_branch':{'const':'main'},'remote':TEXT},
         ['source_branch','target_branch','remote'])
-    return {'oneOf':[intake,run_policy,supplemental,decision,delivery,*base]}
+    recovery=obj({'request_id':TEXT,'expected_head':{'type':'string','pattern':'^[0-9a-f]{40}$'},
+        'reason':TEXT},['request_id','expected_head','reason'])
+    return {'oneOf':[intake,run_policy,supplemental,decision,delivery,recovery,*base]}
 
 
 def validate_payload(action, payload):
