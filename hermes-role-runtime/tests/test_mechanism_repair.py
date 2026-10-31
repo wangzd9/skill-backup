@@ -162,6 +162,20 @@ class SessionAttributionTests(unittest.TestCase):
 
 
 class ActivationRepairTests(LedgerFixture):
+    def test_requirement_intake_activation_updates_the_leading_directive_matcher(self):
+        import mechanism_activation
+        import workflow_intake
+        original=workflow_intake.explicit_development
+        try:
+            workflow_intake.explicit_development=lambda text:False
+            self.assertEqual('ACTIVATED',mechanism_activation.activate()['state'])
+            self.assertTrue(workflow_intake.explicit_development('请统一推进两个缺陷补齐专题，直到本地实现、独立验收和交接完成。'))
+            self.assertIn('command_identity',mechanism_activation.TARGETS['workflow_intake.py'])
+            self.assertIn('_catalog',mechanism_activation.TARGETS['requirement_runtime.py'])
+            self.assertIn('RuntimePlugin.control_tool',mechanism_activation.TARGETS['__init__.py'])
+        finally:
+            workflow_intake.explicit_development=original
+
     def test_query_activation_manifest_covers_transitive_local_helpers(self):
         # Fresh imports mask missing helpers in an already-running gateway.
         # Keep the future-call manifest closed over the query's local functions.

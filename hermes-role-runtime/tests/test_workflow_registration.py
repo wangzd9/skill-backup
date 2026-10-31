@@ -62,6 +62,57 @@ class RegistrationTests(LedgerFixture):
         denied = accept(self.ledger, self.target(), self.native(message='duplicate-new'), command_id='start-again')
         self.assertEqual('REGISTERED_RUN_ALREADY_ACCEPTED_USE_EXISTING_RUN_CONTROL', denied['code'])
 
+    def test_one_native_message_accepts_two_packages_with_independent_idempotency(self):
+        from workflow_runtime import submit_control
+        second=self.root/'second-package';second.mkdir()
+        (second/'TODO.md').write_text('SECOND-01: fixed independent local AC')
+        entry=dict(self.entry,requirement_id='second-package',requirement_root=str(second),
+                   task_ids=['SECOND-01'])
+        self.assertCommitted(self.register(self.entry,entry))
+        source=dict(self.native('请统一推进 new-package 和 second-package 两个缺陷修复专题，自动推进并交付。'),
+                    chat_id='isolated-chat')
+        target2={key:entry[key] for key in ('requirement_id','requirement_root','repo','task_ids','contract_files')}
+        pool=self.root/'isolated.json'
+        first=self.assertCommitted(submit_control(pool,'COORDINATOR','accept_requirement',self.target(),source))
+        other=self.assertCommitted(submit_control(pool,'COORDINATOR','accept_requirement',target2,source))
+        self.assertEqual('prepared-new-package',first['run_id'])
+        self.assertEqual('prepared-second-package',other['run_id'])
+        for target in (self.target(),target2):
+            self.assertEqual('DUPLICATE',submit_control(pool,'COORDINATOR','accept_requirement',target,source)['status'])
+        snapshot=self.ledger.snapshot()
+        self.assertEqual(3,len(snapshot['runs']))
+        self.assertEqual(2,len([e for e in snapshot['events'] if e['kind']=='REQUIREMENT_ACCEPTED']))
+        # A retry with changed arguments retains its package identity.
+        changed=submit_control(pool,'COORDINATOR','accept_requirement',self.target(['NEW-02']),source)
+        self.assertEqual('COMMAND_ID_CONFLICT',changed['code'])
+
+    def test_coordinated_development_source_and_registration_are_distinct_checks(self):
+        self.assertCommitted(self.register())
+        source=self.native('请统一推进 new-package 的缺陷补齐，直到本地实现、独立验收和交接完成。')
+        result=self.assertCommitted(accept(self.ledger,self.target(),source,command_id='coordinated-start'))
+        self.assertEqual('prepared-new-package',result['run_id'])
+
+    def test_pre_upgrade_native_acceptance_retry_keeps_original_receipt(self):
+        from workflow_runtime import submit_control
+        self.assertCommitted(self.register())
+        source=dict(self.native(),chat_id='old-chat')
+        original=self.assertCommitted(accept(self.ledger,self.target(),source,
+            command_id='message-control:old-chat:native-develop'))
+        replay=submit_control(self.root/'isolated.json','COORDINATOR','accept_requirement',self.target(),source)
+        self.assertEqual('DUPLICATE',replay['status'])
+        self.assertEqual(original['event_id'],replay['event_id'])
+        self.assertEqual(2,len(self.ledger.snapshot()['runs']))
+
+    def test_source_diagnostics_distinguish_native_identity_from_development_wording(self):
+        before=self.ledger.snapshot()
+        with self.assertRaisesRegex(ValueError,'AUTHENTICATED_REQUIREMENT_NATIVE_SOURCE_REQUIRED'):
+            accept(self.ledger,self.target(),dict(self.native(),authenticated=False),command_id='missing-native')
+        with self.assertRaisesRegex(ValueError,'AUTHENTICATED_REQUIREMENT_NATIVE_SOURCE_REQUIRED'):
+            accept(self.ledger,self.target(),dict(self.native(),primary_text=''),command_id='missing-primary')
+        with self.assertRaisesRegex(ValueError,'EXPLICIT_REQUIREMENT_DEVELOPMENT_SOURCE_REQUIRED'):
+            accept(self.ledger,self.target(),self.native('new-package 的开发进度是什么？'),command_id='question')
+        self.assertEqual(before,self.ledger.snapshot())
+
     def test_reference_package_registers_without_fake_run_and_cannot_autodevelop(self):
         reference = dict(self.entry, kind='reference', task_ids=[])
         self.assertCommitted(self.register(reference))
@@ -138,11 +189,19 @@ class RegistrationTests(LedgerFixture):
         pool=self.root/'isolated.json'
         pool.write_text(json.dumps({'schema_version':1,'pool_id':'test','generation':1,'control':'ACTIVE',
             'catalog_path':str(self.root/'README.md'),'registry_path':str(self.root/'registry.json'),
+            'requirements':{'obsolete-package':{'runtime_root':str(self.root)}},
             'roles':{r:{'chat_id':'chat-'+r,'poll_job_id':'poll-'+r,'skill':'test'} for r in ROLES}}))
         self.assertCommitted(self.register())
         before=self.ledger.snapshot()
-        row=list_requirements(pool)['requirements'][0]
+        catalog=list_requirements(pool)
+        self.assertEqual(['obsolete-package'],catalog['stale_mapping_ids'])
+        self.assertEqual(1,len(catalog['requirements']))
+        row=catalog['requirements'][0]
         self.assertEqual('prepared-new-package',row['registration']['run_id'])
         self.assertEqual('PAUSED',row['registration']['run_control'])
         self.assertEqual('business.sqlite3',row['registration']['authority'])
         self.assertEqual(before,self.ledger.snapshot())
+        # Read-only ACTIVE catalog tolerance does not change selection policy.
+        from requirement_runtime import _catalog,_pool
+        with self.assertRaisesRegex(ValueError,'角色池映射必须精确对应总索引需求'):
+            _catalog(_pool(pool))

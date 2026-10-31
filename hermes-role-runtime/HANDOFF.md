@@ -2,6 +2,10 @@
 
 本文件记录本轮维护流水，不替代原生只读账本。
 
+## 新需求接纳入口（0.17.5）
+
+原“统一推进”消息的 authenticated/native_primary/TURN_BOUND 记录完整，正文哈希一致；拒绝来自句首正则，协调者将复合错误误判成身份缺失。修复措辞识别、来源诊断、双需求幂等（兼容旧回执）、ACTIVE只读目录旧映射和异步热加载，108项相关回归通过。两 prepared run 的 BR/SR 提案仍缺正式合同登记；保留此门，不改业务状态、不冒充已接纳/开工。证据、部署和范围见 [专项记录](REQUIREMENT-INTAKE-REPAIR-20261031.md)。
+
 ## 最终交付阻塞恢复
 
 - 事实：原生请求 `final-delivery-80243bcfdb116ca44b0ba1bcf3bf3b97` 保存旧 main `ba9e367` 的 quality_gate 失败。业务 main/GitHub 已推进到 `aba3ac8`，既有成功验证没有自动导入原生账本。

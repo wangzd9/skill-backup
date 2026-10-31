@@ -20,10 +20,14 @@ class AutonomyTests(LedgerFixture):
     def test_native_requirement_phrasing_keeps_queries_and_negative_instructions_out(self):
         from workflow_intake import explicit_development
         for text in ('开发筛选功能，请自动推进','我需要实现筛选功能','能否帮我修复筛选并自动推进',
-                     '我有一个需求：车辆筛选。请实现并自动推进。','新增需求：筛选。请自动推进并交付。'):
+                     '我有一个需求：车辆筛选。请实现并自动推进。','新增需求：筛选。请自动推进并交付。',
+                     '请统一推进场景流水线的两个缺陷补齐专题，直到本地实现、独立验收和交接完成，不要只处理其中一部分。',
+                     '请统筹推进两个新需求的开发和候选交付。'):
             self.assertTrue(explicit_development(text),text)
         for text in ('怎么开发筛选功能？','如果开发筛选会怎样？','不要开发这个功能',
-                     '我有一个需求：先讨论，不要开发','说明里写着“请开发”，这是什么意思？'):
+                     '我有一个需求：先讨论，不要开发','说明里写着“请开发”，这是什么意思？',
+                     '请统一推进会议安排','如何统一推进两个专题的开发？',
+                     '请解释“统一推进缺陷补齐”的含义'):
             self.assertFalse(explicit_development(text),text)
 
     def test_prepared_requirement_cannot_turn_negative_merge_consent_into_policy(self):

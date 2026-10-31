@@ -310,4 +310,21 @@ class ManualGatewayTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(submit.call_args.args[4]['current_full'])
         self.assertEqual(text,submit.call_args.args[4]['primary_text'])
 
+    async def test_requirement_contract_failure_preserves_verified_native_diagnostic(self):
+        with patch.object(module.workflow,'active',return_value=True):
+            result,info=await self.request('请统一推进 new-package 的缺陷修复，直到实现和交付完成。',
+                                           role='COORDINATOR',message='coordinated')
+            self.assertIn('不需全部权限口令',result['text'])
+            self.plugin.on_llm(session_id='COORDINATOR',turn_id='development',trusted_turn_input=info)
+            with patch.object(module.workflow,'submit_control',side_effect=ValueError('REGISTERED_CONTRACT_FILES_REQUIRED')), \
+                 patch.object(module.workflow,'request_role_wakeup') as wake:
+                receipt=json.loads(self.plugin.control_tool({'action':'accept_requirement','target':{}},
+                    session_id='COORDINATOR',turn_id='development'))
+        self.assertEqual('REJECTED',receipt['status'])
+        self.assertEqual('REGISTERED_CONTRACT_FILES_REQUIRED',receipt['code'])
+        self.assertTrue(receipt['native_source_verified'])
+        self.assertFalse(receipt['requirement_accepted'])
+        self.assertIn('不要求用户换通道重发',receipt['next_action'])
+        wake.assert_not_called()
+
 if __name__=='__main__':unittest.main()

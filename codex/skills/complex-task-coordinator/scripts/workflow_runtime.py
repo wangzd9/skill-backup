@@ -885,7 +885,11 @@ def submit_control(pool_path, role, action, target, provenance):
     if action=='accept_requirement':
         if role!='COORDINATOR':
             raise ValueError('COORDINATOR_REQUIRED')
-        from workflow_intake import accept
+        from workflow_intake import accept,command_identity
+        # One authored message can name several requirement packages. Keep
+        # retries for a package identical, while isolating the other packages;
+        # do not hash the whole target (changed arguments must still conflict).
+        command_id=command_identity(ledger,command_id,target)
         return accept(ledger,target,provenance,command_id=command_id)
     if action in {'authorize_service','authorize_merge','revoke_authorization'}:
         if role != 'COORDINATOR':

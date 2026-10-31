@@ -5,6 +5,22 @@ import re
 import subprocess
 
 
+def command_identity(ledger, command_id, target):
+    """Scope new messages per package while retaining pre-upgrade receipts."""
+    import json
+    if not isinstance(target,dict) or not isinstance(target.get('requirement_id'),str):
+        return command_id
+    with ledger._connection() as db:
+        previous=db.execute("SELECT result FROM commands WHERE command_id=? AND verb='accept_requirement'",
+                            (command_id,)).fetchone()
+        if previous:
+            result=json.loads(previous['result'])
+            run=db.execute('SELECT requirement_id FROM runs WHERE run_id=?',(result.get('run_id'),)).fetchone()
+            if run and run['requirement_id']==target['requirement_id']:
+                return command_id
+    return command_id+':requirement:'+hashlib.sha256(target['requirement_id'].encode()).hexdigest()[:24]
+
+
 def explicit_development(primary):
     """Accept common native request phrasing without treating queries as commands."""
     if re.search(r'不要(?:开发|实现|交付|自动推进)|暂不(?:开发|实现)|不授权(?:开发|自动推进)',primary):
@@ -12,16 +28,24 @@ def explicit_development(primary):
     imperative=re.match(r'^(?:(?:请|帮我|现在|立即|我要|我需要|请你|我想|需要|麻烦|帮忙|给我|我们|能否|能不能)\s*)*'
                         r'(?:开发|实现|交付|自动推进|新增|增加|修复|优化|完成)',primary)
     introduced=re.match(r'^(?:我(?:有|要新增|想新增)(?:一)?个需求|新增需求|需求(?:说明)?)[：:\s]',primary)
-    return bool(imperative or introduced and re.search(r'请(?:帮我)?(?:开发|实现|修复|自动推进|自动交付)|自动推进并交付',primary))
+    # A request to coordinate development is still an explicit development
+    # request. Match the leading directive, not an imperative inside a quote
+    # or a later description of what someone else requested.
+    coordinated=re.match(r'^(?:请你|请|现在|立即|帮我|麻烦|\s)*(?:统一|统筹)?推进',primary)
+    first_clause=re.split(r'[。！？!?\n]',primary,maxsplit=1)[0]
+    return bool(imperative or introduced and re.search(r'请(?:帮我)?(?:开发|实现|修复|自动推进|自动交付)|自动推进并交付',primary)
+                or coordinated and re.search(r'开发|实现|交付|修复|缺陷|补齐',first_clause))
 
 
 def accept(ledger, target, provenance, *, command_id):
     from business_ledger import _deny, _json
     from manual_access import full_permission_action
+    if (provenance.get('authenticated') is not True or not provenance.get('message_id') or not provenance.get('user_id')
+            or not isinstance(provenance.get('primary_text'),str) or not provenance['primary_text'].strip()):
+        raise ValueError('AUTHENTICATED_REQUIREMENT_NATIVE_SOURCE_REQUIRED')
     primary=full_permission_action(provenance['primary_text'])
     primary=primary if primary is not None else provenance['primary_text'].strip()
-    if (provenance.get('authenticated') is not True or not provenance.get('message_id') or not provenance.get('user_id')
-            or not explicit_development(primary)):
+    if not explicit_development(primary):
         raise ValueError('EXPLICIT_REQUIREMENT_DEVELOPMENT_SOURCE_REQUIRED')
     required={'requirement_id','requirement_root','repo','task_ids'}
     if not isinstance(target,dict) or not required<=set(target) or set(target)-required-{'run_id','merge_branch','contract_files','use_native_requirement'}:

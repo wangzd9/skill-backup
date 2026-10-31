@@ -14,9 +14,10 @@ import threading
 LOCK=threading.Lock()
 TARGETS={
     '__init__.py':('RuntimePlugin.work_input_tool','RuntimePlugin.work_command_tool',
-                   'RuntimePlugin.decision_context_tool','RuntimePlugin.on_api'),
+                   'RuntimePlugin.decision_context_tool','RuntimePlugin.on_api','RuntimePlugin.control_tool',
+                   'RuntimePlugin.on_message','RuntimePlugin.on_llm'),
     'workflow_sandbox.py':('tool_directive', '_run'),
-    'requirement_runtime.py':('list_requirements',),
+    'requirement_runtime.py':('_catalog','list_requirements'),
     'workflow_registration.py':('freeze_sources','packages','register_packages','prepared_package'),
     'business_ledger.py':('BusinessLedger._command','BusinessLedger._event','BusinessLedger.snapshot','BusinessLedger.admission_hint','BusinessLedger._release_idle_coordination',
         'BusinessLedger.publish_plan','BusinessLedger.dependency_readiness','BusinessLedger.stage_dependency_ids',
@@ -93,7 +94,7 @@ TARGETS={
         'request_from_resolved_decision','apply_resolved_decisions','request_for_candidate','reconcile','facts'),
     'workflow_development_policy.py':('record','enable','default_for_request','policies','derive','facts'),
     'workflow_integration_workspace.py':('select',),
-    'workflow_intake.py':('accept','scoped_control'),
+    'workflow_intake.py':('command_identity','explicit_development','accept','scoped_control'),
     'workflow_user_decisions.py':('answer_source','record','pending','resolve','recover_native_answer'),
     'workflow_supplemental.py':('_context_from_event','source_task','request','queue_repairs','permits_closure','summary','docker','mysql_session','verify'),
     'workflow_final_delivery.py':('git','digest','source','preflight','request','states','summary','_completed','next_actions','_record','execute'),
@@ -157,7 +158,7 @@ def activate():
                     body=tree.body;owner=module
                     parts=dotted.split('.')
                     for part in parts:
-                        node=next(n for n in body if isinstance(n,(ast.FunctionDef,ast.ClassDef)) and n.name==part)
+                        node=next(n for n in body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef)) and n.name==part)
                         body=node.body
                     if len(parts)==2:
                         owner=getattr(module,parts[0])

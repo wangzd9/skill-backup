@@ -89,7 +89,7 @@ def _pool(pool_path):
     return value
 
 
-def _catalog(pool):
+def _catalog(pool, *, allow_stale_mapping=False):
     index = _path(pool['catalog_path'])
     raw = index.read_bytes()
     container = index.parent
@@ -125,7 +125,7 @@ def _catalog(pool):
     if not entries:
         raise ValueError('需求总索引中没有明确需求入口')
     mapping = pool.get('requirements', {})
-    if not isinstance(mapping, dict) or any(key not in entries for key in mapping):
+    if not isinstance(mapping, dict) or (not allow_stale_mapping and any(key not in entries for key in mapping)):
         raise ValueError('角色池映射必须精确对应总索引需求')
     selectors = {}
     for key, entry in entries.items():
@@ -146,12 +146,16 @@ def _catalog(pool):
                 raise ValueError('AMBIGUOUS_REQUIREMENT_ALIAS: '+selector)
             selectors[selector] = key
     return {'catalog_path': str(index), 'sha256': _sha(raw), 'entries': entries, 'selectors': selectors,
+            'stale_mapping_ids':sorted(set(mapping)-set(entries)),
             'referenced_roots': referenced_roots}
 
 
 def list_requirements(pool_path):
-    catalog = _catalog(_pool(pool_path))
-    from workflow_runtime import ledger_path,open_ledger
+    from workflow_runtime import active,ledger_path,open_ledger
+    # A read-only ACTIVE catalog uses the current index and ledger. Obsolete
+    # LEGACY mappings remain visible as diagnostics, never selectable entries.
+    # All mutating legacy selection paths retain strict mapping validation.
+    catalog = _catalog(_pool(pool_path),allow_stale_mapping=active(pool_path))
     from workflow_registration import packages
     registered=packages(open_ledger(pool_path)) if ledger_path(pool_path).is_file() else {}
     for identifier,item in catalog['entries'].items():
@@ -166,6 +170,7 @@ def list_requirements(pool_path):
         else:
             item['registration']={'state':'CATALOG_ONLY','run_id':None}
     return {'catalog_path': catalog['catalog_path'], 'catalog_sha256': catalog['sha256'],
+            'stale_mapping_ids':catalog['stale_mapping_ids'],
             'requirements': list(catalog['entries'].values())}
 
 

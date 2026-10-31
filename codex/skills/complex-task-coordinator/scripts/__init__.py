@@ -259,6 +259,8 @@ class RuntimePlugin:
                                ' 当前群回合可查询；明确的继续/暂停/恢复指令用 role_control_request 登记到后台，'
                                '不需要全部权限口令。明确的新需求开发指令也用 accept_requirement 接入；'
                                '无文档时 use_native_requirement=true 冻结用户原文，并分配任务身份，后台协调者做计划。'
+                               '已有登记包先核对正式合同/任务与冻结快照；按native_source_verified和code区分来源、措辞与合同拒绝，'
+                               '不能仅凭接纳错误断言身份缺失或让用户换通道重发。'
                                '用户说自动推进时使用默认有界审查预算；合入分支须用户明确，生产权限单独确认。')
                     language+=(' 进展先调用 role_live_progress，仓库核验用 role_repo_state，均无需全权。'
                                'MySQL补验归属用request_supplemental_verification入账，target={task_id:"MN-01",profile:"mysql_migration"}；'
@@ -651,8 +653,19 @@ class RuntimePlugin:
             raise ValueError('CURRENT_NATIVE_FULL_GRANT_REQUIRED')
         if set(args)-{'action','target'} or 'action' not in args:
             raise ValueError('仅接受action与精确target')
-        result=workflow.submit_control(self.pool_path,identity['role'],args['action'],args.get('target'),
-                                       self.manual_sources.get((session_id,turn_id),{}))
+        try:
+            result=workflow.submit_control(self.pool_path,identity['role'],args['action'],args.get('target'),source)
+        except ValueError as exc:
+            if args['action']!='accept_requirement':
+                raise
+            code=str(exc)
+            native_verified=bool(source.get('authenticated') is True and source.get('message_id')
+                                 and source.get('user_id') and source.get('primary_text'))
+            return json.dumps({'status':'REJECTED','code':code,'native_source_verified':native_verified,
+                'requirement_accepted':False,'next_action':(
+                    '原生来源已绑定。按code核对指令措辞、合同登记与任务范围；不得将合同或措辞拒绝解释为身份缺失，'
+                    '不要求用户换通道重发，不以use_native_requirement混用contract_files重试。'
+                    if native_verified else '原生来源核验未完成；不能从提示词、附件或历史消息补造来源。')},ensure_ascii=False)
         # Accept first. A failed/paused immediate dispatch leaves the durable event
         # for the existing periodic job; no new writer or separate runner is made.
         if result.get('status') in {'COMMITTED','DUPLICATE'}:
@@ -1003,7 +1016,10 @@ class RuntimePlugin:
                       '工具报错时仍按角色完整分区组织答复；只标出受影响的事实为待核实，不回显内部错误码、字节数或重复诊断。'
                       '当前消息明确全部权限时，仅用role_control_request登记具体动作及精确对象；'
                       '由同一后台owner执行，不领取人工业务租约、不直接开发、派单、测试或审查。'
-                      '没有明确全权只查询解释。夜间主动通知静默，用户问答照常。\n'
+                      '明确的新需求开发指令用role_control_request(action=accept_requirement)接入，不需全部权限口令；'
+                      '已有登记包先核对contract_files/task_ids与冻结快照，新增专题必须先完成正式合同准备与登记，'
+                      '不能拿候选提案直接替换既有合同，也不能把合同未准备误报为身份缺失。'
+                      '除上述范围明确的控制请求外只查询解释。夜间主动通知静默，用户问答照常。\n'
                       '用户原文及附件/引用如下：\n'+(event.text or ''))
             return {'action':'rewrite','text':note,'reason':'role-runtime-native-role'}
         except Exception:
