@@ -86,3 +86,16 @@ test_requirement_runtime test_mechanism_repair.ActivationRepairTests test_native
 计划发布后，协调者因checkpoint顶层多填open_items被无副作用schema拒绝；随后把整个payload序列化成字符串（state.db 380803、380850），预算交接层先执行字符串.get而抛异常，on_tool统一错误处理将其显示成“角色会话权限核验失败”，掩盖了真实格式问题。正确对象交接及业务权限均没有问题，C已通过真实checkpoint e15464完成安全接续。
 
 workflow_sessions.tool_decision现在先核对checkpoint payload类型：非对象明确返回CHECKPOINT_PAYLOAD_MUST_BE_OBJECT、INVALID_NOT_STARTED、NONE和对象示例，允许修正同ID。不会自动解码字符串或放行新业务动作；对象且yield_execution=true仍需后续完整schema、身份、事件前缀及账本校验。新增隔离检查字符串/数组/null/整数均不抛异常、不释放writer、不改变账本，正常交接仍可提交。定向24项通过（8.140s），完整184项通过（58.898s），日志分别为regression-checkpoint-envelope.log和regression-checkpoint-envelope-full.log。现场部署结果待核验追加。
+
+现场部署核验：源码ee80fc5、备份cfbf618；同一Gateway PID3612975及启动身份，71份源码哈希一致；备份595/1209条清单零差异。不重启、不强清writer、不更改模型或会话预算，不开放生产/宿主权限。
+
+## 17:45:50首次实际代码写入：监督目标完成
+
+17:26:40正式PLAN_PUBLISHED e15442（version=1）和17:27:02/03 B/C领取事件e15443/e15445已真实发生。C在e15464保存阅读与决策检查点、安全退出后，e15469绑定原work的新执行c4400b10be7647ce850062719b97c571，attempt=1保持。17:45:50原生write_file真正写入私有副本：
+
+- `app/scene/result_batch_v2/errors.py`，2046B，SHA256 `594cc5098ad48893383832c8a60688f50936b3fa817e71b88527f1236a3b44a9`。
+- `app/scene/result_batch_v2/canonical.py`，3730B，SHA256 `7412bcd2ea5b199b33184a79a3ffaa7d5fbdd170df5084778d72bf88dbe5ce4b`。
+
+工具调用state.db 380966，成功结果380967/380968均verified=true。17:46:43只读核对Git状态、文件大小/哈希/修改时间一致，目录为`/home/wang/.hermes/role-pool.runtime/workspaces/work-ce2b761c2402479f8b1574c663cb042d/`。这些是原生执行者写入，维护者没有修改业务代码、提交候选或代做验收。B在其原work已跑既有reconcile基线6 passed（380956），其工作区当次仍无实现修改。两任务均DEVELOPING，不以读取材料、运行状态、已有单测或Markdown更新代替开工证据。
+
+固定证据：`/home/wang/work/.local/requirement-preparation-repair-20261031/development-start-verified.json`。记录接受、计划、领单、原生回执、文件哈希、部署及测试信息。此时没有候选交付、新需求独立测试或跨包验收通过，不宣布两专题完成。Foundation后续依赖仍为REC-01→SRC-01；BR-00+REC-01+SRC-01→BR-01→BR-02→BR-03。Spray四任务已接受但尚无计划；17:39真实切换被REQUIREMENT_SWITCH_REQUIRES_DEVELOPER_SAFE_HANDOFF拒绝，保护B/C在途进展，待安全点/提供方产物后由原生协调者接续，无需用户重发或补权限。
