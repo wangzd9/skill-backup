@@ -137,7 +137,7 @@ def accept(ledger, target, provenance, *, command_id):
 
 def scoped_control(provenance, action):
     """A specific imperative is consent to that control, never full tool access."""
-    return (action in {'continue','pause','resume','accept_requirement','request_supplemental_verification','record_user_decision'} and isinstance(provenance,dict)
+    return (action in {'continue','pause','resume','accept_requirement','request_supplemental_verification','record_user_decision','request_final_delivery'} and isinstance(provenance,dict)
             and provenance.get('authenticated') is True and provenance.get('message_id')
             and provenance.get('user_id') and isinstance(provenance.get('primary_text'),str))
 

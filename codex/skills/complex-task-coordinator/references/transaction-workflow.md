@@ -77,3 +77,12 @@ ACK、checkpoint、worker退出分别不代表业务完成。核最近真实状�
 0.16.5：旧覆盖拒绝回执的excluded_files仅在已知path/exclude_reason元数据结构下转为repository_path；原回执及哈希保留，含其他字段的引用不免除证据校验。
 
 0.16.6：同源supplemental_mysql PASS已落账时，异常repair_followup显示COORDINATOR / VERIFICATION_EXCEPTION_CLOSE_REQUIRED，先核原件再显式close；不继续等待已完成的复验，不重复派单，不自动把异常关成PASS。
+
+
+## 0.17.0：最终 Git 交付的专用原生路径
+
+本地需求 COMPLETED 后，候选 authorize_merge 不再适用。用户当前明确要求“合入 <source> 到 main 并 push <remote>，然后更新本地测试环境”时，用 role_control_request(action=request_final_delivery,target={source_branch,target_branch:"main",remote}) 持久登记；不请求 shell、不让用户换会话或重复已登记消息。最终交付使用独立消息幂等槽，旧候选授权请求失败不占用该槽。
+
+后台原 owner 按 next_actions 调用 finalize_delivery(request_id)，受控执行冻结版本预检、fetch、main 合入、非强推及远端 SHA 核验、本地 mock up/test 和 quality_gate。分叉保留main独有提交及范围；有冲突或双方文件交集则停止待审。不触及处理机或生产，不扩展任意命令能力，不改原验收与审查。
+
+每步必须核真实退出码与证据；只凭git合并、push成功或容器健康都不能宣布最终交付完成。BLOCKED保留具体失败步骤与此前成功结果，UNVERIFIED先对账，不换command_id盲重放。当前状态读final_deliveries，不从checkpoint推断。

@@ -262,7 +262,7 @@ class RuntimePlugin:
                                '用户说自动推进时使用默认有界审查预算；合入分支须用户明确，生产权限单独确认。')
                     language+=(' 进展先调用 role_live_progress，仓库核验用 role_repo_state，均无需全权。'
                                'MySQL补验归属用request_supplemental_verification入账，target={task_id:"MN-01",profile:"mysql_migration"}；'
-                               '明确原文即可登记到既有TESTER，不要求全部权限口令。用户裁决用record_user_decision登记原文；'
+                               '明确原文即可登记到既有TESTER，不要求全部权限口令。最终git交付用request_final_delivery登记source_branch/target_branch=main/remote及本地栈授权，由后台finalize_delivery执行；不使用authorize_merge代替。用户裁决用record_user_decision登记原文；'
                                '按解读b等短答复可target={}入账，由后台核对原提问关联，不要求重发明确对象或全权口令。'
                                '只有COMMITTED/DUPLICATE回执才可称后台已收到。'
                                '以当次 checked_at 和 event_high_water 为准；checkpoint 是历史叙述，'
@@ -1184,12 +1184,12 @@ def register(ctx):
         {'name':'role_control_request','description':'可信当前用户明确控制或裁决原文持久登记；由后台owner执行，不需全权口令。',
          'parameters':{'type':'object','properties':{
              'action':{'type':'string','enum':['accept_requirement','select_run','pause','resume','continue','cancel','rework',
-                                            'authorize_service','authorize_merge','revoke_authorization','request_supplemental_verification','record_user_decision']},
+                                            'authorize_service','authorize_merge','revoke_authorization','request_supplemental_verification','record_user_decision','request_final_delivery']},
              'target':control_target_schema()},
              'required':['action'],'additionalProperties':False}},plugin.control_tool,disclosure='direct')
     for name,toolset,actions in (
             ('role_coordination_command','role_coordination',['publish_plan','decide','checkpoint','ack_events','safe_release',
-                'service_submit','service_collect','service_decide','service_resume','service_reject','extend_task_scope','refresh_task_base','refresh_development_base','merge','complete','complete_requirement','append_development_log','commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception']),
+                'service_submit','service_collect','service_decide','service_resume','service_reject','extend_task_scope','refresh_task_base','refresh_development_base','merge','complete','complete_requirement','finalize_delivery','append_development_log','commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception']),
             ('role_development_command','role_development',['deliver','checkpoint','ack_events','safe_release']),
             ('role_test_command','role_testing',['verify','verify_supplemental','verify_integration','deliver_integration','close_verification','checkpoint','ack_events','safe_release'])):
         from workflow_contracts import command_schema

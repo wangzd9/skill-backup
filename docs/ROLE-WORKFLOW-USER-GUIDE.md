@@ -1,6 +1,6 @@
 # 角色工作流使用指南：需求接入、开发、最终验收与恢复
 
-**校正日期：2026-10-30，时间统一为 Asia/Shanghai（+08:00）。适用于已启用业务账本的 ACTIVE 模式。裁决材料版 3.34。观察修复：长测试按受控期限派生宽限期；写权诊断异常/恢复各稳定 120 秒后通知。**
+**校正日期：2026-10-31，时间统一为 Asia/Shanghai（+08:00）。适用于已启用业务账本的 ACTIVE 模式。裁决材料版 3.35。观察修复：长测试按受控期限派生宽限期；写权诊断异常/恢复各稳定 120 秒后通知。**
 
 日常操作在既有协调者飞书群完成；A、B、C 和 TESTER 群用于查看各自工作及控制本角色。固定五角色复用于不同需求，不需要为每个需求重新建群。规划者仍由用户按需手动触发，不是第六个常驻角色。
 
@@ -644,3 +644,20 @@ OCR 提交前被拒不算审查通过，也不必永久停在 REVIEW。当前入
 同源 supplemental_mysql PASS 落账后，返修材料将责任切回 COORDINATOR，显示 VERIFICATION_EXCEPTION_CLOSE_REQUIRED，不再提示等待已完成的复验。协调者仍须核真实原件并显式关闭；异常在关闭前保持未满足，不自动变成 PASS。
 
 SNAPSHOT_STALE 的 refresh_readiness 给出当前提供方、责任人及冻结失败码。提供方全部完成、旧验证及 writer 核退后，原生 reconcile 自动刷新。会话达到原安全交接阈值后只允许保存 yield_execution 检查点或 safe_release；继续只读翻历史也须交接。群查询与报告会话不受此后台限制。详见[修复与上线核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md)。
+
+
+### 13.6 最终 Git 交付（0.17.0）
+
+需求 `COMPLETED` 表示已在冻结特性分支完成本地验收；不表示已合入 main、push 或更新本地栈。原 `authorize_merge` 专用于候选合入，不能作为最终交付授权。
+
+在协调者群明确发送，例如：
+
+```text
+合入 feat/a100-multi-node 到 main 并 push github，然后更新本地测试环境。
+```
+
+群模型用 `role_control_request(action="request_final_delivery", target={"source_branch":"feat/a100-multi-node","target_branch":"main","remote":"github"})` 持久登记。该入口不要求全权口令，且与旧候选授权使用不同消息幂等槽。登记成功后由既有后台 owner 处理 `finalize_delivery(request_id)`；群不开放通用 shell，不新建影子 owner。
+
+入口冻结已验收版本、main 基线、remote 身份、本地脚本哈希和合并预演。分叉时记录 main 独有提交和双方文件范围；冲突或范围交集停止待审，不自动解冲突。固定步骤为 fetch、合并 main、非强推并核远端 SHA、本地 mock up/test、local_quality_gate。这里只管理本地仓库和本地测试栈；不连接处理机或部署生产。
+
+每步有 START、真实退出结果与哈希证据，失败显示 BLOCKED，执行中断且结果不明显示 UNVERIFIED。已成功步骤不因新回合或更换 command_id 再执行；已有成功操作回执可对账接续，缺回执不盲重试。push 成功但本地验证失败仍是未完成交付。当前进度入口的 `final_deliveries` 分开显示这些事实，不用历史 checkpoint 代替当前结果。

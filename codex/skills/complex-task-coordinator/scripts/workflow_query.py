@@ -117,6 +117,8 @@ def progress_context(snapshot, run_id, role):
             'source': 'candidate_delivery' if candidate else 'task_contract'}
     from workflow_completion import facts
     final = facts(snapshot, run_id)
+    from workflow_final_delivery import summary as final_delivery_summary
+    result['final_deliveries']=final_delivery_summary(snapshot,run_id)
     report = final.get('report') or {}
     payload = report.get('payload') or {}
     result['completion'] = {'state': final['state'],
@@ -436,6 +438,8 @@ def live_progress(pool_path, role):
     from workflow_user_decisions import pending as pending_decisions
     from workflow_completion import facts as completion_facts
     completion=completion_facts(snapshot,run_id)
+    from workflow_final_delivery import summary as final_delivery_states
+    packet['final_deliveries']=final_delivery_states(snapshot,run_id)
     packet['completion']={key:completion[key] for key in ('state','work_id','completion_event_id') if key in completion}
     if completion.get('plan'):
         packet['completion'].update(validation_task_id=completion['plan']['validation_task_id'],

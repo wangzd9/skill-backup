@@ -535,6 +535,8 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None, snap
     from workflow_completion import facts as completion_facts, context as completion_context, historical_failures
     from workflow_completion_repair import task_issues
     packet['completion']=completion_facts(snapshot,run_id)
+    from workflow_final_delivery import states as final_delivery_states
+    packet['final_deliveries']=final_delivery_states(snapshot,run_id)
     if role=='COORDINATOR' and packet['completion'].get('state') in ('SNAPSHOT_STALE','REPAIRING','WAITING_DEVELOPMENT'):
         from workflow_completion import refresh_status
         packet['completion']['refresh_readiness']=refresh_status(ledger,snapshot,packet['completion'].get('plan'))
@@ -665,7 +667,7 @@ def command(scope, action, payload, *, command_id):
 def _execute_command(scope, action, payload, *, command_id):
     guard(scope, allow_drain=action in {'checkpoint', 'safe_release','ack_events'})
     identity = identity_from_scope(scope)
-    extra=({'extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','complete_requirement','append_development_log','commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception'}
+    extra=({'extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','complete_requirement','finalize_delivery','append_development_log','commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception'}
            if scope['role']=='COORDINATOR' else {'verify_supplemental','verify_integration','deliver_integration'} if scope['role']=='TESTER' else set())
     if action not in COMMANDS[scope['role']] and action not in extra and action!='ack_events':
         raise ValueError('COMMAND_NOT_ALLOWED_FOR_ROLE')
@@ -688,6 +690,9 @@ def _execute_command(scope, action, payload, *, command_id):
 
 def _validated_command(scope, action, payload, identity, *, command_id):
     ledger = open_ledger(scope['pool_path'], readonly=False)
+    if action=='finalize_delivery':
+        from workflow_final_delivery import execute
+        return execute(ledger,identity,payload,command_id=command_id)
     if action=='resolve_verification_exception':
         from workflow_verification_exceptions import resolve
         return resolve(ledger,identity,payload,command_id=command_id)
@@ -863,6 +868,10 @@ def submit_control(pool_path, role, action, target, provenance):
     if action == 'select_run' and role != 'COORDINATOR':
         raise ValueError('COORDINATOR_REQUIRED')
     command_id='message-control:'+provenance['chat_id']+':'+provenance['message_id']
+    if action=='request_final_delivery':
+        if role!='COORDINATOR':raise ValueError('COORDINATOR_REQUIRED')
+        from workflow_final_delivery import request
+        return request(ledger,target or {},provenance,command_id=command_id+':final-delivery')
     if action=='record_user_decision':
         if role!='COORDINATOR':
             raise ValueError('COORDINATOR_REQUIRED')

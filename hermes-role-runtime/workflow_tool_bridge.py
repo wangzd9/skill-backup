@@ -32,7 +32,8 @@ def usage(role, *, include_background=False):
                '最终PASS后用complete_requirement复核逐AC、本次证据及historical_failures处置并本地收口；coverage_review逐项给closure obligation_id、validation_event_id、result、reason，明确场景/断言/环境语义是否对应；issue_dispositions给issue_id/reason/evidence。'
                '环境预算耗尽后，取得真实恢复证据再用environment_recovered(validation_event_id,summary,evidence)登记新预算，不改原FAIL或UNVERIFIED。'
                '不得用开发任务完成代替验收，不把本地收口称生产启用。规划者仍由用户手动触发。')
-        text+=('协调者的普通 terminal/write_file/patch 按角色禁用；这不是用户授权缺失，不要请求开放 shell。'
+        text+=('最终Git交付与候选合入分开：群用request_final_delivery登记精确source_branch、target_branch=main和remote及本地栈授权；后台见next_actions后用finalize_delivery(request_id)固定执行合入、push、mock up/test/quality_gate，逐步留证据。已完成需求不再使用authorize_merge；失败停止、未知先对账，不重复执行副作用。'
+               '协调者的普通 terminal/write_file/patch 按角色禁用；这不是用户授权缺失，不要请求开放 shell。'
                '本地自动开发按local_development_automation持久执行，派单/验证/返修/安全收口/基线刷新/本地合入不逐项征求同意。'
                'verification_retirements是内部收口请求，TESTER自己safe_release，observer核真实writer退出后清理；不得发明eNNNN a/b用户审批。'
                '未交付开发基线滞后用refresh_development_base(task_id,reason)，不指示A交付空占位候选。'

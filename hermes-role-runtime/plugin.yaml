@@ -1,5 +1,5 @@
 name: role-workflow-runtime
-version: 0.16.6
+version: 0.17.0
 description: "原生角色执行与状态汇报；独立模型总结、按角色调用计量、任务领取通知及有界上下文"
 provides_hooks:
   - on_scheduler_tick

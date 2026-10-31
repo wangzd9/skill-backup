@@ -51,7 +51,8 @@ def capabilities(role):
             'merge_execution': '有效授权spec.repo同仓；共享dirty时受管integration-worktrees隔离合入，回执记录实际位置，operations仅存日志',
             'coordination_actions': ['publish_plan','decide','checkpoint','safe_release','service_submit',
                 'service_collect','service_decide','service_resume','service_reject','extend_task_scope',
-                'refresh_task_base','refresh_development_base','merge','complete','complete_requirement','append_development_log','commit_documentation','resolve_user_decision','resolve_verification_exception'] if role == 'COORDINATOR' else [],
+                'refresh_task_base','refresh_development_base','merge','complete','complete_requirement','finalize_delivery','append_development_log','commit_documentation','resolve_user_decision','resolve_verification_exception'] if role == 'COORDINATOR' else [],
+            'final_delivery': '群用request_final_delivery持久登记精确分支/remote及本地栈授权；后台finalize_delivery固定执行main合入、push、mock up/test与quality_gate，分步留证据，不开放shell；失败停止不隐式重试。',
             'final_acceptance': '原生completion计划自动冻结集成版本并排队TESTER；verify_integration逐AC取证，deliver_integration交付，代码FAIL回原owner新attempt；最终PASS后协调者complete_requirement复核本地收口；无需用户另发派单裁决，规划者仍手动。',
             'documentation_policy': '协调者先用role_repo_state的documentation_review读真实diff与SHA，核对事实和范围；'
                 '可确认的普通文档用commit_documentation单独提交，不能因归属未知一律等待用户；代码、指令与AC不走此入口。',

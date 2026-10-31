@@ -213,7 +213,7 @@ def _contract(role, action):
             'command_alternatives':guidance[role][action],
             'notice':'这是状态/责任提示，不是command。按prepare中的当前任务、前置条件及关联目录项执行真实命令；不得把提示名提交为动作。'}
     extra={'COORDINATOR':{'service_resume','service_reject','extend_task_scope','refresh_task_base',
-        'refresh_development_base','complete','complete_requirement','append_development_log',
+        'refresh_development_base','complete','complete_requirement','finalize_delivery','append_development_log',
         'commit_documentation','resolve_user_decision','environment_recovered','resolve_verification_exception'},
         'TESTER':{'verify_supplemental','verify_integration','deliver_integration'}}
     if action not in COMMANDS[role] | extra.get(role,set()) | {'ack_events'}:

@@ -112,6 +112,9 @@ def next_actions(packet, ledger, *, snapshot=None):
                 'payload':{'observation_event_id':item['observation_event_id']},
                 'reason':'核UNVERIFIED原始证据后显式选择repair/investigate/close。repair仅原范围已完成任务，落实真实新attempt；'
                     '已有处置则先核落账派单/安全核退/真实复验，不等待MN-07失败、不扩范围、不重复同因提交。'})
+    if role=='COORDINATOR':
+        from workflow_final_delivery import next_actions as final_delivery_actions
+        result.extend(final_delivery_actions(snapshot,selected))
     final_actions=completion_actions(packet,ledger,snapshot=snapshot)
     if final_actions:
         return result+final_actions

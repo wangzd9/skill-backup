@@ -105,6 +105,8 @@ def payload_schema(action):
     if action in ('verify_integration','deliver_integration','complete_requirement'):
         from workflow_completion_contracts import payload_schema as completion_schema
         return completion_schema(action)
+    if action=='finalize_delivery':
+        return obj({'request_id':TEXT},['request_id'])
     if action=='resolve_user_decision':
         return obj({'request_id': TEXT, 'decision_id': TEXT,
                     'summary': TEXT, 'evidence': {'type':'object','minProperties':1}},
@@ -194,7 +196,9 @@ def control_target_schema():
     base=[v for v in CONTROL_TARGET['oneOf'] if 'task_ids' not in v.get('properties',{})]
     supplemental=obj({'run_id':TEXT,'task_id':TEXT,'profile':{'const':'mysql_migration'}},['task_id','profile'])
     decision=obj({'run_id':TEXT,'decision_id':TEXT},['decision_id'])
-    return {'oneOf':[intake,run_policy,supplemental,decision,*base]}
+    delivery=obj({'run_id':TEXT,'source_branch':TEXT,'target_branch':{'const':'main'},'remote':TEXT},
+        ['source_branch','target_branch','remote'])
+    return {'oneOf':[intake,run_policy,supplemental,decision,delivery,*base]}
 
 
 def validate_payload(action, payload):
@@ -203,7 +207,7 @@ def validate_payload(action, payload):
         errors=list(Draft202012Validator(payload_schema(action)).iter_errors(payload))
         if errors:raise ValueError('INVALID_ACK_PAYLOAD: through 必须是已发行的连续前缀水位')
         return
-    if action not in PAYLOADS and action not in ('resolve_verification_exception','extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','append_development_log','commit_documentation','verify_supplemental','resolve_user_decision','verify_integration','deliver_integration','complete_requirement'):
+    if action not in PAYLOADS and action not in ('resolve_verification_exception','extend_task_scope','service_resume','service_reject','refresh_task_base','refresh_development_base','complete','finalize_delivery','append_development_log','commit_documentation','verify_supplemental','resolve_user_decision','verify_integration','deliver_integration','complete_requirement'):
         raise ValueError('COMMAND_UNSUPPORTED')
     errors = sorted(Draft202012Validator(payload_schema(action)).iter_errors(payload),
                     key=lambda error: list(map(str, error.absolute_path)))

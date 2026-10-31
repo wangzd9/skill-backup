@@ -905,6 +905,10 @@ def render_live_progress_fallback(packet, role):
             'COMPLETED':'本地需求验收已收口'}
         if final:
             lines.append(_live_bullet('需求验收', final_labels.get(final.get('state'),final.get('state') or '待核实')+'；开发叶任务完成与需求验收分别记账。'))
+        for delivery in packet.get('final_deliveries',[]):
+            stage=delivery.get('stage','待执行')
+            last=(delivery.get('stages') or [{}])[-1]
+            lines.append(_live_bullet('最终Git交付', f"{delivery['state']} · {stage}；main {str(last.get('head','待核实'))[:12]}；{last.get('code','逐步回执见原生交付记录')}"))
         if completion.get('head'):
             lines.append(_live_bullet('固定验证版本', str(completion['head'])[:12]+'；结果及返修按本次账本快照核对。'))
         lines += ['', '**执行者进度**', '']

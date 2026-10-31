@@ -233,6 +233,9 @@ def start_coverage(home, scope, at=None):
 
 def observation_grace_for_tool(tool_name, args=None):
     """Use the enforced test deadline to avoid a shorter observation alarm."""
+    if (str(tool_name)=='role_coordination_command' and isinstance(args,dict)
+            and args.get('action')=='finalize_delivery'):
+        return 3*3600+4*120+180
     if str(tool_name) != 'role_test_command' or not isinstance(args, dict):
         return 180
     payload = args.get('payload') if isinstance(args.get('payload'), dict) else {}

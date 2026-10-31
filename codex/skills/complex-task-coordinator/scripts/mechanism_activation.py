@@ -96,6 +96,7 @@ TARGETS={
     'workflow_intake.py':('accept','scoped_control'),
     'workflow_user_decisions.py':('answer_source','record','pending','resolve','recover_native_answer'),
     'workflow_supplemental.py':('_context_from_event','source_task','request','queue_repairs','permits_closure','summary','docker','mysql_session','verify'),
+    'workflow_final_delivery.py':('git','digest','source','preflight','request','states','summary','next_actions','_record','execute'),
     'workflow_merge.py':('merge_candidate',),
     'workflow_integration_recovery.py':('prepare_pending_base','refresh_undelivered','refresh_base'),
     'workflow_tool_bridge.py':('usage',),
