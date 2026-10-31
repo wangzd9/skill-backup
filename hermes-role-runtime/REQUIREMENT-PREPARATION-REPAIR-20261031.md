@@ -36,3 +36,5 @@ test_requirement_runtime test_mechanism_repair.ActivationRepairTests test_native
 真实业务状态单独以现场回执为准；机制测试通过不表示两专题已经接纳、开发或验收完成。现场采用记录在完成核验后追加。
 
 现场已核验热加载前后Gateway PID3612975、进程启动身份不变；71份激活源码SHA全部匹配。原消息已恢复为两张真实准备工作单：Foundation e15395（prepare-d7542139ec5b900c59d346c63b082c1f）、Spray e15396（prepare-1ea43dd0ccff73591ffb162951797ccd）；单字母B仅补记待关联答复e15394。15:24后台原生新执行e15399已发行包含这三条业务事件的输入；尚不能据此宣称已接纳或已派单。真实后续结果以账本为准。
+
+实际后台处理暴露另一处材料缺口：短答复恢复只附旧checkpoint，协调者会反复搜索日志寻找选项。恢复入口现同时链接同一原生会话中紧邻该用户消息的已发布assistant回答（本例行380090），保存哈希artifact；这是历史问答证据，不是新授权，语义仍由owner核对。完整开发准备指令明确不依赖短答复的历史选项关联。

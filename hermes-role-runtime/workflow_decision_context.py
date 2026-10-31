@@ -102,7 +102,7 @@ def _basis(packet, snapshot, action):
         'preparation_events':[e for e in snapshot['events'] if action.get('request_id') and
             e['kind'].startswith('REQUIREMENT_PREPARATION_') and e['payload'].get('request_id')==action['request_id']],
         'user_answer':[e for e in snapshot['events'] if action.get('request_id') and
-            e['kind'] in ('USER_DECISION_RECORDED','USER_DECISION_RESOLVED') and
+            e['kind'] in ('USER_DECISION_RECORDED','USER_DECISION_RESOLVED','USER_DECISION_CONTEXT_LINKED') and
             e['payload'].get('request_id')==action['request_id']],
         'proposed_action':action}
 
@@ -333,8 +333,9 @@ def prepare(packet, snapshot, item):
         if journal:
             facts['preparation_request']['staged_review']={key:journal[key] for key in ('event_id','review_artifact') if key in journal}
     elif action.get('request_id'):
-        facts['user_answer']=next(e for e in snapshot['events'] if e['kind']=='USER_DECISION_RECORDED'
-            and e['payload']['request_id']==action['request_id'])
+        from workflow_user_decisions import pending
+        facts['user_answer']=next(e for e in pending(snapshot,(packet.get('run') or {}).get('run_id'))
+            if e['payload']['request_id']==action['request_id'])
         facts['question_link_state']='COORDINATOR_MUST_VERIFY_ORIGINAL_QUESTION_AND_OPTIONS'
     if item['target'].get('observation_event_id'):
         facts['verification_exception']=next((i for i in packet.get('verification_exceptions',[])

@@ -95,9 +95,10 @@ class UserDecisionTests(LedgerFixture):
         state=self.root/'state.sqlite3'
         with sqlite3.connect(state) as db:
             db.execute('CREATE TABLE sessions(id,source,user_id,chat_id)')
-            db.execute('CREATE TABLE messages(id,session_id,role,content,platform_message_id,timestamp)')
+            db.execute('CREATE TABLE messages(id,session_id,role,content,platform_message_id,timestamp,tool_calls)')
             db.execute('INSERT INTO sessions VALUES(?,?,?,?)',('s','feishu','user','chat'))
-            db.execute('INSERT INTO messages VALUES(?,?,?,?,?,?)',(7,'s','user',
+            db.execute('INSERT INTO messages(id,session_id,role,content,platform_message_id,timestamp) VALUES(?,?,?,?,?,?)',(6,'s','assistant','方案 A 保持原状；方案 B 按原指令准备合同。',None,122))
+            db.execute('INSERT INTO messages(id,session_id,role,content,platform_message_id,timestamp) VALUES(?,?,?,?,?,?)',(7,'s','user',
                 '[角色群只读/控制请求] 角色：COORDINATOR\n权限说明\n用户原文及附件/引用如下：\n'+FULL_RULING,
                 'answer-1',123))
         result=recover_native_answer(self.pool,state,7,expected_run_id='run-one')
@@ -105,6 +106,8 @@ class UserDecisionTests(LedgerFixture):
         recorded = pending(self.ledger.snapshot(), 'run-one')[0]['payload']
         self.assertEqual(FULL_RULING, recorded['answer'])
         self.assertEqual('native_history_recovery', recorded['provenance']['source_kind'])
+        self.assertEqual(6,recorded['question_context']['question_message_db_row'])
+        self.assertTrue(recorded['question_context']['no_new_permissions'])
         self.assertEqual('answer-1', recorded['provenance']['message_id'])
         duplicate=recover_native_answer(self.pool,state,7,expected_run_id='run-one')
         self.assertEqual('DUPLICATE',duplicate['status'])

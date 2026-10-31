@@ -96,7 +96,7 @@ TARGETS={
     'workflow_integration_workspace.py':('select',),
     'workflow_preparation.py':('digest','committed','task_in_source','requests','_request','_paused','enqueue','_path','_owner','prepare','activate','next_actions','recover_native_request'),
     'workflow_intake.py':('command_identity','explicit_development','accept','scoped_control'),
-    'workflow_user_decisions.py':('answer_source','record','pending','resolve','recover_native_answer'),
+    'workflow_user_decisions.py':('answer_source','record','pending','resolve','recover_native_answer','recover_question_context'),
     'workflow_supplemental.py':('_context_from_event','source_task','request','queue_repairs','permits_closure','summary','docker','mysql_session','verify'),
     'workflow_final_delivery.py':('git','digest','source','preflight','request','states','summary','_completed','next_actions','_record','execute'),
     'workflow_delivery_recovery.py':('executor_digest','project','_check','request_recovery','_record','execute_recovery'),

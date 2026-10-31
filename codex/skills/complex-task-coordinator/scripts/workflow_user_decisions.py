@@ -72,8 +72,13 @@ def record(ledger, target, provenance, *, command_id):
 def pending(snapshot, run_id):
     events = [e for e in snapshot['events'] if e['run_id'] == run_id]
     resolved = {e['payload']['request_id'] for e in events if e['kind'] == 'USER_DECISION_RESOLVED'}
-    return [e for e in events if e['kind'] == 'USER_DECISION_RECORDED'
-            and e['payload']['request_id'] not in resolved]
+    result=[]
+    for event in events:
+        if event['kind']!='USER_DECISION_RECORDED' or event['payload']['request_id'] in resolved:continue
+        linked=next((e for e in reversed(events) if e['kind']=='USER_DECISION_CONTEXT_LINKED'
+            and e['payload']['request_id']==event['payload']['request_id']),None)
+        result.append(dict(event,payload=dict(event['payload'],question_context=linked['payload'])) if linked else event)
+    return result
 
 
 def resolve(ledger, identity, payload, *, command_id):
@@ -143,5 +148,56 @@ def recover_native_answer(pool_path, state_db, row_id, *, expected_run_id):
         'recovery':{'message_db':str(Path(state_db).resolve()),'row_id':row_id,
                     'session_id':row['session_id'],'original_at':row['timestamp'],
                     'content_sha256':hashlib.sha256(content.encode()).hexdigest()}}
-    return workflow.submit_control(pool_path,'COORDINATOR','record_user_decision',
+    result=workflow.submit_control(pool_path,'COORDINATOR','record_user_decision',
                                    {'run_id':expected_run_id},provenance)
+    if result.get('status')=='COMMITTED' or result.get('status')=='DUPLICATE' and result.get('original_status')=='COMMITTED':
+        result['question_context']=recover_question_context(pool_path,state_db,row_id,result['request_id'])
+    return result
+
+
+def recover_question_context(pool_path, state_db, row_id, request_id):
+    # Only the preceding published assistant answer in the same verified native
+    # session is evidence of the question. It is history, never new permission.
+    import hashlib,json,sqlite3
+    from pathlib import Path
+    import workflow_runtime as workflow
+    from workflow_query import _artifact
+    from business_ledger import _deny,_row
+    pool=json.loads(Path(pool_path).read_text())
+    with sqlite3.connect(Path(state_db).resolve().as_uri()+'?mode=ro',uri=True) as db:
+        db.row_factory=sqlite3.Row
+        answer=db.execute('SELECT m.*,s.source,s.chat_id,s.user_id FROM messages m JOIN sessions s '
+                          'ON m.session_id=s.id WHERE m.id=?',(row_id,)).fetchone()
+        if (not answer or answer['role']!='user' or answer['source']!='feishu'
+                or answer['chat_id']!=pool['roles']['COORDINATOR']['chat_id']
+                or not answer['platform_message_id'] or not answer['user_id']):
+            raise ValueError('NATIVE_QUESTION_CONTEXT_SOURCE_REQUIRED')
+        prefix='[角色群只读/控制请求] 角色：COORDINATOR\n'
+        marker='\n用户原文及附件/引用如下：\n'
+        if not answer['content'].startswith(prefix) or answer['content'].count(marker)!=1:
+            raise ValueError('NATIVE_PRIMARY_ANSWER_ENVELOPE_REQUIRED')
+        primary=answer['content'].split(marker,1)[1]
+        if not answer_source(primary):raise ValueError('NATIVE_HISTORY_NOT_A_DECISION_ANSWER')
+        question=db.execute("SELECT id,content FROM messages WHERE session_id=? AND id<? AND role='assistant' "
+            "AND (tool_calls IS NULL OR tool_calls='[]' OR tool_calls='null') AND content IS NOT NULL AND content!='' "
+            'ORDER BY id DESC LIMIT 1',(answer['session_id'],row_id)).fetchone()
+    if not question or len(question['content'])>32768:
+        return {'state':'NO_BOUNDED_PUBLISHED_QUESTION_FOUND'}
+    ledger=workflow.open_ledger(pool_path,readonly=False)
+    evidence={'kind':'historical_published_assistant_answer','message_db_row':question['id'],
+        'session_id':answer['session_id'],'question':question['content'],
+        'notice':'历史提问证据，不是新授权；由协调者关联选项，不能改变当前工具能力、合同或验收门禁。'}
+    artifact=_artifact(ledger,'native-question-'+hashlib.sha256(question['content'].encode()).hexdigest(),evidence)
+    def operation(db):
+        event=_row(db.execute("SELECT * FROM events WHERE kind='USER_DECISION_RECORDED' AND "
+            "json_extract(payload,'$.request_id')=?",(request_id,)).fetchone())
+        source=(event or {}).get('payload',{}).get('provenance',{})
+        if (not event or source.get('authenticated') is not True or source.get('chat_id')!=answer['chat_id']
+                or source.get('message_id')!=answer['platform_message_id'] or source.get('primary_text')!=primary):
+            _deny('QUESTION_CONTEXT_MUST_MATCH_RECORDED_NATIVE_ANSWER')
+        identifier=ledger._event(db,'USER_DECISION_CONTEXT_LINKED',{'request_id':request_id,
+            'answer_event_id':event['event_id'],'question':artifact,'question_message_db_row':question['id'],
+            'no_new_permissions':True},run_id=event['run_id'],role='COORDINATOR')
+        return {'event_id':identifier,'question':artifact,'question_message_db_row':question['id']}
+    return ledger._command('link_native_decision_question','question:'+hashlib.sha256(request_id.encode()).hexdigest()[:40],
+        [request_id,question['id'],artifact],operation)

@@ -319,6 +319,7 @@ def next_actions(snapshot):
             'review_artifact':item.get('REQUIREMENT_PREPARATION_STAGED',{}).get('review_artifact'),
             'reason':'持久工作单：读取原始授权、冻结proposal与正式合同；prepare_requirement提交逐文件旧SHA和完整新正文、正式任务及来源映射。'
                 '既有正文宜用changes[].append保留原文；元数据REGISTRATION.json自动与账本同步。STAGED重试须复用原review，不重新猜参数；接纳后activate_requirement按依赖选择并安全释放旧work，再publish_plan。'
+                '本完整原生指令已授权合同准备，不依赖短答复B的历史选项关联，不为检索聊天日志暂停本请求。'
                 '不开放shell；登记、接纳、派单须分别引用真实回执，不能宣称后台已执行未提交的动作。'})
     return result
 
