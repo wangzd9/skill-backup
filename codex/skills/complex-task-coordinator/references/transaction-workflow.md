@@ -86,3 +86,5 @@ ACK、checkpoint、worker退出分别不代表业务完成。核最近真实状�
 后台原 owner 按 next_actions 调用 finalize_delivery(request_id)，受控执行冻结版本预检、fetch、main 合入、非强推及远端 SHA 核验、本地 mock up/test 和 quality_gate。分叉保留main独有提交及范围；有冲突或双方文件交集则停止待审。不触及处理机或生产，不扩展任意命令能力，不改原验收与审查。
 
 每步必须核真实退出码与证据；只凭git合并、push成功或容器健康都不能宣布最终交付完成。BLOCKED保留具体失败步骤与此前成功结果，UNVERIFIED先对账，不换command_id盲重放。当前状态读final_deliveries，不从checkpoint推断。
+
+0.17.1–0.17.2补充：只读进度的final_deliveries为当前状态卡，完整逐步记录在artifacts.manifest的final_deliveries原件；失败保留实际code/退出结果，不因push完成而宣称完整交付。原生finalize_delivery命令与身份/门禁不变。

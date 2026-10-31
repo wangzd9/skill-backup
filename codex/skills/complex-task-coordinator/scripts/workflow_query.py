@@ -439,7 +439,14 @@ def live_progress(pool_path, role):
     from workflow_completion import facts as completion_facts
     completion=completion_facts(snapshot,run_id)
     from workflow_final_delivery import summary as final_delivery_states
-    packet['final_deliveries']=final_delivery_states(snapshot,run_id)
+    delivery_rows=final_delivery_states(snapshot,run_id)
+    packet['final_deliveries']=[{**{k:r[k] for k in ('request_id','state','stage') if k in r},
+        'completed_stage_count':len(r.get('completed_stages',[])),
+        'push_verified':'push' in r.get('completed_stages',[]),
+        **{k:v for k,v in (r.get('stages') or [{}])[-1].items() if k in ('head','exit_code','code')}}
+        for r in delivery_rows]
+    from workflow_final_delivery import states as final_delivery_details
+    packet['artifacts']['final_deliveries']=_artifact(ledger,role+'-final-deliveries',final_delivery_details(snapshot,run_id))
     packet['completion']={key:completion[key] for key in ('state','work_id','completion_event_id') if key in completion}
     if completion.get('plan'):
         packet['completion'].update(validation_task_id=completion['plan']['validation_task_id'],

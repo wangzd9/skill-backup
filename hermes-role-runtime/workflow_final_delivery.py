@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 import subprocess
 
-from runtime_common import locked, read_json, save_json
+from runtime_common import locked, read_json
 
 SCRIPTS = ('scripts/local_stack.sh', 'scripts/local_quality_gate.sh')
 STAGES = ('fetch', 'merge', 'push', 'local_up', 'local_test', 'quality_gate')
@@ -143,8 +143,13 @@ def states(snapshot, run_id):
 
 
 def summary(snapshot, run_id):
-    return [{k:s[k] for k in ('request_id','state','stage','stages') if k in s}
-            for s in states(snapshot,run_id)]
+    # 完整逐步证据留在artifact；固定预算入口只内联当前事实与成功步骤。
+    return [{**{k:s[k] for k in ('request_id','state','stage') if k in s},
+        'stage_count':len(s['stages']),
+        'completed_stages':[v['stage'] for v in s['stages'] if v['state'] in ('READY','COMPLETED')],
+        'stages':[{k:v[k] for k in ('stage','state','head','exit_code','code') if k in v}
+                  for v in s['stages'][-1:]]}
+        for s in states(snapshot,run_id)]
 
 
 def next_actions(snapshot, run_id):
@@ -264,8 +269,10 @@ def execute(ledger, identity, payload, *, command_id):
                 row['state']='READY'
             except (ValueError,OSError,subprocess.SubprocessError,IndexError) as exc:
                 code=str(exc) if isinstance(exc,ValueError) else 'FINAL_DELIVERY_'+type(exc).__name__.upper()
+                refs={'path':str(result_path),'sha256':hashlib.sha256(result_path.read_bytes()).hexdigest()} if result_path.is_file() else None
                 return _record(ledger,identity,request_id,stage,{'state':'BLOCKED','code':code,
-                    'head':git(repo,'rev-parse','refs/heads/main'),'evidence':str(result_path),
+                    'head':git(repo,'rev-parse','refs/heads/main'),'evidence':refs,
+                    'exit_code':persisted.get('exit_code'),
                     'replay_allowed':False,'next':'保留已完成步骤与原日志，核对真实阻塞；不能冒充交付成功或用新ID重复副作用。'})
         return {'status':'COMPLETED','request_id':request_id,'head':git(repo,'rev-parse','refs/heads/main'),
             'push_verified':True,'local_validation':'PASS','production_permission':False}

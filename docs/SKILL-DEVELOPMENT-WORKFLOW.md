@@ -918,3 +918,5 @@ Hermes主模型/provider、OCR及claude-mem记忆压缩均使用 `http://192.168
 | 3.33 | 2026-10-30 | 历史拒绝覆盖的排除文件路径使用同一元数据分类，保留原件哈希与证据校验 | [实施与核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md) |
 
 | 3.34 | 2026-10-30 | 同源MySQL复验PASS后将异常材料责任切回协调者显式关闭，保留原UNVERIFIED | [实施与核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md) |
+
+2026-10-31 0.17.1–0.17.2：最终交付的逐步历史与证据完整保留在哈希artifact，8KiB进度核心只保留当前state/stage/head/code及push核验，修复真实生产入口的预算溢出；追加27项回归及8080字节生产查询通过。未扩大预算、未删除业务门禁，也不把质量门禁失败记成成功。

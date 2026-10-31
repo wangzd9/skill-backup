@@ -59,6 +59,20 @@ class FinalGitDeliveryTests(LedgerFixture):
         again=delivery.execute(self.ledger,self.coord,{'request_id':r['request_id']},command_id='changed-command')
         self.assertEqual('COMPLETED',again['status']);self.assertFalse(again['replay_allowed'])
         self.assertEqual([],delivery.next_actions(self.ledger.snapshot(),'run-one'))
+        compact=delivery.summary(self.ledger.snapshot(),'run-one')[0]
+        self.assertEqual(6,compact['stage_count'])
+        self.assertEqual(list(delivery.STAGES),compact['completed_stages'])
+        self.assertLess(len(json.dumps(compact).encode()),1000)
+        self.assertNotIn('evidence',compact['stages'][0])
+        from workflow_query import live_progress
+        with mock.patch('workflow_runtime.open_ledger',return_value=self.ledger):
+            live=live_progress(self.root/'isolated-pool.json','COORDINATOR')
+        self.assertLess(len(json.dumps(live,ensure_ascii=False).encode()),8192)
+        self.assertEqual('COMPLETED',live['final_deliveries'][0]['state'])
+        self.assertEqual(head,live['final_deliveries'][0]['head'])
+        self.assertNotIn('stages',live['final_deliveries'][0])
+        self.assertTrue(live['final_deliveries'][0]['push_verified'])
+        self.assertEqual(6,live['final_deliveries'][0]['completed_stage_count'])
         self.assertEqual(head,self.git('rev-parse','main'))
 
     def test_remote_advance_stops_before_merge_and_push(self):
@@ -85,6 +99,7 @@ class FinalGitDeliveryTests(LedgerFixture):
         r=self.request()
         result=delivery.execute(self.ledger,self.coord,{'request_id':r['request_id']},command_id='execute')
         self.assertEqual('BLOCKED',result['state']);self.assertEqual('FINAL_DELIVERY_QUALITY_GATE_FAILED',result['code'])
+        self.assertEqual(7,result['exit_code']);self.assertIn('sha256',result['evidence'])
         self.assertEqual(self.git('rev-parse','main'),self.git('rev-parse','refs/heads/main',cwd=self.remote))
         self.assertEqual('BLOCKED',delivery.execute(self.ledger,self.coord,{'request_id':r['request_id']},command_id='again')['status'])
 

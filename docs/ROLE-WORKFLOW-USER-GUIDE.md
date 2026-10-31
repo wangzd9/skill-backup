@@ -646,7 +646,7 @@ OCR 提交前被拒不算审查通过，也不必永久停在 REVIEW。当前入
 SNAPSHOT_STALE 的 refresh_readiness 给出当前提供方、责任人及冻结失败码。提供方全部完成、旧验证及 writer 核退后，原生 reconcile 自动刷新。会话达到原安全交接阈值后只允许保存 yield_execution 检查点或 safe_release；继续只读翻历史也须交接。群查询与报告会话不受此后台限制。详见[修复与上线核验](analysis/coordinator-health-audit-20261030/WORKFLOW-RECOVERY-CLOSEOUT-REPAIR.md)。
 
 
-### 13.6 最终 Git 交付（0.17.0）
+### 13.6 最终 Git 交付（0.17.0–0.17.2）
 
 需求 `COMPLETED` 表示已在冻结特性分支完成本地验收；不表示已合入 main、push 或更新本地栈。原 `authorize_merge` 专用于候选合入，不能作为最终交付授权。
 
@@ -661,3 +661,5 @@ SNAPSHOT_STALE 的 refresh_readiness 给出当前提供方、责任人及冻结�
 入口冻结已验收版本、main 基线、remote 身份、本地脚本哈希和合并预演。分叉时记录 main 独有提交和双方文件范围；冲突或范围交集停止待审，不自动解冲突。固定步骤为 fetch、合并 main、非强推并核远端 SHA、本地 mock up/test、local_quality_gate。这里只管理本地仓库和本地测试栈；不连接处理机或部署生产。
 
 每步有 START、真实退出结果与哈希证据，失败显示 BLOCKED，执行中断且结果不明显示 UNVERIFIED。已成功步骤不因新回合或更换 command_id 再执行；已有成功操作回执可对账接续，缺回执不盲重试。push 成功但本地验证失败仍是未完成交付。当前进度入口的 `final_deliveries` 分开显示这些事实，不用历史 checkpoint 代替当前结果。
+
+0.17.1–0.17.2：逐步完整回执移入哈希artifact，进度核心只保留当前状态、步骤、已完成数量、push核验与失败码，避免新增交付记录撑爆8KiB只读入口。当前结果与历史检查点分开；真实质量门禁失败不因push成功而转为完成。
