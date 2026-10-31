@@ -746,7 +746,8 @@ class BusinessLedger:
                 if work['role'] != 'COORDINATOR' or work['run_id'] != run_id:
                     _deny('COORDINATOR_REQUIRED')
             if type(version) is not int or version < 1 or version != (run['plan_version'] or 0) + 1:
-                _deny('PLAN_VERSION_NOT_NEXT')
+                _deny('PLAN_VERSION_NOT_NEXT', current_version=run['plan_version'],
+                      expected_version=(run['plan_version'] or 0)+1, requested_version=version)
             if not isinstance(tasks, list) or not tasks:
                 _deny('EMPTY_PLAN')
             task_map = {}
@@ -758,7 +759,11 @@ class BusinessLedger:
                     _deny('INVALID_TASK_SPEC')
                 task = item.get('task_id')
                 if task not in run['task_ids'] or task in task_map or item.get('role') not in ('A','B','C'):
-                    _deny('TASK_OUTSIDE_ACCEPTED_SCOPE_OR_DUPLICATE')
+                    _deny('TASK_OUTSIDE_ACCEPTED_SCOPE_OR_DUPLICATE',task_id=task,
+                          accepted_task_ids=run['task_ids'],
+                          unknown_task_ids=sorted({entry['task_id'] for entry in tasks
+                              if isinstance(entry,dict) and isinstance(entry.get('task_id'),str)
+                              and entry['task_id'] not in run['task_ids']}))
                 if not _FULL_COMMIT.fullmatch(str(item.get('base', ''))) or not item.get('ac_version'):
                     _deny('FROZEN_BASE_AND_AC_REQUIRED')
                 scope = item.get('scope')

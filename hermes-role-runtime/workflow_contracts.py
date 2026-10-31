@@ -12,7 +12,7 @@ def obj(properties, required=()):
 TEXT = {'type': 'string', 'minLength': 1}
 STRINGS = {'type': 'array', 'items': TEXT}
 EVIDENCE = obj({'path': {**TEXT,'description':'持久证据文件的绝对路径；不相对candidate.repo或工具cwd猜测。自测输出使用输入包delivery_evidence.directory，避免弄脏候选。'}, 'sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'}}, ['path'])
-TASK = obj({'task_id': TEXT, 'role': {'enum': ['A', 'B', 'C']},
+TASK = obj({'task_id': {**TEXT,'description':'精确使用当前run已接纳的task_ids，不缩写、改名或自行删除前缀；prepare材料给出完整集合。'}, 'role': {'enum': ['A', 'B', 'C']},
             'dependencies':{**STRINGS,'description':'完整依赖任务集合；使用stage_dependencies时必须恰好等于三个阶段依赖的并集。'},
             'stage_dependencies': {**obj({'development_start':STRINGS,'integration':STRINGS,'acceptance':STRINGS},
                                       ['development_start','integration','acceptance']),
@@ -46,7 +46,8 @@ PAYLOADS = {
     'checkpoint': obj({'checkpoint': {'type': 'object'}, 'processed_through': {'type': 'integer', 'minimum': 0},
                        'yield_execution': {'type': 'boolean'}}, ['checkpoint']),
     'safe_release': obj({'reason': TEXT}, ['reason']),
-    'publish_plan': obj({'version': {'type': 'integer', 'minimum': 1},
+    'publish_plan': obj({'version': {'type': 'integer', 'minimum': 1,
+                         'description':'当前已成功提交的plan_version+1；尚无计划时必须为1。失败次数及command_id后缀不推进版本；prepare预填准确值。'},
                          'tasks': {'type': 'array', 'minItems': 1, 'items': TASK}}, ['version', 'tasks']),
     'deliver': obj({'candidate': obj({'repo': TEXT, 'base': TEXT, 'head': TEXT, 'ac_version': TEXT,
                                      'evidence': {'type': 'array', 'minItems': 1, 'items': EVIDENCE},

@@ -233,6 +233,8 @@ def _contract(role, action):
         result['execution_rules']=test_execution_rules()
     if action=='publish_plan':
         result['execution_rules']={
+            'version':'仅成功提交推进版本；version必须为当前plan_version+1，首次为1，不是尝试次数。',
+            'task_ids':'只使用当前run已接纳task_ids原编号，不缩写或改前缀；required_checks逐任务填写，不在payload顶层填写。',
             'scope':'仓库相对文件路径/glob，不是实现叙述；scope会成为执行者真实写入边界。',
             'staged_required':['ac','acceptance','inputs','stop_conditions','minimum_reading_set','risk_scenarios','test_environment','escalation_conditions'],
             'staged_dependencies':'development_start ⊆ integration ⊆ acceptance；三个集合并集必须恰好等于dependencies。晚期依赖必须有dependency_contracts，逐项匹配同计划提供方的contract_id/version/interface，并给替身simulation。',
@@ -353,6 +355,12 @@ def prepare(packet, snapshot, item):
     if action['action'] in ('complete_requirement','environment_recovered','verify_integration','deliver_integration'):
         facts['completion']=packet.get('completion');facts['historical_failures']=packet.get('historical_failures')
     draft={k:v for k,v in (action.get('payload') or {}).items() if k not in ('result','decision','summary','supersedes','coverage_review','issue_dispositions')}
+    if action['action']=='publish_plan':
+        run=packet.get('run') or {}
+        draft['version']=(run.get('plan_version') or 0)+1
+        facts['plan_admission']={'run_id':run.get('run_id'),
+            'current_version':run.get('plan_version'),'expected_version':draft['version'],
+            'accepted_task_ids':run.get('task_ids',[])}
     for field in ('candidate_id','action_id','request_id'):
         if action.get(field):draft[field]=action[field]
     if action['action']=='service_submit':

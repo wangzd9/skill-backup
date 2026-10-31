@@ -149,7 +149,9 @@ def next_actions(packet, ledger, *, snapshot=None):
                         'reason':'依赖已集成，未交付任务直接刷新基线，不生成空占位候选'},
                         'reason':'等待开发者checkpoint安全交出后受控刷新；保留旧私有工作区用于迁移成果，无需用户授权。'})
         if not (packet.get('run') or {}).get('plan_version'):
-            result.append({'action':'publish_plan','reason':'已接受需求需要拆分计划；按冻结合同分配范围和门禁。需要提前并行时显式提供单调stage_dependencies、提供方provided_contracts及匹配的dependency_contracts、最小阅读集、风险场景、验证环境和升级条件；接口无法匹配则保持串行。开发提前开始不开放集成与最终验收门禁，风险场景和原AC均须在固定最终候选上验证。'})
+            result.append({'action':'publish_plan','payload':{'version':1},
+                'accepted_task_ids':packet['run'].get('task_ids',[]),
+                'reason':'首份成功计划version=1，失败次数不推进版本；任务ID必须使用已接纳原编号。按冻结合同分配范围和门禁。需要提前并行时显式提供单调stage_dependencies、提供方provided_contracts及匹配的dependency_contracts、最小阅读集、风险场景、验证环境和升级条件；接口无法匹配则保持串行。开发提前开始不开放集成与最终验收门禁，风险场景和原AC均须在固定最终候选上验证。'})
         for candidate in packet['candidates']:
             if candidate['state']!='CURRENT':
                 continue

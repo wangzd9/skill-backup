@@ -35,6 +35,16 @@ def synthetic():
 
 
 class PreparationTests(unittest.TestCase):
+    def test_plan_preparation_carries_committed_version_and_exact_ids_without_assigning_work(self):
+        for current,expected in ((None,1),(2,3)):
+            p,s=synthetic();p['run'].update(plan_version=current,task_ids=['TASK-FND-REC-01','TASK-BR-00'])
+            p['next_actions']=[{'action':'publish_plan'}]
+            result=context.prepare(p,s,context.directory(p,s)['items'][0])
+            self.assertEqual({'version':expected},result['payload_draft'])
+            self.assertEqual(['TASK-FND-REC-01','TASK-BR-00'],result['facts']['plan_admission']['accepted_task_ids'])
+            self.assertNotIn('tasks',result['payload_draft'])
+            self.assertEqual(current,p['run']['plan_version'])
+
     def test_directory_enumerates_all_adverse_results_answers_and_stable_ids(self):
         p,s=synthetic();first=context.directory(p,s)
         self.assertEqual(['FAIL','UNKNOWN','UNVERIFIED'],[v['result'] for v in first['blocker_index']['verification_results']])

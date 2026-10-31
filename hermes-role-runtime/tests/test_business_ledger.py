@@ -117,6 +117,21 @@ sys.exit(0 if result.wasSuccessful() else 1)
 
 
 class BusinessLedgerTests(LedgerFixture):
+    def test_plan_rejection_reports_exact_next_version_and_accepted_task_ids_without_advancing(self):
+        _,coord=self.bind('COORDINATOR')
+        before=self.ledger.snapshot()['event_high_water']
+        wrong_version=self.ledger.publish_plan('run-one',6,self.plan,identity=coord,command_id='attempt-six')
+        self.assertEqual('PLAN_VERSION_NOT_NEXT',wrong_version['code'])
+        self.assertEqual((1,2,6),tuple(wrong_version[k] for k in ('current_version','expected_version','requested_version')))
+        wrong_ids=self.ledger.publish_plan('run-one',2,[self.task('ALIAS-1','A'),self.task('ALIAS-2','B')],
+            identity=coord,command_id='wrong-aliases')
+        self.assertEqual('TASK_OUTSIDE_ACCEPTED_SCOPE_OR_DUPLICATE',wrong_ids['code'])
+        self.assertEqual(['T1','T2','T3'],wrong_ids['accepted_task_ids'])
+        self.assertEqual(['ALIAS-1','ALIAS-2'],wrong_ids['unknown_task_ids'])
+        after=self.ledger.snapshot()
+        self.assertEqual(before,after['event_high_water'])
+        self.assertEqual(1,after['runs'][0]['plan_version'])
+
     def test_readonly_missing_never_creates_paths_and_roles_remain_five(self):
         missing=self.root/'absent/path/ledger.sqlite3'
         with self.assertRaises(FileNotFoundError):

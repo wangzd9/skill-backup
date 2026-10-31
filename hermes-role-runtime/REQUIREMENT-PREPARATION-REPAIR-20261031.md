@@ -68,3 +68,13 @@ test_requirement_runtime test_mechanism_repair.ActivationRepairTests test_native
 恢复指引区分两种情形：INVALID_NOT_STARTED未启动、无副作用，可修正后用同ID；TRANSACTION_GATE已拒绝的命令ID绑定原输入和回执，改参或前提变化需新ID，保留原拒绝记录。UNKNOWN仍不得盲重放。热激活同步更新schema常量和无状态预检函数；当前在途执行不接管、不重启，预算交接规则保持不变。
 
 定向34项回归通过（11.428s，regression-plan-preflight.log），涵盖原生schema裁剪后的条件仍有效、多项错误同时报告、提供方精确匹配、拒绝/未启动ID恢复语义。完整179项隔离回归通过（53.867s，regression-plan-preflight-full.log），包括既有账本、准备接纳、安全交接、派单、验收和恢复。旧模块缺少新预检函数时的热激活亦有专门检查。现场实际采用证据待核验后追加；工具修复不等于业务开工。
+
+现场部署：源码16c8b52，备份94871b7；Gateway PID3612975/启动身份保持，71份源码哈希一致，备份595/1209条清单零差异。旧执行checkpoint e15438、安全退出e15439后，新原生执行e15441（22aff889e22e4f35a2286f79ff917d10）已读到新schema和execution_rules（state.db 380730）。上一版真实输入只读预检可一次报告三处依赖引用错误，证据plan-preflight-live-v5.json；未调用业务命令。
+
+## 计划版本与任务编号的事实提示（0.17.10）
+
+17:21原生v6计划把scope全部改为实际相对路径，改用普通串行依赖；但payload顶层放了任务字段required_checks，schema无副作用拒绝（380760），准确指引修正后可沿用同ID。17:23修正该项后，因把尝试次数6作为首次计划版本触发PLAN_VERSION_NOT_NEXT（380762）；改为1后，又因把已接纳TASK-FND-REC-01、TASK-FND-SRC-01缩写为TASK-REC-01、TASK-SRC-01而被TASK_OUTSIDE_ACCEPTED_SCOPE_OR_DUPLICATE拒绝（380764）。这些是模型输入错误，不能放宽版本/任务范围门。
+
+另一个机制提示缺口是：publish_plan的prepare材料facts/payload_draft为空，版本拒绝未给出期望值，范围拒绝不指出未知任务。现在prepare只预填从run已提交版本算出的下一version，并提供原样accepted_task_ids；next_actions显式列出首计划version=1和原编号；schema说明失败不推进版本、required_checks逐任务填。拒绝回执补current/expected/requested_version、accepted_task_ids和所有unknown_task_ids。执行入口仍重新核对，不自动修改用户/角色提交的计划，不伪造角色分配、依赖、验收结论或业务进展。
+
+定向30项隔离回归通过（4.147s，regression-plan-identifiers.log），完整181项隔离回归通过（54.657s，regression-plan-identifiers-full.log）；新增检查真实临时Git/账本的拒绝不产生事件、不推进版本，和准备材料只提供机械字段、不自动分配任务。现场后续待核验追加。
