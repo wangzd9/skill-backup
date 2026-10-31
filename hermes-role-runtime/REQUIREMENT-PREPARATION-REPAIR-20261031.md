@@ -78,3 +78,11 @@ test_requirement_runtime test_mechanism_repair.ActivationRepairTests test_native
 另一个机制提示缺口是：publish_plan的prepare材料facts/payload_draft为空，版本拒绝未给出期望值，范围拒绝不指出未知任务。现在prepare只预填从run已提交版本算出的下一version，并提供原样accepted_task_ids；next_actions显式列出首计划version=1和原编号；schema说明失败不推进版本、required_checks逐任务填。拒绝回执补current/expected/requested_version、accepted_task_ids和所有unknown_task_ids。执行入口仍重新核对，不自动修改用户/角色提交的计划，不伪造角色分配、依赖、验收结论或业务进展。
 
 定向30项隔离回归通过（4.147s，regression-plan-identifiers.log），完整181项隔离回归通过（54.657s，regression-plan-identifiers-full.log）；新增检查真实临时Git/账本的拒绝不产生事件、不推进版本，和准备材料只提供机械字段、不自动分配任务。现场后续待核验追加。
+
+现场部署：源码dd1020d、备份bde36ac；Gateway PID/启动身份不变，71份激活源码及两份备份清单均核对一致。17:27原生owner以准确ID和version=1真实提交正式六任务计划e15442；B领取TASK-FND-REC-01（work-88d8e219bbe0419fae412593e03f2ff4，e15443/e15444），C领取TASK-BR-00（work-ce2b761c2402479f8b1574c663cb042d，e15445/e15446）。各自私有副本的只读终端调用退出0，未由维护者修改业务实现；此刻尚无代码写入证据。
+
+## 会话交接层误报权限失败（0.17.11）
+
+计划发布后，协调者因checkpoint顶层多填open_items被无副作用schema拒绝；随后把整个payload序列化成字符串（state.db 380803、380850），预算交接层先执行字符串.get而抛异常，on_tool统一错误处理将其显示成“角色会话权限核验失败”，掩盖了真实格式问题。正确对象交接及业务权限均没有问题，C已通过真实checkpoint e15464完成安全接续。
+
+workflow_sessions.tool_decision现在先核对checkpoint payload类型：非对象明确返回CHECKPOINT_PAYLOAD_MUST_BE_OBJECT、INVALID_NOT_STARTED、NONE和对象示例，允许修正同ID。不会自动解码字符串或放行新业务动作；对象且yield_execution=true仍需后续完整schema、身份、事件前缀及账本校验。新增隔离检查字符串/数组/null/整数均不抛异常、不释放writer、不改变账本，正常交接仍可提交。定向24项通过（8.140s），完整184项通过（58.898s），日志分别为regression-checkpoint-envelope.log和regression-checkpoint-envelope-full.log。现场部署结果待核验追加。

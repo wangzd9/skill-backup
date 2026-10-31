@@ -78,6 +78,24 @@ class AdoptionRepairTests(unittest.TestCase):
 
 
 class SessionRepairTests(LedgerFixture):
+    def test_malformed_checkpoint_at_threshold_reports_shape_without_auth_failure_or_release(self):
+        _,identity=self.bind('COORDINATOR')
+        scope={**identity,'kind':'business','workflow_version':1,'session_policy':sessions.DEFAULT_POLICY}
+        sessions.observe(self.root,scope,api_call_count=47)
+        before=self.ledger.snapshot()
+        for payload in ('{"checkpoint":{},"yield_execution":true}',[],None,1):
+            with self.subTest(payload=payload):
+                result=sessions.tool_decision(self.root,scope,'role_coordination_command',
+                    {'action':'checkpoint','payload':payload,'command_id':'malformed'})
+                self.assertEqual(('block','CHECKPOINT_PAYLOAD_MUST_BE_OBJECT','INVALID_NOT_STARTED'),
+                    tuple(result[k] for k in ('action','reason','phase')))
+                self.assertFalse(result['new_command_id_required'])
+                self.assertEqual('NONE',result['side_effect_state'])
+        self.assertEqual(before,self.ledger.snapshot())
+        self.assertEqual('block',sessions.tool_decision(self.root,scope,'terminal',{})['action'])
+        self.assertIsNone(sessions.tool_decision(self.root,scope,'role_coordination_command',
+            {'action':'checkpoint','payload':{'checkpoint':{},'yield_execution':True},'command_id':'fixed'}))
+
     def test_threshold_allows_durable_yield_and_same_work_resumes_with_fresh_budget(self):
         worker,identity=self.bind('A')
         scope={**identity,'kind':'business','workflow_version':1,'session_policy':sessions.DEFAULT_POLICY}

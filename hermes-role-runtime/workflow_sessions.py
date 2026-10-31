@@ -60,8 +60,17 @@ def tool_decision(home,scope,tool_name,args):
     if tool_name==COMMAND_TOOLS.get(scope['role']) and isinstance(args,dict):
         if args.get('action')=='safe_release':
             return None
-        if args.get('action')=='checkpoint' and (args.get('payload') or {}).get('yield_execution') is True:
-            return None
+        if args.get('action')=='checkpoint':
+            payload=args.get('payload')
+            if not isinstance(payload,dict):
+                return {'action':'block','reason':'CHECKPOINT_PAYLOAD_MUST_BE_OBJECT',
+                    'phase':'INVALID_NOT_STARTED','side_effect_state':'NONE',
+                    'retryable':True,'new_command_id_required':False,
+                    'message':'检查点尚未启动：payload必须是JSON对象，不能是序列化JSON字符串、数组或null。'
+                        '直接提交payload={"checkpoint":{"next":"真实进展和下一步"},"yield_execution":true}；'
+                        '修正后可沿用同一command_id。仅确认已实际读取且已发行的事件前缀；原work、权限与交接门禁保持。'}
+            if payload.get('yield_execution') is True:
+                return None
     value['last_blocked_action']={'at':time.time(),'reason':'SESSION_CHECKPOINT_REQUIRED',
         'tool':tool_name,'action':args.get('action') if isinstance(args,dict) else None,
         'invocation_started':False,'owner':scope['role'],'work_retained':True}
