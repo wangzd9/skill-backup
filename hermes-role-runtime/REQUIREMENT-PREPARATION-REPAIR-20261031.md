@@ -40,3 +40,13 @@ test_requirement_runtime test_mechanism_repair.ActivationRepairTests test_native
 实际后台处理暴露另一处材料缺口：短答复恢复只附旧checkpoint，协调者会反复搜索日志寻找选项。恢复入口现同时链接同一原生会话中紧邻该用户消息的已发布assistant回答（本例行380090），保存哈希artifact；这是历史问答证据，不是新授权，语义仍由owner核对。完整开发准备指令明确不依赖短答复的历史选项关联。
 
 现场后续：原问答artifact通过e15400关联，原生owner在e15401保存检查点并安全交接，e15404新执行接续；e15405已真实完成用户答复语义关联。原生会话已调用prepare_requirement动作合同并批量读取Foundation冻结合同/提案，尚未出现prepare_requirement成功提交、REQUIREMENT_ACCEPTED或新计划，两个业务run仍为PAUSED。此时机制源码已部署并通过140项隔离回归；不能将上述材料准备或未返回模型请求报告为代码开工。
+
+## 16:00真实提交暴露的引用兼容缺陷（0.17.7）
+
+15:35会话的合同准备被会话预算交接门拦截；该次checkpoint又因payload被序列化为字符串而失败，不能把原生COMPLETED当业务完成。15:48原生执行e15408接续，16:00两包真正调用prepare_requirement，均被PREPARATION_NEW_TASK_SOURCE_MAPPING_REQUIRED拒绝（state.db工具结果行380531/380532），没有正式文件或账本业务进展。
+
+提交为每个已请求任务附上了冻结提案原文，并用了需求根内绝对路径。原实现要求映射key必须严格等于“额外拆分任务集合”，因此额外提供正确证据反而被整单拒绝；工具schema没有解释这一约束，也没有声明只收相对路径。
+
+0.17.7允许本次任务集合内的冗余引用，绝对路径仅在其明确属于需求根、且精确匹配已冻结source时接受；相对路径规则相同。每份引用仍验证非正式可编辑文件、冻结原文和长度，不读用户引用指向的实时文件；未知任务key、跨根路径、..、伪造引用、缺少额外提供方来源、历史任务复活均拒绝。工具schema明确这些语义。隔离回归新增模型实际提交形式的成功用例，以及上述失败不得产生文件/事件副作用的检查。
+
+143项隔离回归通过（38.981s，regression-citation-compat.log）；现场八条任务引用只读比对均确实匹配已冻结proposal原文。此验证不调用真实业务prepare、不代替原生owner提交，也不代表已接纳或开工。

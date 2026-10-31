@@ -125,6 +125,46 @@ class PreparationTests(LedgerFixture):
         self.assertIn('TASK-PROVIDER-01',accepted['payload']['task_ids'])
         self.assertNotIn('OLD-01',accepted['payload']['task_ids'])
 
+    def test_redundant_requested_task_citations_accept_exact_frozen_absolute_and_relative_paths(self):
+        queued=self.assertCommitted(self.queue());worker,owner=self.bind('COORDINATOR')
+        review=self.review(queued['request_id'])
+        review['additional_task_sources']={task:{'path':str(self.package/'proposal.md') if n%2 else 'proposal.md',
+            'quote':'Source integrity and asynchronous reconciliation provider contract.'}
+            for n,task in enumerate(review['task_ids'])}
+        self.assertTrue(self.assertCommitted(prepare(self.ledger,owner,review,command_id='redundant'))['requirement_accepted'])
+
+    def test_redundant_citation_never_ignores_bad_evidence_or_outside_task(self):
+        queued=self.assertCommitted(self.queue());worker,owner=self.bind('COORDINATOR')
+        review=self.review(queued['request_id'])
+        before=self.ledger.snapshot();original=(self.package/'TODO.md').read_bytes()
+        quote='Source integrity and asynchronous reconciliation provider contract.'
+        cases=[('TASK-BR-00',{'path':str(self.root/'other'/'proposal.md'),'quote':quote}),
+            ('TASK-BR-00',{'path':'../new-package/proposal.md','quote':quote}),
+            ('TASK-BR-00',{'path':'TODO.md','quote':quote}),
+            ('TASK-BR-00',{'path':'proposal.md','quote':'Invented evidence never appeared in frozen proposal.'}),
+            ('TASK-UNREQUESTED-01',{'path':'proposal.md','quote':quote})]
+        for n,(task,citation) in enumerate(cases):
+            with self.subTest(task=task,citation=citation):
+                review['additional_task_sources']={task:citation}
+                with self.assertRaisesRegex(ValueError,'PREPARATION_(TASK_NOT_GROUNDED|NEW_TASK_SOURCE_MAPPING_REQUIRED)'):
+                    prepare(self.ledger,owner,review,command_id='invalid-citation-'+str(n))
+                self.assertEqual(original,(self.package/'TODO.md').read_bytes())
+                self.assertEqual(before['events'],self.ledger.snapshot()['events'])
+
+    def test_missing_provider_citation_and_historical_restart_stay_rejected(self):
+        queued=self.assertCommitted(self.queue());worker,owner=self.bind('COORDINATOR')
+        review=self.review(queued['request_id'])
+        for task in ('TASK-PROVIDER-01','OLD-01'):
+            with self.subTest(task=task):
+                review['task_ids']=self.target['task_ids']+[task]
+                review['additional_task_sources']={}
+                with self.assertRaisesRegex(ValueError,'PREPARATION_NEW_TASK_SOURCE_MAPPING_REQUIRED'):
+                    prepare(self.ledger,owner,review,command_id='missing-'+task)
+        review['additional_task_sources']={'OLD-01':{'path':'proposal.md',
+            'quote':'Source integrity and asynchronous reconciliation provider contract.'}}
+        with self.assertRaisesRegex(ValueError,'PREPARATION_NEW_TASK_SOURCE_MAPPING_REQUIRED'):
+            prepare(self.ledger,owner,review,command_id='historical')
+
     def test_source_queries_and_unlisted_historical_scope_are_not_enqueued(self):
         for primary in ('现在呢','new-package 的开发状态是什么？','请开发 new-package，纳入合同 TASK-BR-00。'):
             with self.assertRaises(ValueError):

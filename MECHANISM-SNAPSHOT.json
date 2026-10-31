@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "snapshot_at": "2026-10-31T15:44:36+08:00",
-  "plugin_commit": "f3dcb55e6186ead9bf40b1c019031503cd8ea21d",
+  "snapshot_at": "2026-10-31T16:04:21+08:00",
+  "plugin_commit": "f16f86a2eb10a2d601ef7b6bb5594818d1eed07a",
   "core_commit": "c3901f5f8606b6449abd5442d866e28c5015f295",
   "core_base_commit": "5f47c35d37a40fb651e4a00571d03e12b23d11f9",
   "gateway_activation_performed": false,
@@ -27,7 +27,7 @@
       "path": "SOURCE-REVISIONS.json",
       "source": "/home/wang/work/hermes-role-runtime",
       "bytes": 496,
-      "sha256": "957ae34b60d32439f67dbf787506ed2954851407d02dca9d43c447f970e4937a"
+      "sha256": "9475527ad8282af7d8b2ea6d11688a480537bcdeb2ec1f8ba85bb55965081715"
     },
     {
       "path": "codex/skills/complex-task-coordinator/SKILL.md",
@@ -691,8 +691,8 @@
     {
       "path": "codex/skills/complex-task-coordinator/scripts/workflow_contracts.py",
       "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/workflow_contracts.py",
-      "bytes": 16960,
-      "sha256": "64c6501d31cecb8abce2c2f596a90bd992e257b4b842dd332c74a7faf85c152f",
+      "bytes": 17447,
+      "sha256": "b378209f727bf9a69bc92683ddbe36d6917c36e7ab4991ec296076ecbcd3753c",
       "materialized_symlink": "/home/wang/work/hermes-role-runtime/workflow_contracts.py"
     },
     {
@@ -1847,8 +1847,8 @@
     {
       "path": "hermes-role-runtime/HANDOFF.md",
       "source": "/home/wang/work/hermes-role-runtime/HANDOFF.md",
-      "bytes": 8191,
-      "sha256": "26954b0efeeb8bade469e4a0546a6ce0f909c5f1230079a5fb4d64e7b8d63bf6"
+      "bytes": 8755,
+      "sha256": "b916916e495c9bab5e173e27d52dae45d52c7561ea8d79b5ff6bb381c1be6fc8"
     },
     {
       "path": "hermes-role-runtime/MIGRATION.md",
@@ -1859,8 +1859,8 @@
     {
       "path": "hermes-role-runtime/README.md",
       "source": "/home/wang/work/hermes-role-runtime/README.md",
-      "bytes": 19760,
-      "sha256": "ca211f50c217278afb6139f01cfb4d615eac75b8c081bb607f73fdc1576e3c57"
+      "bytes": 20069,
+      "sha256": "5fb7cdb32e6490c2c9dd7fb1fe8e3ea694db4fe4d0ea52f1a4094bf14e22c609"
     },
     {
       "path": "hermes-role-runtime/REQUIREMENT-INTAKE-REPAIR-20261031.md",
@@ -2214,7 +2214,7 @@
       "path": "hermes-role-runtime/plugin.yaml",
       "source": "/home/wang/work/hermes-role-runtime/plugin.yaml",
       "bytes": 548,
-      "sha256": "70380767e08863061fe9c7afbbeded8e6bf705c3c903920cf3960591d11c83b5"
+      "sha256": "29464b9ff08cece96f59315020f44b4340bc187e88754e4d0f14c9afe6d1bc81"
     },
     {
       "path": "hermes-role-runtime/pool_entry.py",
@@ -3269,8 +3269,8 @@
     {
       "path": "hermes-role-runtime/workflow_contracts.py",
       "source": "/home/wang/work/hermes-role-runtime/workflow_contracts.py",
-      "bytes": 16960,
-      "sha256": "64c6501d31cecb8abce2c2f596a90bd992e257b4b842dd332c74a7faf85c152f"
+      "bytes": 17447,
+      "sha256": "b378209f727bf9a69bc92683ddbe36d6917c36e7ab4991ec296076ecbcd3753c"
     },
     {
       "path": "hermes-role-runtime/workflow_coordination_log.py",
@@ -3689,26 +3689,26 @@
     {
       "path": "hermes-role-runtime/REQUIREMENT-PREPARATION-REPAIR-20261031.md",
       "source": "/home/wang/work/hermes-role-runtime/REQUIREMENT-PREPARATION-REPAIR-20261031.md",
-      "bytes": 5410,
-      "sha256": "f85a9fee82c6f7b1b6b0b880f70803c02531c4445900d8cf9994a24e0242d638"
+      "bytes": 6966,
+      "sha256": "34a7a4a0f221b5c44732dfb63765e48f575e86240fb1c8df2c5302fd5b01eb2e"
     },
     {
       "path": "hermes-role-runtime/tests/test_workflow_preparation.py",
       "source": "/home/wang/work/hermes-role-runtime/tests/test_workflow_preparation.py",
-      "bytes": 14753,
-      "sha256": "a455fdd11a5be93d847e0310a4be31eb9f023b1948e276e88d2e9a5570fc88ec"
+      "bytes": 17703,
+      "sha256": "c930915c52b69126f346d2b8926a3ba594be225d17306e30f1bf5e8724879fdb"
     },
     {
       "path": "hermes-role-runtime/workflow_preparation.py",
       "source": "/home/wang/work/hermes-role-runtime/workflow_preparation.py",
-      "bytes": 21390,
-      "sha256": "ec0118529b87996475c6fce0ccfd4abb575b3779e27590f6376333ed11c8d04d"
+      "bytes": 21906,
+      "sha256": "e7d1876d0f43e687ee9940c0ba6b55215939d8dbf4b159379b539a321a51f670"
     },
     {
       "path": "codex/skills/complex-task-coordinator/scripts/workflow_preparation.py",
       "source": "/home/wang/.codex/skills/complex-task-coordinator/scripts/workflow_preparation.py",
-      "bytes": 21390,
-      "sha256": "ec0118529b87996475c6fce0ccfd4abb575b3779e27590f6376333ed11c8d04d",
+      "bytes": 21906,
+      "sha256": "e7d1876d0f43e687ee9940c0ba6b55215939d8dbf4b159379b539a321a51f670",
       "materialized_symlink": "/home/wang/work/hermes-role-runtime/workflow_preparation.py"
     }
   ],

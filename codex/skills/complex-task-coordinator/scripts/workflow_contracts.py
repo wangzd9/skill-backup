@@ -93,8 +93,10 @@ def payload_schema(action):
         return obj({'request_id':TEXT,'summary':{**TEXT,'maxLength':8000},
             'task_ids':{'type':'array','minItems':1,'maxItems':100,'uniqueItems':True,
                 'items':{'type':'string','pattern':'^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$'}},
-            'additional_task_sources':{'type':'object','maxProperties':100,'additionalProperties':
-                obj({'path':TEXT,'quote':{**TEXT,'minLength':8,'maxLength':4000}},['path','quote'])},
+            'additional_task_sources':{'type':'object','maxProperties':100,
+                'description':'仅额外拆出的提供方任务必须逐项引用冻结proposal；原指令task_ids内的任务无需重复映射，若提供则同样核验。key只能是本次task_ids，不能复活历史任务。',
+                'additionalProperties':obj({'path':{**TEXT,'description':'冻结sources中的proposal路径；可用需求根相对路径或该根内的绝对路径，不允许跨根或..。'},
+                    'quote':{**TEXT,'minLength':8,'maxLength':4000,'description':'冻结proposal中连续的原文引用；不得使用改写或行号前缀。'}},['path','quote'])},
             'changes':{'type':'array','minItems':1,'maxItems':20,'items':obj({
                 'path':TEXT,'sha256':sha,'content':{'type':'string','minLength':1,'maxLength':1048576},
                 'append':{'type':'string','minLength':1,'maxLength':65536}},

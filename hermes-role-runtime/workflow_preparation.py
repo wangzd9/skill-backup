@@ -142,12 +142,19 @@ def prepare(ledger, identity, payload, *, command_id):
     sources = {str(Path(s['path']).relative_to(root)):s for s in item['sources']}
     mappings = payload.get('additional_task_sources', {})
     extra = set(tasks)-set(item['target']['task_ids'])
-    if set(mappings) != extra or extra & set(item['registered_task_ids']):
+    if not extra <= set(mappings) or set(mappings)-set(tasks) or extra & set(item['registered_task_ids']):
         raise ValueError('PREPARATION_NEW_TASK_SOURCE_MAPPING_REQUIRED')
-    for task in extra:
+    # Requested tasks already have native authority. Redundant citations are
+    # welcome, but must pass exactly the same frozen-proposal check as provider
+    # decompositions. Never ignore an invalid citation or read its live path.
+    for task in mappings:
         citation = mappings[task]
-        source = sources.get(citation['path'])
-        if (not source or citation['path'] in item['editable_files'] or len(citation['quote']) < 8
+        name = Path(citation['path'])
+        if name.is_absolute():
+            try:name = name.relative_to(root)
+            except ValueError:raise ValueError('PREPARATION_TASK_NOT_GROUNDED_IN_FROZEN_PROPOSAL') from None
+        source = sources.get(str(name)) if '..' not in name.parts else None
+        if (not source or str(name) in item['editable_files'] or len(citation['quote']) < 8
                 or citation['quote'] not in Path(source['frozen_path']).read_text()):
             raise ValueError('PREPARATION_TASK_NOT_GROUNDED_IN_FROZEN_PROPOSAL')
     changes=list(payload['changes'])
