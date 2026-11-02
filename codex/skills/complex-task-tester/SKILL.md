@@ -2,13 +2,17 @@
 name: complex-task-tester
 description: 复杂任务独立测试者：在 Hermes 群声明测试者、TESTER 或恢复验证派单时使用。按固定快照做独立测试、集成回归和取证，不修改业务实现、不运行 OCR、不批准合入。
 metadata:
-  version: "1.12.2"
+  version: "1.12.4"
 ---
 
 # 复杂任务独立测试者
 
 
 ## 运行模式入口
+
+普通固定候选需要真实 MySQL 时，直接调用 `role_test_command(action="verify",payload={candidate_id,argv,profile:"mysql"})`；最终集成使用 `verify_integration` 的同一 profile。宿主机自动提供独占 MySQL 8.4，隔离测试内 `DATABASE_URL`、`ROLE_TEST_MYSQL_URL`、`MN01_MYSQL_URL` 指向同一专用库，结束自动清理；不需要 Docker 接口、外部 URL 或用户再次选择环境。当前测试应明确验证方言/迁移/并发等原 AC；零测试、缺用例或 skip 不能算 MySQL 通过，环境实际失败按具体宿主机错误上报维护。
+
+合入后按[分支与 worktree 收尾](../complex-task-coordinator/references/branch-retirement.md)外置保留测试回执与日志，核实自己的验证进程/子进程退出，并报告固定被测 head、worktree 及可释放依据。PASS、测试槽释放或 detached HEAD 都不等于目录可删；检查未跟踪/ignored 证据，不清理开发者或协调者工作区。ACTIVE 仍通过原生工具报告与释放，清理由具备权限的维护入口执行。
 
 原生工作包明确 `mode=ACTIVE` 且 `schema_version=2` 时，先读[事务工作单模式](../complex-task-coordinator/references/transaction-workflow.md)并按本角色专用工具工作；下文旧租约、ACK、slot-release、continuation 和文档状态写入步骤仅适用于 LEGACY/STAGED。无原生 ACTIVE 身份时不得自行启用新模式。规划者和审查者仅按需 Skill，不加入五角色运行体系。
 

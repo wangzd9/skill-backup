@@ -28,7 +28,7 @@ SESSIONS = Path('/home/wang/.opencodereview/sessions')
 GLOBAL_LOCK = Path('/home/wang/.local/state/ocr-runtime/ocr.lock')
 PROVIDER = 'vllm-local'
 ENDPOINT = 'http://192.168.2.45:8002/v1'
-VERSION = '1.7.0'
+VERSION = '1.7.1'
 METRICS_URL = 'http://192.168.2.45:8002/metrics'
 MODEL_SELECTOR = Path(__file__).resolve().parent/'ocr_model_route.py'
 ROUTING_PYTHON = Path('/home/wang/.hermes/hermes-agent/venv/bin/python')
@@ -319,7 +319,7 @@ def load_spec(directory):
         raise RuntimeError('SPEC_CHANGED: 创建新run，不改冻结材料')
     spec = json.loads(raw)
     version = spec.get('runtime_version')
-    if (spec.get('schema') != 'coordinator.ocr-run/v1' or version not in ('1.5.0', '1.6.0', VERSION)
+    if (spec.get('schema') != 'coordinator.ocr-run/v1' or version not in ('1.5.0', '1.6.0', '1.7.0', VERSION)
             or (version == '1.5.0' and spec.get('model_routing'))):
         raise RuntimeError('SPEC_VERSION_UNSUPPORTED')
     for name, expected in spec['artifacts'].items():
@@ -451,7 +451,8 @@ def prepare(args):
         if previous_status['state'] == 'AWAITING_DECISION':
             raise RuntimeError('ALREADY_REVIEWED: 裁决发现，不重复调用')
         spec.update({'reuse_run': str(previous_directory), 'retry_reason': retry_reason,
-                     'retry_depth': previous.get('retry_depth', 0) + 1})
+                     'retry_depth': previous.get('retry_depth', 0) + 1,
+                     'recovery_policy': partial_recovery_policy(previous)})
         for batch in prepared:
             for entry in previous_status['recorded_state'].get('batches', []):
                 if (entry.get('state') == 'REVIEW_COMPLETE' and entry.get('returncode') == 0
@@ -653,6 +654,18 @@ def stop_child(child):
     child.wait()
 
 
+def partial_recovery_policy(previous):
+    """A partial retry removes intra-run contention, preserving review identity.
+
+    This changes scheduling only: frozen code, rules, model policy, successful
+    evidence and the single-retry limit are still checked by prepare.
+    """
+    return {'kind': 'SERIAL_PARTIAL_RECOVERY', 'max_parallel_batches': 1,
+            'source_run_id': previous['run_id'],
+            'previous_parallel_limit': previous.get('concurrency_policy', {}).get('idle_limit', 1),
+            'runtime_version': VERSION}
+
+
 def run_batches(directory, spec, result, cancelled, children):
     """One service owns the global budget; each OCR child consumes one slot."""
     pending = iter(spec['batches'])
@@ -699,6 +712,10 @@ def run_batches(directory, spec, result, cancelled, children):
             policy = spec.get('concurrency_policy')
             sample = (concurrency_snapshot(policy['metrics_url']) if policy else
                       {'limit': 1, 'waiting': None, 'reason': 'FROZEN_SERIAL_POLICY'})
+            if spec.get('recovery_policy'):
+                sample = {**sample, 'observed_limit': sample['limit'],
+                          'limit': min(sample['limit'], spec['recovery_policy']['max_parallel_batches']),
+                          'recovery_policy': spec['recovery_policy']['kind']}
             result['concurrency'] = sample
             if len(active) < sample['limit']:
                 # A reduction drains existing children; it never kills valid work.
@@ -760,6 +777,10 @@ def run_batches(directory, spec, result, cancelled, children):
         atomic_json(directory / 'state.json', result)
         if active:
             time.sleep(1)
+    observed = {entry['id'] for entry in result['batches']}
+    result['unstarted_batches'] = [
+        {'id': item['id'], 'files': item['files'], 'reason': terminal}
+        for item in spec['batches'] if item['id'] not in observed]
     result['state'] = terminal or 'AWAITING_DECISION'
 
 

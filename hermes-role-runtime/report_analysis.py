@@ -8,6 +8,7 @@ import re
 
 
 def contract(role):
+    from workflow_report_text import presentation_instruction
     from workflow_reports import (ANALYSIS_FIELDS, COORDINATOR_SECTIONS,
         PERSONAL_SECTIONS, _COORDINATOR_SECTION_LIMITS, _PERSONAL_SECTION_LIMITS)
     coordinator = role == 'COORDINATOR'
@@ -27,6 +28,7 @@ def contract(role):
         '每条只含label和text两个字符串字段：label为简短中文字段名，不带冒号、换行或Markdown；'
         'text用简体中文写一件事，不加列表前缀或换行；连同字段名和排版每条不超过240字。'
         '同一事实的条件可用分号连接，不把多项独立事实拼成长段；缺事实写待核实，无新增如实写无新增。'
+        + presentation_instruction() +
         '核验时间、窗口、角色状态、证据引用、用量与观察来源由程序补入，不在sections重复。'
         '示例仅说明结构，不是本次事实，不可把示例结论当核验结果：\n' +
         json.dumps(example, ensure_ascii=False, separators=(',', ':')))
@@ -63,10 +65,14 @@ def decode(output):
 
 def normalize(analysis, role):
     """Render typed labels without altering facts; preserve legacy validation."""
+    from workflow_report_text import plain_text
     if not isinstance(analysis.get('sections'), dict):
         return analysis
     sections = dict(analysis['sections'])
     for heading, items in sections.items():
+        if isinstance(items, str):
+            sections[heading] = plain_text(items)
+            continue
         if not isinstance(items, list):
             continue
         rendered = []
@@ -82,9 +88,9 @@ def normalize(analysis, role):
                         or not isinstance(text, str) or not text.strip()
                         or re.search(r'[\r\n]', text)):
                     raise ValueError('REPORT_STRUCTURED_BULLET_INVALID:' + heading)
-                rendered.append('**' + label + '：** ' + text)
+                rendered.append('**' + plain_text(label) + '：** ' + plain_text(text))
             else:
-                rendered.append(item)
+                rendered.append(plain_text(item) if isinstance(item, str) else item)
         if typed:
             if role == 'COORDINATOR':
                 if any(not isinstance(item, str) for item in rendered):
@@ -92,6 +98,8 @@ def normalize(analysis, role):
                 sections[heading] = '\n'.join(rendered)
             else:
                 sections[heading] = rendered
+        else:
+            sections[heading] = rendered
     return {**analysis, 'sections': sections}
 
 

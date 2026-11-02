@@ -50,10 +50,12 @@ def _result_source(ledger, folder):
     if (not isinstance(command_id,str) or hashlib.sha256(command_id.encode()).hexdigest()[:32]!=folder.name
             or not candidate.get('work_id')):
         raise ValueError('EXCEPTION_NATIVE_REQUEST_REQUIRED')
-    path=folder/'verification.json'
-    if not path.is_file():path=folder/'environment-failure.json'
+    path=folder/'environment-failure.json'
+    if not path.is_file():path=folder/'verification.json'
     result=read_json(path,{}) or {}
-    if result.get('status')!='UNVERIFIED' or result.get('candidate')!=candidate:
+    uncertain=(result.get('status')=='UNVERIFIED' or (result.get('test_stats') or {}).get('mechanical_result')=='UNVERIFIED'
+        or (result.get('validation') or {}).get('valid') is False)
+    if not uncertain or result.get('candidate')!=candidate:
         raise ValueError('EXCEPTION_UNVERIFIED_FIXED_RESULT_REQUIRED')
     # A frozen native reference must stay inside this operation. Missing or
     # changed evidence is an uncertainty, never permission to publish FAIL.
@@ -80,20 +82,30 @@ def record(ledger, folder):
     candidate,source,result,checked,refs=_result_source(ledger,folder)
     def operation(db):
         work=ledger._one(db,'works','work_id',candidate['work_id'])
-        if (work['kind']!='supplemental_verification' or work['candidate_id']!=candidate['candidate_id']
+        if (work['kind'] not in ('supplemental_verification','verification','integration_verification') or work['candidate_id']!=candidate['candidate_id']
                 or work['run_id']!=candidate['run_id'] or work['attempt']!=candidate['attempt']):
             _deny('EXCEPTION_SUPPLEMENTAL_BINDING_MISMATCH')
-        current=ledger._one(db,'candidates','candidate_id',work['candidate_id'])
-        if any(current[k]!=candidate[k] for k in ('head','ac_version','base','repo','task_id','run_id','attempt')):
-            _deny('EXCEPTION_CANDIDATE_CHANGED')
+        if work['kind']!='integration_verification':
+            current=ledger._one(db,'candidates','candidate_id',work['candidate_id'])
+            if any(current[k]!=candidate[k] for k in ('head','ac_version','base','repo','task_id','run_id','attempt')):
+                _deny('EXCEPTION_CANDIDATE_CHANGED')
         if ledger._authority(db)['current_run_id']!=work['run_id']:
             _deny('EXCEPTION_NOT_CURRENT_RUN')
-        from workflow_supplemental import _context_from_event
-        context=_context_from_event(db,work)
+        if work['kind']=='supplemental_verification':
+            from workflow_supplemental import _context_from_event
+            context=_context_from_event(db,work)
+        else:
+            from runtime_common import read_json
+            profile=(read_json(Path(folder)/'request.json',{}) or {}).get('verification_profile')
+            expected='integration_mysql' if work['kind']=='integration_verification' else 'candidate_mysql'
+            if profile!=expected:_deny('EXCEPTION_MYSQL_PROFILE_REQUIRED')
+            context={'profile':profile,'request_event_id':None}
         ledger._evidence(source)
         payload={'candidate_id':work['candidate_id'],'head':candidate['head'],
             'task_id':work['task_id'],'attempt':work['attempt'],'result':'UNVERIFIED',
             'profile':context['profile'],'request_event_id':context['request_event_id'],
+            'work_kind':work['kind'],'phase':result.get('phase','TEST_RESULT_UNVERIFIED'),
+            'review_after':ledger.clock()+300,
             'source':source,'runner_sources':refs,
             'reason_codes':list(dict.fromkeys([*(result.get('test_stats') or {}).get('reasons',[]),
                 *checked['reasons'],result.get('code','TEST_RESULT_UNVERIFIED')])),
@@ -102,9 +114,9 @@ def record(ledger, folder):
         event=ledger._event(db,'VERIFICATION_EXCEPTION_RECORDED',payload,
             run_id=work['run_id'],role='COORDINATOR',work_id=work['work_id'])
         from workflow_verification_lifecycle import request
-        retirement=request(db,ledger,work,'UNVERIFIED证据已保留并移交协调者，技术工作单安全退休；不是业务通过。')
+        retirement=request(db,ledger,work,'UNVERIFIED证据已保留并移交协调者，技术工作单安全退休；不是业务通过。') if work['kind']=='supplemental_verification' else None
         return {'event_id':event,'retirement_event_id':retirement,'result':'UNVERIFIED','work_id':work['work_id'],
-            'responsible_role':'COORDINATOR','writer_clearance_required':True}
+            'responsible_role':'COORDINATOR','writer_clearance_required':retirement is not None}
     key=hashlib.sha256(json.dumps([candidate['work_id'],source],sort_keys=True).encode()).hexdigest()
     return ledger._command('record_verification_exception','verification-exception:'+key,[candidate,source],operation)
 
@@ -113,9 +125,9 @@ def recover(ledger):
     """Recover previously saved results only for still-open supplemental work."""
     from runtime_common import read_json
     snapshot=ledger.snapshot();run_id=snapshot['current_run_id']
-    known={e['work_id'] for e in snapshot['events'] if e['kind']=='VERIFICATION_EXCEPTION_RECORDED'}
+    known={e['payload']['source']['path'] for e in snapshot['events'] if e['kind']=='VERIFICATION_EXCEPTION_RECORDED'}
     pending={w['work_id'] for w in snapshot['works'] if w['run_id']==run_id and
-        w['kind']=='supplemental_verification' and w['state']!='ENDED' and w['work_id'] not in known}
+        w['kind'] in ('supplemental_verification','verification','integration_verification') and w['state']!='ENDED'}
     if not pending:return []
     results=[]
     for folder in sorted((ledger.path.parent/'operations').iterdir()) if (ledger.path.parent/'operations').is_dir() else []:
@@ -124,10 +136,12 @@ def recover(ledger):
             manifest=read_json(folder/'request.json',{}) or {}
             work_id=(manifest.get('candidate') or {}).get('work_id')
             if work_id not in pending:continue
+            path=folder/'environment-failure.json'
+            if not path.exists():path=folder/'verification.json'
+            if str(path) in known:continue
             result=record(ledger,folder)
             if result.get('status') in ('COMMITTED','DUPLICATE'):
-                results.append(result);pending.remove(work_id)
-            if not pending:break
+                results.append(result);known.add(str(path))
         except (OSError,ValueError,TypeError,KeyError):
             continue  # Untrusted/missing evidence remains unknown, never success.
     return results
@@ -199,6 +213,8 @@ def resolve(ledger, identity, payload, *, command_id):
             detail={**payload,'owner':'COORDINATOR','review_after':ledger.clock()+300,
                 'next':'到期复核新证据后选择原范围返修或提交真实复验依据；不把机制缺口转为等待用户授权。'}
         elif payload['disposition']=='close':
+            if source.get('profile') in ('candidate_mysql','integration_mysql'):
+                return close_general(db,ledger,work,observed,payload)
             verification=ledger._one(db,'verifications','verification_id',payload['verification_id'])
             if verification['check_name']!='supplemental_mysql' or verification['result']!='PASS':
                 _deny('EXCEPTION_CLOSURE_REQUIRES_REAL_SUPPLEMENTAL_PASS')
@@ -345,12 +361,76 @@ def repair_followup(snapshot, item):
         'next':'等待原请求谱系的真实supplemental_mysql复验；普通独立测试PASS不能关闭异常。复验PASS后协调者显式close。'}
 
 
+def general_passes(snapshot,item):
+    result=[]
+    if item.get('phase')=='TEST_EXECUTION':return result
+    source_work=next((w for w in snapshot['works'] if w['work_id']==item['work_id']),None)
+    candidates={c['candidate_id']:c for c in snapshot['candidates'] if c['state']=='CURRENT'}
+    works={w['work_id']:w for w in snapshot['works']}
+    for event in snapshot['events']:
+        target=works.get(event.get('work_id'))
+        if not source_work or not target or target['run_id']!=source_work['run_id']:continue
+        if item.get('phase')=='ENVIRONMENT_CLEANUP':
+            if target['work_id']!=source_work['work_id']:continue
+        elif event['event_id']<=item['observation_event_id']:continue
+        if event['kind']=='VERIFICATION_PUBLISHED':
+            check=next((v for v in snapshot['verifications'] if v['verification_id']==event['payload']['verification_id']),None)
+            candidate=candidates.get(check['candidate_id']) if check else None
+            if (candidate and target['task_id']==source_work['task_id'] and target['attempt']>=source_work['attempt'] and check['result']=='PASS' and
+                    check['evidence'].get('verification_profile')==item['profile']):
+                result.append({'verification_id':check['verification_id'],'published_event_id':event['event_id'],
+                    'candidate_id':check['candidate_id'],'work_id':target['work_id'],
+                    'resource_reconciliation_required':item.get('phase')=='ENVIRONMENT_CLEANUP'})
+        elif event['kind']=='INTEGRATION_TEST_RECORDED':
+            row=event['payload']
+            if ((row.get('stats') or {}).get('mechanical_result')=='PASS' and
+                    row.get('evidence',{}).get('verification_profile')==item['profile']):
+                result.append({'test_event_id':event['event_id'],'published_event_id':event['event_id'],
+                    'work_id':target['work_id'],'resource_reconciliation_required':item.get('phase')=='ENVIRONMENT_CLEANUP'})
+    return result
+
+
+def close_general(db,ledger,work,observed,payload):
+    from business_ledger import _deny
+    source=observed['payload']
+    item={**source,'observation_event_id':observed['event_id'],'work_id':observed['work_id']}
+    options=general_passes(ledger.snapshot(work['run_id']),item)
+    option=next((o for o in options if (o.get('verification_id') and o.get('verification_id')==payload.get('verification_id')) or
+        (o.get('test_event_id') and o.get('test_event_id')==payload.get('test_event_id'))),None)
+    if not option:_deny('EXCEPTION_CLOSURE_REQUIRES_LATER_SAME_PROFILE_PASS')
+    clearance=None
+    if option.get('resource_reconciliation_required'):
+        from workflow_local_environment import resource_clearance
+        try:clearance=resource_clearance(ledger,Path(source['source']['path']).parent)
+        except ValueError as exc:_deny(str(exc))
+    if option.get('verification_id'):
+        evidence=ledger._one(db,'verifications','verification_id',option['verification_id'])['evidence']
+    else:evidence=ledger._one(db,'events','event_id',option['test_event_id'])['payload']['evidence']
+    ledger._evidence(evidence)
+    from delivery_evidence import check_candidate_test_evidence
+    from runtime_common import read_json
+    snapshot=ledger.snapshot(work['run_id'])
+    if option.get('candidate_id'):
+        candidate=next(c for c in snapshot['candidates'] if c['candidate_id']==option['candidate_id'])
+    else:
+        from workflow_completion import context,target_current
+        target=next(w for w in snapshot['works'] if w['work_id']==option['work_id'])
+        if not target_current(ledger,snapshot,target):_deny('EXCEPTION_CLOSURE_INTEGRATION_TARGET_CHANGED')
+        candidate=context(snapshot,target)['target']
+    if not check_candidate_test_evidence(evidence,candidate)['valid']:_deny('EXCEPTION_CLOSURE_EVIDENCE_CHANGED')
+    event=ledger._event(db,'VERIFICATION_EXCEPTION_CLOSED',{**payload,'previous_result':'UNVERIFIED',
+        'previous_result_unchanged':True,'pass_event_id':option['published_event_id'],'resource_clearance':clearance},
+        run_id=work['run_id'],work_id=work['work_id'],role='COORDINATOR')
+    return {'event_id':event,'closed':True,'previous_result_unchanged':True}
+
+
 def closure_passes(snapshot, item):
     """Later current PASS options, including a subsequent repair in the lineage.
 
     This is a read-only index, not evidence validation or a closure verdict.
     resolve() still verifies the original native profile and runner evidence.
     """
+    if item.get('profile') in ('candidate_mysql','integration_mysql'):return general_passes(snapshot,item)
     roots={}
     for event in snapshot['events']:
         if event['kind']=='SUPPLEMENTAL_VERIFICATION_REQUESTED':

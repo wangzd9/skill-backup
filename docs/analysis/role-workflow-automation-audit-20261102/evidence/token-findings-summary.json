@@ -1,0 +1,76 @@
+{
+  "window_end": "2026-11-02T13:55:24.431144+08:00",
+  "post_input_share_of_input_plus_output": 0.9752283789631275,
+  "post_prompt_share_by_kind": {
+    "business_cron": 0.958723502961415,
+    "group_chat": 0.039572966120115634,
+    "summary": 0.0014116675564734187,
+    "aux:compression": 0.00029186336199598327
+  },
+  "post_local_prompt_share": 0.9603023216366289,
+  "post_coordinator_prompt_share": 0.5128799956451361,
+  "last24_prompt_share_by_role": {
+    "COORDINATOR": 0.4311948134886876,
+    "C": 0.4183378977253109,
+    "B": 0.12874692455541106,
+    "TESTER": 0.021111384449810353,
+    "A": 0.0006089797807800864
+  },
+  "coordinator_local_business_observational_comparison": {
+    "pre_oct29_prompt_p50": 96486,
+    "post_prompt_p50": 81525.0,
+    "p50_change": -0.15505876500217652,
+    "pre_first_request_p50": 76583,
+    "post_first_request_p50": 65641,
+    "first_p50_change": -0.14287766214434017,
+    "caveat": "同角色、本地、业务回合；任务和版本不同，非因果节省率。"
+  },
+  "daily_total_check": {
+    "pre_oct27_29_mean_prompt": 238952459.66666666,
+    "post_oct31_nov01_mean_prompt": 262246883.5,
+    "mean_change": 0.09748559971229653,
+    "caveat": "日工作量和角色阶段不同，不能据此认定优化导致成本上升或下降。"
+  },
+  "current_context_sample_summary": [
+    {
+      "role": "COORDINATOR",
+      "samples": 8,
+      "initial_message_bytes_p50": 157608.5,
+      "packet_bytes_p50": 105227.5,
+      "projection_byte_reduction_p50_before_added_metrics": 0.06651395321860565,
+      "with_work_memory": 0
+    },
+    {
+      "role": "A",
+      "samples": 8,
+      "initial_message_bytes_p50": 121536.5,
+      "packet_bytes_p50": 89363.5,
+      "projection_byte_reduction_p50_before_added_metrics": 0.10278868380775757,
+      "with_work_memory": 0
+    },
+    {
+      "role": "B",
+      "samples": 8,
+      "initial_message_bytes_p50": 139032.0,
+      "packet_bytes_p50": 103428.0,
+      "projection_byte_reduction_p50_before_added_metrics": 0.01660658404840859,
+      "with_work_memory": 0
+    },
+    {
+      "role": "C",
+      "samples": 8,
+      "initial_message_bytes_p50": 80173.0,
+      "packet_bytes_p50": 48000.0,
+      "projection_byte_reduction_p50_before_added_metrics": 0.1281902385789096,
+      "with_work_memory": 0
+    },
+    {
+      "role": "TESTER",
+      "samples": 8,
+      "initial_message_bytes_p50": 120951.0,
+      "packet_bytes_p50": 84069.5,
+      "projection_byte_reduction_p50_before_added_metrics": 0.10400299691821913,
+      "with_work_memory": 0
+    }
+  ]
+}

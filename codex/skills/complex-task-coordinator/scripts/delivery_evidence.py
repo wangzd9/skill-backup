@@ -298,6 +298,54 @@ def _candidate_test_command(command, *, checkout, artifacts, candidate, evidence
     return args
 
 
+def freeze_test_request(ledger, identity, candidate_id, requested, folder, verification_profile=None):
+    """Freeze the same native target before environment setup or test execution."""
+    manifest_path=folder/"request.json"
+    verified = ledger.validate_identity(identity)
+    if not verified.get('valid'):
+        return verified
+    work = verified['work']
+    if work['role'] != 'TESTER' or work['kind'] not in ('verification','supplemental_verification','integration_verification') or work['candidate_id'] != candidate_id:
+        raise ValueError('INDEPENDENT_TESTER_WORK_REQUIRED')
+    from workflow_verification_lifecycle import pending
+    with ledger._connection() as db:
+        if pending(db,work['work_id']):
+            raise ValueError('VERIFICATION_RETIREMENT_PENDING')
+    if work['kind']=='supplemental_verification':
+        from workflow_supplemental import get_context
+        supplemental_context=get_context(ledger,work)
+        if verification_profile!='mysql_migration' or supplemental_context.get('profile')!=verification_profile:
+            raise ValueError('SUPPLEMENTAL_PROFILE_ENTRY_REQUIRED')
+        if (supplemental_context.get('candidate_id')!=candidate_id
+                or supplemental_context.get('run_id')!=work['run_id']
+                or supplemental_context.get('task_id')!=work['task_id']
+                or supplemental_context.get('attempt')!=work['attempt']):
+            raise ValueError('SUPPLEMENTAL_PROFILE_BINDING_MISMATCH')
+    elif verification_profile and not (work['kind']=='integration_verification' or
+            work['kind']=='verification' and verification_profile=='candidate_mysql'):
+        raise ValueError('SUPPLEMENTAL_PROFILE_WORK_REQUIRED')
+    if work['kind']=='integration_verification':
+        from workflow_completion import context, target_current
+        snapshot=ledger.snapshot()
+        if candidate_id is not None or verification_profile not in ('integration_local','integration_mysql') or not target_current(ledger,snapshot,work):
+            raise ValueError('INTEGRATION_FIXED_TARGET_REQUIRED')
+        candidate={**context(snapshot,work)['target'],'task_id':work['task_id'],
+            'attempt':work['attempt'],'candidate_id':None,'kind':'integration_verification'}
+    else:
+        candidates = [item for item in ledger.snapshot(work['run_id'])['candidates'] if item['candidate_id'] == candidate_id]
+        if len(candidates) != 1 or candidates[0]['state'] != 'CURRENT':
+            raise ValueError('CURRENT_CANDIDATE_REQUIRED')
+        candidate = {key: candidates[0][key] for key in ('candidate_id', 'run_id', 'task_id', 'attempt', 'repo', 'base', 'head', 'ac_version')}
+    candidate['test_repository']=next(row['repo'] for row in ledger.snapshot()['runs'] if row['run_id']==work['run_id'])
+    candidate['work_id'] = work['work_id']
+    if work['run_id'] != candidate['run_id'] or work['task_id'] != candidate['task_id'] or work['attempt'] != candidate['attempt']:
+        raise ValueError('TEST_WORK_CANDIDATE_IDENTITY_MISMATCH')
+    manifest={'input_sha256':_hash(requested),'candidate':candidate,'state':'PREPARED',
+              'verification_profile':verification_profile}
+    save_json(manifest_path,manifest)
+    return manifest
+
+
 def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
                             timeout_seconds=300, supersedes=None, evidence=None, report_format='pytest',
                             verification_profile=None, environment_overrides=None):
@@ -352,45 +400,9 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
                 raise ValueError('TEST_COMMAND_ID_CONFLICT')
             candidate = manifest['candidate']
         else:
-            verified = ledger.validate_identity(identity)
-            if not verified.get('valid'):
-                return verified
-            work = verified['work']
-            if work['role'] != 'TESTER' or work['kind'] not in ('verification','supplemental_verification','integration_verification') or work['candidate_id'] != candidate_id:
-                raise ValueError('INDEPENDENT_TESTER_WORK_REQUIRED')
-            from workflow_verification_lifecycle import pending
-            with ledger._connection() as db:
-                if pending(db,work['work_id']):
-                    raise ValueError('VERIFICATION_RETIREMENT_PENDING')
-            if work['kind']=='supplemental_verification':
-                from workflow_supplemental import get_context
-                supplemental_context=get_context(ledger,work)
-                if verification_profile!='mysql_migration' or supplemental_context.get('profile')!=verification_profile:
-                    raise ValueError('SUPPLEMENTAL_PROFILE_ENTRY_REQUIRED')
-                if (supplemental_context.get('candidate_id')!=candidate_id
-                        or supplemental_context.get('run_id')!=work['run_id']
-                        or supplemental_context.get('task_id')!=work['task_id']
-                        or supplemental_context.get('attempt')!=work['attempt']):
-                    raise ValueError('SUPPLEMENTAL_PROFILE_BINDING_MISMATCH')
-            elif verification_profile and work['kind']!='integration_verification':
-                raise ValueError('SUPPLEMENTAL_PROFILE_WORK_REQUIRED')
-            if work['kind']=='integration_verification':
-                from workflow_completion import context, target_current
-                snapshot=ledger.snapshot()
-                if candidate_id is not None or verification_profile not in ('integration_local','integration_mysql') or not target_current(ledger,snapshot,work):
-                    raise ValueError('INTEGRATION_FIXED_TARGET_REQUIRED')
-                candidate={**context(snapshot,work)['target'],'task_id':work['task_id'],
-                    'attempt':work['attempt'],'candidate_id':None,'kind':'integration_verification'}
-            else:
-                candidates = [item for item in ledger.snapshot(work['run_id'])['candidates'] if item['candidate_id'] == candidate_id]
-                if len(candidates) != 1 or candidates[0]['state'] != 'CURRENT':
-                    raise ValueError('CURRENT_CANDIDATE_REQUIRED')
-                candidate = {key: candidates[0][key] for key in ('candidate_id', 'run_id', 'task_id', 'attempt', 'repo', 'base', 'head', 'ac_version')}
-            candidate['test_repository']=next(row['repo'] for row in ledger.snapshot()['runs'] if row['run_id']==work['run_id'])
-            candidate['work_id'] = work['work_id']
-            if work['run_id'] != candidate['run_id'] or work['task_id'] != candidate['task_id'] or work['attempt'] != candidate['attempt']:
-                raise ValueError('TEST_WORK_CANDIDATE_IDENTITY_MISMATCH')
-            save_json(manifest_path, {'input_sha256': _hash(requested), 'candidate': candidate,'state':'PREPARED'})
+            manifest=freeze_test_request(ledger,identity,candidate_id,requested,folder,verification_profile)
+            if 'candidate' not in manifest:return manifest
+            candidate=manifest['candidate']
         if not checkout.exists():
             _git(candidate['repo'], 'worktree', 'add', '--detach', str(checkout), candidate['head'])
         if _git(checkout, 'rev-parse', 'HEAD').decode().strip() != candidate['head']:
@@ -425,7 +437,8 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
             try:
                 command, environment = prepare(command, candidate, checkout, artifacts, pytest=report_format=='pytest')
                 if environment_overrides:
-                    if verification_profile not in ('mysql_migration','integration_mysql') or set(environment_overrides)!={'MN01_MYSQL_URL'}:
+                    from workflow_local_environment import valid_mysql_environment
+                    if not valid_mysql_environment(verification_profile, environment_overrides):
                         raise ValueError('FIXED_MYSQL_PROFILE_ENVIRONMENT_REQUIRED')
                     environment.update(environment_overrides)
                 def wrap(argv):
@@ -439,7 +452,7 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
                           'next_action':'保留候选，使用项目测试环境与已安装插件；执行超时用 timeout_seconds。修正 argv 后使用新的 command_id 重试验证。'}
                 save_json(folder/'environment-failure.json', result)
                 save_json(folder/'execution-phase.json',{'state':'ENVIRONMENT_UNVERIFIED','command_id':command_id})
-                if verification_profile=='mysql_migration':
+                if verification_profile in ('mysql_migration','candidate_mysql','integration_mysql'):
                     from workflow_verification_exceptions import record
                     result['exception_handoff']=record(ledger,folder)
                 return result
@@ -484,7 +497,7 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
         stats = classify(stats, pytest=report_format=='pytest')
         from workflow_test_environment import check_stability
         stats = check_stability(stats,artifacts,pytest=report_format=='pytest')
-        if verification_profile in ('mysql_migration','integration_mysql') and stats['skipped']:
+        if verification_profile in ('mysql_migration','integration_mysql','candidate_mysql') and stats['skipped']:
             stats['mechanical_result']='UNVERIFIED'
             stats['reasons'].append('REAL_MYSQL_EXECUTION_REQUIRED')
         frozen = {**candidate, 'path': str(report), 'sha256': stats['sha256'], 'exit_code': row['exit_code'],
@@ -504,9 +517,9 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
             result['status']=result['publication']['status']
         elif stats['mechanical_result'] in ('PASS', 'FAIL') and checked['valid']:
             result['publication'] = ledger.publish_verification(identity, candidate_id,
-                'supplemental_mysql' if verification_profile else 'independent_test',
+                'supplemental_mysql' if verification_profile=='mysql_migration' else 'independent_test',
                 stats['mechanical_result'], frozen, command_id=command_id,
-                supersedes=[] if verification_profile and stats['mechanical_result']!='PASS' else supersedes)
+                supersedes=[] if verification_profile=='mysql_migration' and stats['mechanical_result']!='PASS' else supersedes)
             result['status'] = result['publication']['status']
         else:
             result['code'] = 'TEST_RESULT_UNVERIFIED'
@@ -516,7 +529,8 @@ def execute_candidate_tests(ledger, identity, candidate_id, argv, *, command_id,
             from workflow_verification_retry import finish as retry_finish
             retry_finish(ledger,retry_key,folder,result)
         save_json(folder/'execution-phase.json',{'state':'RESULT_READY','command_id':command_id})
-        if verification_profile=='mysql_migration' and result['status']=='UNVERIFIED':
+        if verification_profile in ('mysql_migration','candidate_mysql','integration_mysql') and (
+                stats['mechanical_result']=='UNVERIFIED' or not checked['valid']):
             from workflow_verification_exceptions import record
             result['exception_handoff']=record(ledger,folder)
         return result
@@ -541,11 +555,8 @@ def preflight_test_request(argv, timeout_seconds, evidence, report_format, *, ve
     if code is None:
         try:validate_evidence({} if evidence is None else evidence)
         except (ValueError,TypeError,AttributeError):code='INVALID_TEST_EVIDENCE';field='evidence'
-    if code is None and environment_overrides is not None and (
-            not isinstance(environment_overrides,dict) or set(environment_overrides)!={'MN01_MYSQL_URL'}
-            or verification_profile not in ('mysql_migration','integration_mysql')
-            or not isinstance(environment_overrides.get('MN01_MYSQL_URL'),str)
-            or not environment_overrides['MN01_MYSQL_URL'] or '\0' in environment_overrides['MN01_MYSQL_URL']):
+    from workflow_local_environment import valid_mysql_environment
+    if code is None and environment_overrides is not None and not valid_mysql_environment(verification_profile, environment_overrides):
         code='FIXED_MYSQL_PROFILE_ENVIRONMENT_REQUIRED';field='environment_overrides'
     if code:
         from workflow_contracts import test_execution_rules

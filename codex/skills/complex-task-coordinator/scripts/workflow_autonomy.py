@@ -76,6 +76,9 @@ def sweep(ledger):
     queue_repairs(ledger)
     from workflow_completion import reconcile as reconcile_completion
     results.extend(reconcile_completion(ledger))
+    from workflow_coordination import reconcile as reconcile_coordination, attention
+    results.append(reconcile_coordination(ledger))
+    results.extend(attention(ledger))
     for row in invalid:
         def operation(db, row=row):
             current=ledger._one(db,'works','work_id',row['work_id'])

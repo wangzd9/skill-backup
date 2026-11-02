@@ -138,7 +138,7 @@ class WorkflowQueryTests(LedgerFixture):
         report = render_live_progress_fallback(packet, 'COORDINATOR')
         self.assertIsNone(_coordinator_progress_format_error(report))
         self.assertIn('执行者 A（工作中）', report)
-        self.assertIn('T1 attempt 1 开发中', report)
+        self.assertIn('T1：开发中', report)
         self.assertEqual(before, self.ledger.snapshot())
         self.assertIsNone(worker.poll())
 
@@ -156,7 +156,7 @@ class WorkflowQueryTests(LedgerFixture):
         self.assertNotIn('tasks', envelope)
         self.assertEqual(expected, expand_live_progress(envelope))
         from workflow_reports import render_live_progress_fallback
-        self.assertIn('0/240 项', render_live_progress_fallback(envelope, 'COORDINATOR'))
+        self.assertIn('本批 240 项任务，已完成验收 0 项', render_live_progress_fallback(envelope, 'COORDINATOR'))
 
     def test_page_integrity_and_waterline_fail_closed_without_using_missing_as_empty(self):
         packet = live_progress(self.pool, 'COORDINATOR')

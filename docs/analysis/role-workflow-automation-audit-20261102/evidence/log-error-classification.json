@@ -1,0 +1,45 @@
+{
+  "operational_error_lines": {
+    "no such column": 50,
+    "no such table": 1,
+    "other": 3
+  },
+  "last_stack_file": [
+    {
+      "category": "no such column",
+      "file": "workflow_intake.py",
+      "mentions": 1
+    },
+    {
+      "category": "no such column",
+      "file": "workflow_query.py",
+      "mentions": 1
+    },
+    {
+      "category": "no such table",
+      "file": "workflow_runtime.py",
+      "mentions": 1
+    },
+    {
+      "category": "no such column",
+      "file": "workflow_runtime.py",
+      "mentions": 40
+    },
+    {
+      "category": "other",
+      "file": "scheduler.py",
+      "mentions": 2
+    },
+    {
+      "category": "no such column",
+      "file": "scheduler.py",
+      "mentions": 8
+    },
+    {
+      "category": "other",
+      "file": "workflow_runtime.py",
+      "mentions": 1
+    }
+  ],
+  "note": "日志提及数，不是去重事故数。"
+}

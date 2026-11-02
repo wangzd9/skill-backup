@@ -1,0 +1,1072 @@
+{
+  "collected_at": "2026-11-02T13:35:20.978947+08:00",
+  "mode": "read-only; per-query snapshots; no live database changes",
+  "database_bytes": 3175374848,
+  "queries": {
+    "page_usage": {
+      "rows": [
+        {
+          "name": "commands",
+          "pages": 762472,
+          "allocated_bytes": 3123085312,
+          "payload_bytes": 3095672693,
+          "unused_bytes": 23830509
+        },
+        {
+          "name": "events",
+          "pages": 5019,
+          "allocated_bytes": 20557824,
+          "payload_bytes": 18162714,
+          "unused_bytes": 2213317
+        },
+        {
+          "name": "imports",
+          "pages": 4037,
+          "allocated_bytes": 16535552,
+          "payload_bytes": 16518241,
+          "unused_bytes": 1148
+        },
+        {
+          "name": "authority",
+          "pages": 676,
+          "allocated_bytes": 2768896,
+          "payload_bytes": 2764012,
+          "unused_bytes": 2165
+        },
+        {
+          "name": "sqlite_autoindex_commands_1",
+          "pages": 486,
+          "allocated_bytes": 1990656,
+          "payload_bytes": 1665313,
+          "unused_bytes": 236134
+        },
+        {
+          "name": "outbox",
+          "pages": 476,
+          "allocated_bytes": 1949696,
+          "payload_bytes": 1612137,
+          "unused_bytes": 327695
+        },
+        {
+          "name": "executions",
+          "pages": 472,
+          "allocated_bytes": 1933312,
+          "payload_bytes": 1736019,
+          "unused_bytes": 168037
+        },
+        {
+          "name": "execution_tools",
+          "pages": 398,
+          "allocated_bytes": 1630208,
+          "payload_bytes": 1529038,
+          "unused_bytes": 63000
+        },
+        {
+          "name": "events_work_kind_event",
+          "pages": 357,
+          "allocated_bytes": 1462272,
+          "payload_bytes": 1292693,
+          "unused_bytes": 106331
+        },
+        {
+          "name": "events_run_event",
+          "pages": 247,
+          "allocated_bytes": 1011712,
+          "payload_bytes": 908262,
+          "unused_bytes": 41522
+        },
+        {
+          "name": "sqlite_autoindex_execution_tools_1",
+          "pages": 115,
+          "allocated_bytes": 471040,
+          "payload_bytes": 376520,
+          "unused_bytes": 77169
+        },
+        {
+          "name": "works",
+          "pages": 80,
+          "allocated_bytes": 327680,
+          "payload_bytes": 249893,
+          "unused_bytes": 76167
+        },
+        {
+          "name": "candidates",
+          "pages": 64,
+          "allocated_bytes": 262144,
+          "payload_bytes": 212475,
+          "unused_bytes": 48574
+        },
+        {
+          "name": "verifications",
+          "pages": 56,
+          "allocated_bytes": 229376,
+          "payload_bytes": 173880,
+          "unused_bytes": 54204
+        },
+        {
+          "name": "executions_work_state",
+          "pages": 50,
+          "allocated_bytes": 204800,
+          "payload_bytes": 174738,
+          "unused_bytes": 18537
+        },
+        {
+          "name": "decisions",
+          "pages": 43,
+          "allocated_bytes": 176128,
+          "payload_bytes": 143952,
+          "unused_bytes": 30872
+        },
+        {
+          "name": "sqlite_autoindex_executions_1",
+          "pages": 41,
+          "allocated_bytes": 167936,
+          "payload_bytes": 134663,
+          "unused_bytes": 21856
+        },
+        {
+          "name": "tasks",
+          "pages": 19,
+          "allocated_bytes": 77824,
+          "payload_bytes": 61152,
+          "unused_bytes": 16346
+        },
+        {
+          "name": "plans",
+          "pages": 17,
+          "allocated_bytes": 69632,
+          "payload_bytes": 62465,
+          "unused_bytes": 7022
+        },
+        {
+          "name": "authorizations",
+          "pages": 16,
+          "allocated_bytes": 65536,
+          "payload_bytes": 49430,
+          "unused_bytes": 15686
+        },
+        {
+          "name": "external_actions",
+          "pages": 14,
+          "allocated_bytes": 57344,
+          "payload_bytes": 44835,
+          "unused_bytes": 11984
+        },
+        {
+          "name": "sqlite_autoindex_outbox_1",
+          "pages": 9,
+          "allocated_bytes": 36864,
+          "payload_bytes": 27181,
+          "unused_bytes": 7662
+        },
+        {
+          "name": "outbox_state_kind_event",
+          "pages": 7,
+          "allocated_bytes": 28672,
+          "payload_bytes": 19408,
+          "unused_bytes": 7267
+        },
+        {
+          "name": "attempts",
+          "pages": 6,
+          "allocated_bytes": 24576,
+          "payload_bytes": 15478,
+          "unused_bytes": 8735
+        },
+        {
+          "name": "sqlite_schema",
+          "pages": 4,
+          "allocated_bytes": 16384,
+          "payload_bytes": 7938,
+          "unused_bytes": 8067
+        },
+        {
+          "name": "works_run_role_state",
+          "pages": 3,
+          "allocated_bytes": 12288,
+          "payload_bytes": 6713,
+          "unused_bytes": 5162
+        },
+        {
+          "name": "sqlite_autoindex_works_1",
+          "pages": 3,
+          "allocated_bytes": 12288,
+          "payload_bytes": 5206,
+          "unused_bytes": 6669
+        },
+        {
+          "name": "sqlite_autoindex_verifications_1",
+          "pages": 3,
+          "allocated_bytes": 12288,
+          "payload_bytes": 4801,
+          "unused_bytes": 7161
+        },
+        {
+          "name": "sqlite_autoindex_decisions_1",
+          "pages": 3,
+          "allocated_bytes": 12288,
+          "payload_bytes": 6174,
+          "unused_bytes": 5671
+        },
+        {
+          "name": "merges",
+          "pages": 3,
+          "allocated_bytes": 12288,
+          "payload_bytes": 4520,
+          "unused_bytes": 7678
+        },
+        {
+          "name": "controls",
+          "pages": 3,
+          "allocated_bytes": 12288,
+          "payload_bytes": 5297,
+          "unused_bytes": 6926
+        },
+        {
+          "name": "work_contexts",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 1602,
+          "unused_bytes": 2471
+        },
+        {
+          "name": "sqlite_sequence",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 11,
+          "unused_bytes": 4073
+        },
+        {
+          "name": "sqlite_autoindex_work_contexts_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 122,
+          "unused_bytes": 3957
+        },
+        {
+          "name": "sqlite_autoindex_tasks_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 1041,
+          "unused_bytes": 2987
+        },
+        {
+          "name": "sqlite_autoindex_runs_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 370,
+          "unused_bytes": 3691
+        },
+        {
+          "name": "sqlite_autoindex_role_current_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 39,
+          "unused_bytes": 4034
+        },
+        {
+          "name": "sqlite_autoindex_plans_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 211,
+          "unused_bytes": 3862
+        },
+        {
+          "name": "sqlite_autoindex_merges_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 461,
+          "unused_bytes": 3594
+        },
+        {
+          "name": "sqlite_autoindex_imports_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 42,
+          "unused_bytes": 4043
+        },
+        {
+          "name": "sqlite_autoindex_external_actions_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 1491,
+          "unused_bytes": 2402
+        },
+        {
+          "name": "sqlite_autoindex_controls_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 263,
+          "unused_bytes": 3807
+        },
+        {
+          "name": "sqlite_autoindex_candidates_2",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 2975,
+          "unused_bytes": 942
+        },
+        {
+          "name": "sqlite_autoindex_candidates_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 2533,
+          "unused_bytes": 1384
+        },
+        {
+          "name": "sqlite_autoindex_authorizations_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 2532,
+          "unused_bytes": 1442
+        },
+        {
+          "name": "sqlite_autoindex_attempts_1",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 3517,
+          "unused_bytes": 370
+        },
+        {
+          "name": "runs",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 2147,
+          "unused_bytes": 1896
+        },
+        {
+          "name": "role_current",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 213,
+          "unused_bytes": 3855
+        },
+        {
+          "name": "one_active_execution_per_role",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 22,
+          "unused_bytes": 4060
+        },
+        {
+          "name": "external_candidate_state",
+          "pages": 1,
+          "allocated_bytes": 4096,
+          "payload_bytes": 3353,
+          "unused_bytes": 540
+        }
+      ],
+      "seconds": 0.5707
+    },
+    "command_payload_by_verb": {
+      "rows": [
+        {
+          "verb": "work_inputs",
+          "rows": 5384,
+          "result_bytes": 3008685516,
+          "max_result_bytes": 6175353,
+          "oldest": 1792571389.7582386,
+          "newest": 1793595749.5616167
+        },
+        {
+          "verb": "bind_execution",
+          "rows": 3811,
+          "result_bytes": 23373052,
+          "max_result_bytes": 16442,
+          "oldest": 1792571389.5302966,
+          "newest": 1793595364.7583828
+        },
+        {
+          "verb": "register_tool_execution",
+          "rows": 5325,
+          "result_bytes": 18907804,
+          "max_result_bytes": 3616,
+          "oldest": 1792574237.1680758,
+          "newest": 1793597598.6251626
+        },
+        {
+          "verb": "end_execution",
+          "rows": 3648,
+          "result_bytes": 11230239,
+          "max_result_bytes": 3236,
+          "oldest": 1792571448.7607806,
+          "newest": 1793595714.1012468
+        },
+        {
+          "verb": "observe_execution_outcome",
+          "rows": 3641,
+          "result_bytes": 10220191,
+          "max_result_bytes": 2845,
+          "oldest": 1792579361.7827008,
+          "newest": 1793595721.3269517
+        },
+        {
+          "verb": "checkpoint",
+          "rows": 2764,
+          "result_bytes": 9452426,
+          "max_result_bytes": 3769,
+          "oldest": 1792574843.520369,
+          "newest": 1793595303.7262664
+        },
+        {
+          "verb": "claim_delivery",
+          "rows": 539,
+          "result_bytes": 2282157,
+          "max_result_bytes": 42938,
+          "oldest": 1792571332.549477,
+          "newest": 1793596857.8577633
+        },
+        {
+          "verb": "ack_events",
+          "rows": 387,
+          "result_bytes": 1296475,
+          "max_result_bytes": 3417,
+          "oldest": 1793346903.26619,
+          "newest": 1793593178.08189
+        },
+        {
+          "verb": "ack_delivery",
+          "rows": 539,
+          "result_bytes": 1155558,
+          "max_result_bytes": 2173,
+          "oldest": 1792571336.5013094,
+          "newest": 1793596861.0857382
+        },
+        {
+          "verb": "queue_notification",
+          "rows": 487,
+          "result_bytes": 1041392,
+          "max_result_bytes": 2147,
+          "oldest": 1792576887.1446512,
+          "newest": 1793596857.830135
+        },
+        {
+          "verb": "queue_supplemental_repair",
+          "rows": 353,
+          "result_bytes": 827297,
+          "max_result_bytes": 2449,
+          "oldest": 1793106524.1324623,
+          "newest": 1793595360.0191493
+        },
+        {
+          "verb": "decide",
+          "rows": 170,
+          "result_bytes": 588647,
+          "max_result_bytes": 3809,
+          "oldest": 1792578006.8928182,
+          "newest": 1793594716.3270059
+        },
+        {
+          "verb": "deliver",
+          "rows": 100,
+          "result_bytes": 350377,
+          "max_result_bytes": 3554,
+          "oldest": 1792606382.4168272,
+          "newest": 1793594761.019426
+        },
+        {
+          "verb": "adjudicate_service",
+          "rows": 79,
+          "result_bytes": 274036,
+          "max_result_bytes": 3590,
+          "oldest": 1792577626.1001337,
+          "newest": 1793594381.2467458
+        },
+        {
+          "verb": "register_external_action",
+          "rows": 74,
+          "result_bytes": 249741,
+          "max_result_bytes": 3498,
+          "oldest": 1792586866.474995,
+          "newest": 1793595190.1639526
+        },
+        {
+          "verb": "publish_verification",
+          "rows": 63,
+          "result_bytes": 220180,
+          "max_result_bytes": 3727,
+          "oldest": 1792598988.5101259,
+          "newest": 1793595281.2165122
+        },
+        {
+          "verb": "append_development_log",
+          "rows": 56,
+          "result_bytes": 191933,
+          "max_result_bytes": 3465,
+          "oldest": 1793068658.6186538,
+          "newest": 1793584592.1141267
+        },
+        {
+          "verb": "record_service_artifact",
+          "rows": 55,
+          "result_bytes": 116723,
+          "max_result_bytes": 2199,
+          "oldest": 1792571329.2797706,
+          "newest": 1793595241.8018916
+        },
+        {
+          "verb": "publish_plan",
+          "rows": 30,
+          "result_bytes": 102499,
+          "max_result_bytes": 3635,
+          "oldest": 1792571309.526239,
+          "newest": 1793455229.8752131
+        },
+        {
+          "verb": "refresh_task_base",
+          "rows": 23,
+          "result_bytes": 84213,
+          "max_result_bytes": 3705,
+          "oldest": 1793083945.0951087,
+          "newest": 1793269094.7171893
+        },
+        {
+          "verb": "record_integration_test",
+          "rows": 19,
+          "result_bytes": 62596,
+          "max_result_bytes": 3315,
+          "oldest": 1793328243.4146702,
+          "newest": 1793374869.9894173
+        },
+        {
+          "verb": "final_delivery_recovery_stage",
+          "rows": 16,
+          "result_bytes": 53226,
+          "max_result_bytes": 3626,
+          "oldest": 1793421287.9140947,
+          "newest": 1793423472.04947
+        },
+        {
+          "verb": "activate_prepared_requirement",
+          "rows": 14,
+          "result_bytes": 50467,
+          "max_result_bytes": 4112,
+          "oldest": 1793435466.4203584,
+          "newest": 1793454408.0168023
+        },
+        {
+          "verb": "reject_external_action",
+          "rows": 18,
+          "result_bytes": 50230,
+          "max_result_bytes": 3494,
+          "oldest": 1792598097.261976,
+          "newest": 1793589747.399842
+        },
+        {
+          "verb": "accepted_merge_permit",
+          "rows": 14,
+          "result_bytes": 49140,
+          "max_result_bytes": 3548,
+          "oldest": 1792809436.1018302,
+          "newest": 1793511631.2046564
+        },
+        {
+          "verb": "release_work",
+          "rows": 12,
+          "result_bytes": 40363,
+          "max_result_bytes": 3416,
+          "oldest": 1792609154.976893,
+          "newest": 1793435716.0962718
+        },
+        {
+          "verb": "refresh_development_base",
+          "rows": 11,
+          "result_bytes": 40065,
+          "max_result_bytes": 3713,
+          "oldest": 1793250853.8641913,
+          "newest": 1793517298.1017725
+        },
+        {
+          "verb": "final_delivery_stage",
+          "rows": 12,
+          "result_bytes": 39613,
+          "max_result_bytes": 3582,
+          "oldest": 1793412502.0682592,
+          "newest": 1793412575.3620026
+        },
+        {
+          "verb": "record_merge",
+          "rows": 11,
+          "result_bytes": 37565,
+          "max_result_bytes": 3433,
+          "oldest": 1793083814.8756196,
+          "newest": 1793511631.4188247
+        },
+        {
+          "verb": "deliver_integration",
+          "rows": 10,
+          "result_bytes": 34570,
+          "max_result_bytes": 3490,
+          "oldest": 1793337114.318575,
+          "newest": 1793391643.30661
+        },
+        {
+          "verb": "extend_task_scope",
+          "rows": 7,
+          "result_bytes": 25575,
+          "max_result_bytes": 3928,
+          "oldest": 1792635289.7447782,
+          "newest": 1793463914.8811462
+        },
+        {
+          "verb": "coordination_attention",
+          "rows": 10,
+          "result_bytes": 21745,
+          "max_result_bytes": 2176,
+          "oldest": 1793584256.8094084,
+          "newest": 1793596200.6921148
+        },
+        {
+          "verb": "grant_merge_authorization",
+          "rows": 9,
+          "result_bytes": 21314,
+          "max_result_bytes": 2470,
+          "oldest": 1793023735.019513,
+          "newest": 1793408886.5849068
+        },
+        {
+          "verb": "retire_obsolete_verification",
+          "rows": 7,
+          "result_bytes": 20853,
+          "max_result_bytes": 5043,
+          "oldest": 1793156204.0487363,
+          "newest": 1793353137.815283
+        },
+        {
+          "verb": "ensure_completion_plan",
+          "rows": 3,
+          "result_bytes": 17482,
+          "max_result_bytes": 6483,
+          "oldest": 1793327349.3854666,
+          "newest": 1793454415.5170882
+        },
+        {
+          "verb": "control_request",
+          "rows": 7,
+          "result_bytes": 16132,
+          "max_result_bytes": 2520,
+          "oldest": 1792596140.1570537,
+          "newest": 1793066827.9213574
+        },
+        {
+          "verb": "grant_external_authorization",
+          "rows": 7,
+          "result_bytes": 15875,
+          "max_result_bytes": 2342,
+          "oldest": 1792580677.2931333,
+          "newest": 1793165988.0030942
+        },
+        {
+          "verb": "accept_requirement",
+          "rows": 3,
+          "result_bytes": 15255,
+          "max_result_bytes": 5627,
+          "oldest": 1792656865.8445866,
+          "newest": 1793435062.0698981
+        },
+        {
+          "verb": "reconcile_task_merge_policy",
+          "rows": 6,
+          "result_bytes": 14139,
+          "max_result_bytes": 2370,
+          "oldest": 1793102801.5879283,
+          "newest": 1793102801.7293487
+        },
+        {
+          "verb": "complete_requirement",
+          "rows": 4,
+          "result_bytes": 14040,
+          "max_result_bytes": 3523,
+          "oldest": 1793392673.9803936,
+          "newest": 1793395483.5514333
+        },
+        {
+          "verb": "resolve_user_decision",
+          "rows": 4,
+          "result_bytes": 13846,
+          "max_result_bytes": 3496,
+          "oldest": 1793246175.6049926,
+          "newest": 1793584531.0531666
+        },
+        {
+          "verb": "apply_control",
+          "rows": 6,
+          "result_bytes": 13829,
+          "max_result_bytes": 2315,
+          "oldest": 1792596341.2856421,
+          "newest": 1793066829.0425417
+        },
+        {
+          "verb": "record_user_decision",
+          "rows": 4,
+          "result_bytes": 10390,
+          "max_result_bytes": 2611,
+          "oldest": 1793243166.4492967,
+          "newest": 1793584189.467171
+        },
+        {
+          "verb": "register_requirement_packages",
+          "rows": 3,
+          "result_bytes": 8247,
+          "max_result_bytes": 3660,
+          "oldest": 1792647990.7040045,
+          "newest": 1792648530.3314424
+        },
+        {
+          "verb": "queue_integration_verification",
+          "rows": 3,
+          "result_bytes": 7487,
+          "max_result_bytes": 2496,
+          "oldest": 1793327350.2337482,
+          "newest": 1793368679.1659198
+        },
+        {
+          "verb": "commit_documentation",
+          "rows": 2,
+          "result_bytes": 7343,
+          "max_result_bytes": 3693,
+          "oldest": 1793591298.0578372,
+          "newest": 1793592084.484821
+        },
+        {
+          "verb": "resolve_verification_exception",
+          "rows": 2,
+          "result_bytes": 7149,
+          "max_result_bytes": 3687,
+          "oldest": 1793354084.7999725,
+          "newest": 1793370803.1398187
+        },
+        {
+          "verb": "requirement_review_policy",
+          "rows": 3,
+          "result_bytes": 6925,
+          "max_result_bytes": 2377,
+          "oldest": 1792656865.86489,
+          "newest": 1793435062.0991755
+        },
+        {
+          "verb": "apply_requirement_preparation",
+          "rows": 2,
+          "result_bytes": 6763,
+          "max_result_bytes": 3382,
+          "oldest": 1793435060.4398613,
+          "newest": 1793435061.61796
+        },
+        {
+          "verb": "suppress_stale_notification",
+          "rows": 3,
+          "result_bytes": 6747,
+          "max_result_bytes": 2250,
+          "oldest": 1793344875.9631805,
+          "newest": 1793344876.0017796
+        },
+        {
+          "verb": "stage_requirement_preparation",
+          "rows": 2,
+          "result_bytes": 6595,
+          "max_result_bytes": 3299,
+          "oldest": 1793435060.397029,
+          "newest": 1793435061.5665677
+        },
+        {
+          "verb": "mark_external_unknown",
+          "rows": 3,
+          "result_bytes": 6371,
+          "max_result_bytes": 2131,
+          "oldest": 1792586867.7616525,
+          "newest": 1792669461.678051
+        },
+        {
+          "verb": "record_preparation_acceptance",
+          "rows": 2,
+          "result_bytes": 6237,
+          "max_result_bytes": 3120,
+          "oldest": 1793435061.0017622,
+          "newest": 1793435062.1166642
+        },
+        {
+          "verb": "request_requirement_preparation",
+          "rows": 2,
+          "result_bytes": 5735,
+          "max_result_bytes": 2869,
+          "oldest": 1793431267.780025,
+          "newest": 1793431268.2191525
+        },
+        {
+          "verb": "request_final_delivery",
+          "rows": 1,
+          "result_bytes": 5212,
+          "max_result_bytes": 5212,
+          "oldest": 1793412366.2624059,
+          "newest": 1793412366.2624059
+        },
+        {
+          "verb": "freeze_admission",
+          "rows": 2,
+          "result_bytes": 5206,
+          "max_result_bytes": 2639,
+          "oldest": 1792571309.4922795,
+          "newest": 1792571319.1794941
+        },
+        {
+          "verb": "adopt_existing_ocr",
+          "rows": 2,
+          "result_bytes": 5004,
+          "max_result_bytes": 2504,
+          "oldest": 1792571312.44646,
+          "newest": 1792571312.6868584
+        },
+        {
+          "verb": "request_final_delivery_recovery",
+          "rows": 2,
+          "result_bytes": 4962,
+          "max_result_bytes": 2486,
+          "oldest": 1793421053.6842198,
+          "newest": 1793421595.4655313
+        },
+        {
+          "verb": "request_supplemental_verification",
+          "rows": 2,
+          "result_bytes": 4908,
+          "max_result_bytes": 2539,
+          "oldest": 1793103075.2207494,
+          "newest": 1793105293.0778255
+        },
+        {
+          "verb": "link_native_decision_question",
+          "rows": 2,
+          "result_bytes": 4861,
+          "max_result_bytes": 2431,
+          "oldest": 1793431852.4816995,
+          "newest": 1793584189.4992902
+        },
+        {
+          "verb": "accept_migration",
+          "rows": 1,
+          "result_bytes": 3114,
+          "max_result_bytes": 3114,
+          "oldest": 1792571312.2270312,
+          "newest": 1792571312.2270312
+        },
+        {
+          "verb": "set_mode",
+          "rows": 1,
+          "result_bytes": 2847,
+          "max_result_bytes": 2847,
+          "oldest": 1792571319.2364655,
+          "newest": 1792571319.2364655
+        },
+        {
+          "verb": "record_verification_exception",
+          "rows": 1,
+          "result_bytes": 2782,
+          "max_result_bytes": 2782,
+          "oldest": 1793352600.8695142,
+          "newest": 1793352600.8695142
+        },
+        {
+          "verb": "open_admission",
+          "rows": 1,
+          "result_bytes": 2693,
+          "max_result_bytes": 2693,
+          "oldest": 1792571319.3023813,
+          "newest": 1792571319.3023813
+        },
+        {
+          "verb": "select_accepted_requirement",
+          "rows": 1,
+          "result_bytes": 2510,
+          "max_result_bytes": 2510,
+          "oldest": 1792656865.894475,
+          "newest": 1792656865.894475
+        },
+        {
+          "verb": "queue_verification_exception_repair",
+          "rows": 1,
+          "result_bytes": 2500,
+          "max_result_bytes": 2500,
+          "oldest": 1793354098.1065364,
+          "newest": 1793354098.1065364
+        },
+        {
+          "verb": "freeze_completion_obligations",
+          "rows": 1,
+          "result_bytes": 2476,
+          "max_result_bytes": 2476,
+          "oldest": 1793344872.8403306,
+          "newest": 1793344872.8403306
+        },
+        {
+          "verb": "select_run",
+          "rows": 1,
+          "result_bytes": 2469,
+          "max_result_bytes": 2469,
+          "oldest": 1792571309.5421965,
+          "newest": 1792571309.5421965
+        },
+        {
+          "verb": "apply_resolved_verification_decision",
+          "rows": 1,
+          "result_bytes": 2437,
+          "max_result_bytes": 2437,
+          "oldest": 1793279293.9480944,
+          "newest": 1793279293.9480944
+        },
+        {
+          "verb": "queue_final_acceptance_repair",
+          "rows": 1,
+          "result_bytes": 2384,
+          "max_result_bytes": 2384,
+          "oldest": 1793338272.8530657,
+          "newest": 1793338272.8530657
+        },
+        {
+          "verb": "stage_import",
+          "rows": 1,
+          "result_bytes": 2364,
+          "max_result_bytes": 2364,
+          "oldest": 1792571309.473493,
+          "newest": 1792571309.473493
+        },
+        {
+          "verb": "enable_local_development_automation",
+          "rows": 1,
+          "result_bytes": 2320,
+          "max_result_bytes": 2320,
+          "oldest": 1793156405.5428982,
+          "newest": 1793156405.5428982
+        },
+        {
+          "verb": "create_run",
+          "rows": 1,
+          "result_bytes": 2141,
+          "max_result_bytes": 2141,
+          "oldest": 1792571309.1268554,
+          "newest": 1792571309.1268554
+        }
+      ],
+      "seconds": 6.8451
+    },
+    "work_inputs_size_buckets": {
+      "rows": [
+        {
+          "size_bucket": "64KB..1MB",
+          "rows": 478,
+          "result_bytes": 103486528,
+          "oldest": 1792597342.8295174,
+          "newest": 1793344096.0188763
+        },
+        {
+          "size_bucket": "<64KB",
+          "rows": 4403,
+          "result_bytes": 46208054,
+          "oldest": 1792574616.027945,
+          "newest": 1793595749.5616167
+        },
+        {
+          "size_bucket": ">=1MB",
+          "rows": 503,
+          "result_bytes": 2858990934,
+          "oldest": 1792571389.7582386,
+          "newest": 1793344889.940389
+        }
+      ],
+      "seconds": 7.2392
+    },
+    "command_payload_recent_days": {
+      "rows": [
+        {
+          "day": "2026-10-21",
+          "rows": 516,
+          "result_bytes": 97411494
+        },
+        {
+          "day": "2026-10-22",
+          "rows": 2582,
+          "result_bytes": 305210016
+        },
+        {
+          "day": "2026-10-23",
+          "rows": 2101,
+          "result_bytes": 106665530
+        },
+        {
+          "day": "2026-10-24",
+          "rows": 2029,
+          "result_bytes": 32476300
+        },
+        {
+          "day": "2026-10-25",
+          "rows": 2291,
+          "result_bytes": 10850868
+        },
+        {
+          "day": "2026-10-26",
+          "rows": 1139,
+          "result_bytes": 5447653
+        },
+        {
+          "day": "2026-10-27",
+          "rows": 1407,
+          "result_bytes": 221226592
+        },
+        {
+          "day": "2026-10-28",
+          "rows": 2563,
+          "result_bytes": 1145090281
+        },
+        {
+          "day": "2026-10-29",
+          "rows": 3211,
+          "result_bytes": 946254635
+        },
+        {
+          "day": "2026-10-30",
+          "rows": 2221,
+          "result_bytes": 192601988
+        },
+        {
+          "day": "2026-10-31",
+          "rows": 2898,
+          "result_bytes": 10542320
+        },
+        {
+          "day": "2026-11-01",
+          "rows": 3702,
+          "result_bytes": 13440354
+        },
+        {
+          "day": "2026-11-02",
+          "rows": 1133,
+          "result_bytes": 4249524
+        }
+      ],
+      "seconds": 6.1229
+    },
+    "business_row_counts": {
+      "rows": [
+        {
+          "events": 19656,
+          "commands": 27793,
+          "works": 127,
+          "tasks": 20,
+          "candidates": 57
+        }
+      ],
+      "seconds": 0.0135
+    },
+    "quick_check": {
+      "rows": [
+        {
+          "quick_check": "ok"
+        }
+      ],
+      "seconds": 0.7757
+    }
+  },
+  "page_size": 4096,
+  "page_count": 775238,
+  "freelist_count": 19,
+  "auto_vacuum": 0,
+  "journal_mode": "delete"
+}

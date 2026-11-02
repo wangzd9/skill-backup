@@ -3,6 +3,86 @@ import os
 import subprocess
 
 
+def _condition_value(db, work, kind, identifier):
+    from business_ledger import _row
+    if kind=='task':
+        row=_row(db.execute('SELECT * FROM tasks WHERE run_id=? AND task_id=?',(work['run_id'],identifier)).fetchone())
+    elif kind in ('candidate','action','run'):
+        table,key={'candidate':('candidates','candidate_id'),'action':('external_actions','action_id'),
+                   'run':('runs','run_id')}[kind]
+        row=_row(db.execute('SELECT * FROM '+table+' WHERE '+key+'=?',(identifier,)).fetchone())
+        if row and kind=='action':
+            owner=db.execute('SELECT run_id FROM candidates WHERE candidate_id=?',(row['candidate_id'],)).fetchone()
+            if not owner or owner['run_id']!=work['run_id']:row=None
+        elif row and row['run_id']!=work['run_id']:row=None
+    elif kind=='authorizations':
+        import json
+        return [_row(r) for r in db.execute('SELECT * FROM authorizations ORDER BY authorization_id')
+                if json.loads(r['spec']).get('run_id') in (None,work['run_id'])]
+    else:raise ValueError('INVALID_WAIT_CONDITION_KIND')
+    if row is None:raise ValueError('WAIT_CONDITION_OBJECT_NOT_IN_RUN')
+    return row
+
+
+def freeze_conditions(db, work, supplied, at):
+    """Freeze real object identities, never parse a semantic wait from prose."""
+    from business_ledger import _row,_hash
+    if supplied is None:
+        objects=[]
+        tasks=[_row(r) for r in db.execute('SELECT * FROM tasks WHERE run_id=?',(work['run_id'],))]
+        own=next((t for t in tasks if t['task_id']==work['task_id']),None)
+        selected=tasks if work['role']=='COORDINATOR' else [t for t in tasks if own and
+            t['task_id'] in [own['task_id'],*own['dependencies']]]
+        objects.extend({'kind':'task','id':t['task_id']} for t in selected)
+        candidates=[_row(r) for r in db.execute('SELECT * FROM candidates WHERE run_id=?',(work['run_id'],))]
+        candidates=[c for c in candidates if c['state']=='CURRENT' and
+            (work['role']=='COORDINATOR' or c['task_id'] in {t['task_id'] for t in selected})]
+        objects.extend({'kind':'candidate','id':c['candidate_id']} for c in candidates)
+        ids={c['candidate_id'] for c in candidates}
+        objects.extend({'kind':'action','id':r['action_id']} for r in db.execute('SELECT * FROM external_actions')
+                       if r['candidate_id'] in ids and r['state'] not in ('ENDED','REJECTED'))
+        if len(objects)>126:return None  # Fall back to broad legacy event visibility, never omit a dependency.
+        supplied={'version':1,'objects':objects,'recheck_at':at+900,'origin':'runtime-object-observation'}
+    if (not isinstance(supplied,dict) or supplied.get('version')!=1 or
+            not isinstance(supplied.get('objects'),list) or len(supplied['objects'])>128):
+        raise ValueError('INVALID_WAIT_CONDITIONS')
+    objects=[];seen=set()
+    for item in [*supplied['objects'],{'kind':'run','id':work['run_id']},{'kind':'authorizations','id':work['run_id']}]:
+        if not isinstance(item,dict) or not isinstance(item.get('id'),str):raise ValueError('INVALID_WAIT_CONDITION_OBJECT')
+        key=(item.get('kind'),item['id'])
+        if key in seen:continue
+        seen.add(key)
+        value=_condition_value(db,work,*key)
+        objects.append({'kind':key[0],'id':key[1],'fingerprint':_hash(value)})
+    deadline=supplied.get('recheck_at',at+900)
+    import math
+    if type(deadline) not in (int,float) or not math.isfinite(deadline):raise ValueError('INVALID_WAIT_RECHECK_AT')
+    return {'version':1,'objects':objects,'recheck_at':min(max(at,deadline),at+900),
+        'frozen_at':at,'event_after':db.execute('SELECT COALESCE(MAX(event_id),0) FROM events').fetchone()[0],
+        'origin':supplied.get('origin','explicit-object-observation'),
+        'policy':'对象变化只触发重核；不表示所需前置已满足，不确认输入或授权。'}
+
+
+def condition_review(db, work, events, at):
+    from business_ledger import _hash
+    conditions=work['checkpoint']['wait_conditions'];changes=[]
+    for item in conditions['objects']:
+        try:changed=_hash(_condition_value(db,work,item['kind'],item['id']))!=item['fingerprint']
+        except ValueError:changed=True
+        if changed:changes.append({'kind':item['kind'],'id':item['id']})
+    urgent=[e['event_id'] for e in events if e['event_id']>conditions['event_after'] and
+        (e.get('run_id') is None or e['kind'].startswith(('CONTROL_','USER_DECISION_',
+            'VERIFICATION_EXCEPTION_','VERIFICATION_RETRY_','REQUIREMENT_PREPARATION_')))]
+    targets={item['id'] for item in conditions['objects'] if item['kind'] in ('task','candidate','action')}
+    mechanical={'EXECUTION_BOUND','EXECUTION_ENDED','EXECUTION_OUTCOME_OBSERVED','TOOL_EXECUTION_REGISTERED',
+                'CHECKPOINT_SAVED','WORK_CLAIMED','COORDINATION_ATTENTION_REQUIRED'}
+    urgent.extend(e['event_id'] for e in events if e['event_id']>conditions['event_after'] and
+        e['kind'] not in mechanical and any(isinstance(e.get('payload',{}).get(k),str) and e['payload'][k] in targets
+            for k in ('task_id','candidate_id','action_id')))
+    return {'changed':bool(changes or urgent),'objects_changed':changes,'attention_event_ids':urgent,
+        'due':at>=conditions['recheck_at'],'recheck_at':conditions['recheck_at'],'gates_unchanged':True}
+
+
 def repo_observation(repo):
     try:
         def git(*args):
@@ -28,6 +108,7 @@ def review(ledger, db, work, run):
     # synthetic events or ACKs are needed to escape an incorrectly saved wait.
     saved_at = event['created_at'] if event else work['created_at']
     deadline = saved_at + 900
+    deadline=min(deadline,work['checkpoint'].get('wait_conditions',{}).get('recheck_at',deadline))
     result = {'due': ledger.clock() >= deadline, 'recheck_at': deadline,
               'reason': 'WAIT_RECHECK_DUE', 'gates_unchanged': True}
     previous = (event or {}).get('payload', {}).get('wait_observation')

@@ -1,0 +1,67 @@
+{
+  "collected_at": "2026-11-02T13:36:16.810710+08:00",
+  "sample_count": 3,
+  "method": "只读抽取按表扫描最先匹配的三条大于等于1MB历史工作输入，输出字段大小及哈希，不保存正文",
+  "samples": [
+    {
+      "command_rowid": 17,
+      "result_bytes": 5536609,
+      "field_bytes": {
+        "decision": 3216,
+        "events": 5533277,
+        "frozen_through": 2,
+        "has_more": 5,
+        "processed_through": 1,
+        "status": 11,
+        "through": 2
+      },
+      "event_count": 15,
+      "events_sha256": "c6aa4fc1d56a3e9dbd6e5972558d6259e62d8d14c576dd2d1142f30e961c81a1",
+      "events_canonical_bytes": 5533277,
+      "events_zlib_bytes": 319853
+    },
+    {
+      "command_rowid": 19,
+      "result_bytes": 5536928,
+      "field_bytes": {
+        "decision": 3261,
+        "events": 5533551,
+        "frozen_through": 2,
+        "has_more": 5,
+        "processed_through": 1,
+        "status": 11,
+        "through": 2
+      },
+      "event_count": 16,
+      "events_sha256": "4a2fd9bf23425c3df832ac8483eac5945103a684ccefdf9f7d2904c7a02cef13",
+      "events_canonical_bytes": 5533551,
+      "events_zlib_bytes": 319917
+    },
+    {
+      "command_rowid": 21,
+      "result_bytes": 5537178,
+      "field_bytes": {
+        "decision": 3242,
+        "events": 5533820,
+        "frozen_through": 2,
+        "has_more": 5,
+        "processed_through": 1,
+        "status": 11,
+        "through": 2
+      },
+      "event_count": 17,
+      "events_sha256": "da62e7079640d68688aca6ee36e465372183c0d324dbda65cadbd93770e740ef",
+      "events_canonical_bytes": 5533820,
+      "events_zlib_bytes": 319978
+    }
+  ],
+  "limitations": "非随机样本，不能外推全部数据的压缩率或去重率；没有做历史引用图核验。",
+  "sample_event_overlap": {
+    "event_occurrences": 48,
+    "distinct_event_contents": 17,
+    "summed_event_bytes_before_dedup": 16600597,
+    "unique_event_content_bytes": 5533802,
+    "largest_shared_event_bytes": 2764120,
+    "interpretation": "这些样本存在相同事件正文重复保存；仅针对三条样本，不能据此外推全库可回收空间。"
+  }
+}

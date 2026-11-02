@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-11-02T12:54:36.716413+08:00",
+  "report_sha256": "993cdbeb4b065844caa4b0e75486036b06656369852c2bf92cb063dc484d98cd",
+  "links_checked": 35,
+  "json_evidence_files_checked_before_this_receipt": 12,
+  "source_snapshot_hashes_rechecked": true,
+  "whitespace_checked": true,
+  "failures": [],
+  "runtime_code_changed": false,
+  "business_tests_run_for_this_document_audit": false
+}

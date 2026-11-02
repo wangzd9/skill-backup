@@ -1,0 +1,41 @@
+{
+  "checked_at": "2026-11-02T14:01:09.492896+08:00",
+  "usage_cutoff": "2026-11-02T13:55:24.431144+08:00",
+  "documents": [
+    {
+      "path": "/home/wang/work/doc/analysis/role-workflow-automation-audit-20261102/TOKEN-EFFICIENCY-REVIEW.md",
+      "sha256": "c3fe270868892f137f99d4bd6c044fdecb9ea67e6c8a5ce197c0432aece2abbf"
+    },
+    {
+      "path": "/home/wang/work/doc/analysis/role-workflow-automation-audit-20261102/REPORT.md",
+      "sha256": "9eef62d68df3bdb8abad81ba9b9611e66470edd027ebf82c60ba3281a047cb0b"
+    },
+    {
+      "path": "/home/wang/work/doc/analysis/role-workflow-automation-audit-20261102/evidence/README.md",
+      "sha256": "2d54582950c84dc950a9f594e1a401458cfb087886b79e87af7f1694bb137feb"
+    }
+  ],
+  "json_files_checked": [
+    "token-usage-current.json",
+    "token-context-samples.json",
+    "token-review-usage.json",
+    "token-findings-summary.json"
+  ],
+  "links_checked": 45,
+  "collector_syntax_checked": true,
+  "group_sums_match": true,
+  "source_sha256": {
+    "workflow_model_input.py": "917685f333921a1b2f5e94877bdbd53b034af8c3b8f04bd225dd77effed75ce0",
+    "workflow_runtime.py": "c725d5f718b4d9e1910ebfecb32f2c40d9d0ddae96f74a86aa328b669b0c6c46",
+    "workflow_sessions.py": "b6f1add532c6102d2fa9d261f14fbbf2fc8354369c36f466a3f90d48dcb75da1",
+    "workflow_decision_context.py": "eb7dcb126a7b41307ac1cc7c9e723a00a2dcc5139df14fb02e2ba91af104c89d",
+    "usage_accounting.py": "40e7328a189796ac9a38ff2f082cd284a7d37f956305358ff148297edb52c3ea",
+    "usage_audit.py": "4aa6f4655ec34804b3c511013995c94c876b8549669713bf706288ae4753875e",
+    "workflow_resumption.py": "4c5f4d605cc26a93b35e7c3049ff2052046656b1d80b10e7b36959ad0e97c5e1",
+    "business_ledger.py": "3b7a59251e1cc575bed9f2e1d50ef47ac2ad39a2fc4dd514adf4e79637fcc0cf"
+  },
+  "failures": [],
+  "live_database_mutated": false,
+  "runtime_changed": false,
+  "models_or_business_tests_called": false
+}

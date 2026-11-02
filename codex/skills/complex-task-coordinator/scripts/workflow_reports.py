@@ -656,6 +656,37 @@ def render_notification(ledger, item):
     payload, kind = item['payload'], item['kind']
     if isinstance(payload.get('text'), str):
         return payload['text']
+    if kind == 'USER_DECISION_REQUESTED':
+        return ('**协调者｜需要你的决定**\n\n**问题：** ' + payload['question'] +
+                '\n\n**原因与影响：** ' + payload['reason'] + '\n\n**裁决编号：** ' + payload['decision_id'] +
+                '\n\n' + '\n'.join('- **选项 ' + str(i) + '：** ' + option
+                                     for i, option in enumerate(payload['options'], 1)))
+    if kind in ('DEPENDENCY_RUN_SCHEDULED', 'DEPENDENCY_RUN_RETURNED'):
+        label = '前置需求已自动接续' if kind == 'DEPENDENCY_RUN_SCHEDULED' else '前置需求已完成，返回下游'
+        return ('**协调者｜' + label + '**\n\n**前置需求：** ' + payload['upstream_run_id'] +
+                '\n\n**下游需求：** ' + payload['consumer_run_id'] +
+                '\n\n**执行方式：** 正在运行的任务结束后自动切换，原任务和进度已保留；测试、审查和合入要求不变。')
+    if kind == 'COORDINATION_ATTENTION_REQUIRED':
+        from workflow_report_text import excerpt
+        lines = ['**协调者｜待处理事项**', '', '**责任人：** 协调者；内部裁决不要求用户逐项批准。']
+        if payload.get('escalation_level', 0):
+            delay = '超过一小时' if payload['escalation_level'] >= 2 else '超过十五分钟'
+            lines += ['', '**处理提醒：** 有待办' + delay + '未解决，协调者需核实卡点；程序或模型服务异常交维护者处理。']
+        for question in payload.get('user_questions', []):
+            lines += ['', '**需要用户决定：** ' + question['question'],
+                      '**选项：** ' + '；'.join(question['options']), '**原因与影响：** ' + question['reason']]
+        for answer in payload.get('pending_answers', []):
+            lines += ['', '**你的答复：** 已记录，由协调者核对原问题后处理；具体结果会另行说明。']
+        for dependency in payload.get('dependencies', []):
+            lines += ['', '**前置功能：** ' + dependency['upstream_run_id'] + '；正在运行的任务结束后，后台自动继续处理。']
+        for review in payload.get('reviews', []):
+            detail = ('审查报告已返回，协调者核对后决定是否需要返修' if review['state']=='RESULT_READY'
+                      else '审查结果不完整，协调者先查清缺项再处理')
+            lines += ['', '**审查待办：** ' + review['task_id'] + '；' + detail + '。']
+        for wait in payload.get('waiting', [])[:4]:
+            lines += ['', '**等待条件待核对：** ' + wait['role'] + '；' + excerpt('；'.join(wait['conditions']), 160) +
+                      ' 详细记录保留在原任务附件。']
+        return '\n'.join(lines)
     if kind=='VERIFICATION_EXCEPTION_REPAIR_QUEUED':
         return ('**补验异常已登记返修**\n\n**任务：** '+str(payload['task_id'])+' / attempt '+str(payload['attempt'])+
             '\n\n**责任人：** '+str(payload['owner'])+'；'+str(payload['reason'])+
@@ -672,12 +703,26 @@ def render_notification(ledger, item):
         candidate=next(row for row in ledger.snapshot()['candidates']
                        if row['candidate_id']==payload['candidate_id'])
         observed=datetime.fromtimestamp(item['created_at'],ZONE)
-        state=payload.get('state','REJECTED')
+        detail='审查未能完成，具体原因和未完成范围仍需核实。'
+        if kind == 'EXTERNAL_ACTION_REJECTED':
+            detail='审查在提交前被拒绝，协调者需核实入口校验原因。'
+        else:
+            from workflow_service_recovery import recovery_diagnosis
+            try:
+                diagnosis=recovery_diagnosis(ledger,payload['action_id'])
+            except (OSError,ValueError,TypeError,KeyError):
+                diagnosis=None
+            if diagnosis:
+                detail=(f"共{diagnosis['planned_batches']}批，已完成{len(diagnosis['completed_batches'])}批，"
+                        f"未完成{len(diagnosis['failed_batches'])}批，"
+                        f"另有{len(diagnosis['unstarted_batches'])}批尚未开始。")
+                if diagnosis['request_timeouts']:
+                    detail+=f"其中{len(diagnosis['request_timeouts'])}批发生模型请求超时。"
         return (f'**协调者 · 审查阻塞 · {observed:%Y-%m-%d %H:%M} +08:00**\n\n'
-                f'{candidate["task_id"]} / attempt {candidate["attempt"]}：'
-                f'审查 {payload["action_id"]} 为 {state}。\n\n'
-                '完整审查门禁保留；协调者须核实失败证据与已有发现，'
-                '已确认问题按原授权返修，不能把补审失败视为通过或静默等待。')
+                f'**情况：** {detail}\n\n'
+                '**接下来：** 协调者核对已有结果和失败证据，在有效授权内补齐审查或退回开发者修复；'
+                '无法恢复时交维护者处理，审查通过后才能继续合入。\n\n'
+                f'**对应任务：** {candidate["task_id"]}，第{candidate["attempt"]}次开发；详细证据保留在原审查附件。')
     if kind in ('CANDIDATE_DELIVERED', 'CANDIDATE_DECIDED'):
         candidates = [value for value in ledger.snapshot()['candidates']
                       if value['candidate_id'] == payload.get('candidate_id')]
@@ -773,7 +818,8 @@ def _coordinator_progress_format_error(text):
                     or english_words > max(10, chinese * 2)
                     or len(re.findall(r'[。！？]', body)) > 4):
                 return 'SIMPLIFIED_CHINESE_REPORT_REQUIRED'
-    return None
+    from workflow_report_text import language_error
+    return language_error(text)
 
 
 def _progress_report_format_error(text, role):
@@ -811,7 +857,8 @@ def _progress_report_format_error(text, role):
             if (len(bullet) > 240 or not chinese or english_words > max(10, chinese * 2)
                     or len(re.findall(r'[。！？]', body)) > 1):
                 return 'PERSONAL_REPORT_BULLET_INVALID'
-    return None
+    from workflow_report_text import language_error
+    return language_error(text)
 
 
 _LIVE_PHASE_LABELS = {
@@ -836,11 +883,9 @@ def _live_role_label(row, tasks):
 
 
 def _live_bullet(label, value, *, limit=205):
-    text = re.sub(r'\s+', ' ', str(value or '')).strip()
-    text = text.replace('**', '').replace('`', '')
-    if len(text) > limit:
-        text = text[:limit - 1].rstrip() + '…'
-    return '- **' + label + '：** ' + (text or '待核实')
+    from workflow_report_text import excerpt, plain_text
+    text = excerpt(value, limit)
+    return '- **' + plain_text(label) + '：** ' + (text or '待核实')
 
 
 def _read_progress_context(packet):
@@ -888,25 +933,43 @@ def render_live_progress_fallback(packet, role):
     descriptions = context.get('tasks') or {}
     histories = context.get('roles') or {}
     completion = context.get('completion') or {}
+    coordination = context.get('coordination') or packet.get('coordination') or {}
+    def task_detail(task):
+        phase = task.get('phase')
+        status = _LIVE_PHASE_LABELS.get(phase, phase or '状态待核实')
+        if phase == 'PENDING' and (task.get('dependency_ready') is False
+                or (task.get('dependency_readiness') or {}).get('development_start') is False):
+            status = '等待前置任务完成'
+        checks = set((task.get('recorded_checks') or {}).get('independent_test') or [])
+        if task.get('candidate_id') and checks:
+            status += ('，独立测试已通过' if checks == {'PASS'} else
+                       '，独立测试未通过' if checks == {'FAIL'} else '，独立测试结果仍需核对')
+        return str(task.get('task_id')) + '：' + status
     def history_bullet(who, field='summary'):
         saved = histories.get(who) or {}
         text = saved.get(field)
         if not text:
             return []
         date = str(saved.get('recorded_at') or '时间未知')
+        if field == 'next' and (coordination.get('dependencies') or coordination.get('handoffs')):
+            return [_live_bullet('上次计划', f'{who} · {date}；现在先补做前置功能，原来的等待说明见附件。')]
         current_work_id=(roles.get(who) or {}).get('current_work_id')
         if saved.get('work_id') and saved['work_id']!=current_work_id:
             return [_live_bullet('前一工作单记录',
-                f'{who} · {date} · event:{saved.get("event_id")}；属于已退出或已切换工作单，原文保留在历史附件，不作为当前进展。')]
+                f'{who} · {date}；属于以前的任务，详情见历史附件，不作为当前进展。')]
         return [_live_bullet('历史检查点' if field == 'summary' else '已记录的接续计划',
-            f'{who} · {date} · event:{saved.get("event_id")}：{text}（仅反映保存时判断）')]
+            f'{who} · {date}：{text}（仅反映当时记录）')]
     title_role = role_names.get(role, '角色')
     if role == 'COORDINATOR':
         lines = [f'**{title_role}｜当前进展核验 · {time_text}**']
         run = packet.get('run') or {}
         completed = sum(task.get('phase') == 'COMPLETED' for task in tasks)
+        requirement_detail = f"{run.get('requirement_id') or '当前需求待核实'}；本批 {len(tasks)} 项任务，已完成验收 {completed} 项。"
+        handoffs = coordination.get('handoffs') or []
+        if handoffs:
+            requirement_detail += '现在先补做前置功能；原任务和进度已保留，完成后自动继续。'
         lines += ['', '**整体目标与进度**',
-                  _live_bullet('需求', f"{run.get('requirement_id') or '当前需求待核实'}；已登记完成 {completed}/{len(tasks)} 项，按任务回执确认验收。")]
+                  _live_bullet('需求', requirement_detail)]
         final=packet.get('completion') or {}
         final_labels={'NOT_PLANNED':'尚未登记最终验收计划','WAITING_DEVELOPMENT':'等待开发集成',
             'VERIFICATION_QUEUED':'最终集成验证已自动排队','VERIFYING':'最终集成验证进行中',
@@ -915,7 +978,7 @@ def render_live_progress_fallback(packet, role):
             'WAITING_ENVIRONMENT':'最终验证环境待修复，保留未验证状态',
             'COMPLETED':'本地需求验收已收口'}
         if final:
-            lines.append(_live_bullet('需求验收', final_labels.get(final.get('state'),final.get('state') or '待核实')+'；开发叶任务完成与需求验收分别记账。'))
+            lines.append(_live_bullet('整体验收', final_labels.get(final.get('state'),final.get('state') or '待核实')+'；单项完成后还要做整体验收。'))
         for delivery in packet.get('final_deliveries',[]):
             stage=delivery.get('stage','待执行')
             last=delivery if 'head' in delivery or 'code' in delivery else (delivery.get('stages') or [{}])[-1]
@@ -923,7 +986,7 @@ def render_live_progress_fallback(packet, role):
                 'UNVERIFIED':'执行待核验','COMPLETED':'已完成'}.get(delivery['state'],'状态待核实')
             stage_label={'fetch':'拉取','merge':'合入main','push':'推送核验','reconcile':'版本对账',
                 'local_up':'本地栈更新','local_test':'本地栈验证','quality_gate':'本地质量门禁'}.get(stage,stage)
-            lines.append(_live_bullet('最终Git交付', f"{state_label}（{delivery['state']}） · {stage_label}；回执版本 {str(last.get('head','待核实'))[:12]}；{last.get('code','逐步回执见原生交付记录')}"))
+            lines.append(_live_bullet('最终交付', f"{state_label}，当前步骤：{stage_label}；详细结果见交付记录。"))
         repository=packet.get('repository') or {}
         if packet.get('final_deliveries') and repository.get('state')=='OBSERVED':
             lines.append(_live_bullet('当次仓库',str(repository.get('branch') or '分支待核实')+' '+
@@ -937,7 +1000,10 @@ def render_live_progress_fallback(packet, role):
             assigned = [task for task in tasks if task.get('role') == who and task.get('phase') not in ('COMPLETED', 'CANCELLED')]
             current = roles.get(who, {})
             state = _live_role_label(current, [task for task in tasks if task.get('role') == who])
-            detail = '；'.join(f"{task.get('task_id')} attempt {task.get('attempt')} { _LIVE_PHASE_LABELS.get(task.get('phase'), task.get('phase', '状态待核实')) }" for task in assigned[:2])
+            if any(d['consumer_task_id'] in {t['task_id'] for t in assigned}
+                   for d in coordination.get('dependencies', [])):
+                state = '阻塞'
+            detail = '；'.join(task_detail(task) for task in assigned[:2])
             if len(assigned) > 2:
                 detail += f'；另有 {len(assigned)-2} 项'
             lines.append(_live_bullet(f'{role_names[who]}（{state}）', detail or '当前没有未完成任务记录。'))
@@ -964,7 +1030,7 @@ def render_live_progress_fallback(packet, role):
         lines.append(_live_bullet(f'测试者（{tester_state}）', tester_detail or '当前没有未完成测试派单记录。'))
         if completion.get('summary'):
             lines.append(_live_bullet('最近最终验证回执',
-                f'event:{completion.get("event_id")} · {completion.get("result")}：{completion["summary"]}'))
+                f'{completion.get("result")}：{completion["summary"]}'))
         lines += history_bullet('TESTER')
         checks = completion.get('checks') or []
         if checks:
@@ -973,8 +1039,9 @@ def render_live_progress_fallback(packet, role):
         serial = packet.get('ocr_serial_gate') or {}
         version = packet.get('ocr_version_gate') or {}
         lines += ['', '**OCR情况和后续计划**', '',
-                  _live_bullet('OCR门禁', f"串行门{'占用或状态未知' if serial.get('blocked') else '当前未见活动占用'}；在途计数 {serial.get('blocking_count', '未知')}；"
-                      f"版本门状态 {version.get('state', '待核实')}，以当前安装版本准入记录为准。")]
+                  _live_bullet('代码审查（OCR）',
+                      f"{'当前有审查正在运行或结果尚未确认' if serial.get('blocked') else '当前没有正在运行的审查'}；"
+                      f"{'审查工具可用' if version.get('state')=='OPEN' else '审查工具是否可用仍需核对'}。")]
         activity=context.get('review_activity') or {}
         own_actions = [action for action in (activity.get('attention',packet.get('external_actions') or []))
                        if action.get('kind') == 'ocr' and action.get('run_id') == run.get('run_id')
@@ -986,14 +1053,13 @@ def render_live_progress_fallback(packet, role):
                 'INCOMPLETE':('审查未完成','缺少可裁决的完整结果；协调者核原因并决定恢复、重审或其他处置，不直接判PASS/FAIL'),
                 'FAILED':('审查执行失败','保留执行失败事实；协调者核证处置，不等同代码FAIL'),
                 'CANCELLED':('审查已取消','保留取消事实；当前检查仍按有效合同核验'),
-                'SUBMITTED':('当前审查','原生执行尚在途，等待原回执，不重复提交'),
-                'UNKNOWN':('审查状态待核验','原生结果未知，保留串行围栏，不自动重试')}
+                'SUBMITTED':('当前审查','代码审查正在运行，等结果返回后由协调者处理'),
+                'UNKNOWN':('审查状态待核验','审查结果尚未确认，协调者先查清情况，暂不重复提交')}
             label,next_step=instructions.get(state,('审查状态待核验','核对原动作与固定候选'))
             if 'current_candidate' not in action and state not in ('SUBMITTED','UNKNOWN'):
                 label,next_step='审查对象待核验','本回包缺少候选版本绑定，不能断言属于当前待办'
             target=f"{action.get('task_id')}"
-            if action.get('attempt') is not None:target+=f" a{action['attempt']}"
-            lines.append(_live_bullet(label,f"{target}：{state}，动作 {action.get('action_id')}；{next_step}。"))
+            lines.append(_live_bullet(label,f"{target}：{next_step}。"))
         if len(own_actions)>4:
             remaining={state:sum(a['state']==state for a in own_actions[4:])
                 for state in dict.fromkeys(a['state'] for a in own_actions[4:])}
@@ -1002,12 +1068,14 @@ def render_live_progress_fallback(packet, role):
                 '；完整对象和原始状态见本次查询附件，不表示已处理。'))
         candidate_record = ''
         if activity:
-            candidate_record = f"{activity.get('current_ocr_pass_count',0)}/{activity.get('current_ocr_candidate_count',0)} 个当前候选已登记 PASS；不替代最终集成验收。"
+            total = activity.get('current_ocr_candidate_count', 0)
+            candidate_record = (f"当前有 {total} 个待审版本，其中 {activity.get('current_ocr_pass_count',0)} 个代码审查已通过；整体验收另行进行。"
+                                if total else '目前还没有需要审查的开发版本。')
         historical=activity.get('historical_incomplete_count',(packet.get('external_action_summary') or {}).get('historical_incomplete_count',0))
         if historical:
             candidate_record += f'旧候选遗留记录：{historical} 条历史 INCOMPLETE 保留原记录与证据，不作为当前候选待裁决；历史在途/未知动作仍受原串行门约束。'
         if candidate_record:
-            lines.append(_live_bullet('候选审查记录', candidate_record))
+            lines.append(_live_bullet('审查进度', candidate_record))
         missing_ocr = [task['task_id'] for task in tasks if task.get('candidate_id')
             and 'ocr' in (task.get('recorded_checks') or {})
             and 'PASS' not in task['recorded_checks']['ocr']]
@@ -1025,21 +1093,32 @@ def render_live_progress_fallback(packet, role):
             actions = context.get('strong_review_actions') or []
             history_count=context.get('strong_review_history_count',0)
             review_status = (('当前没有待处置或在途强审动作；历史共 '+str(history_count)+' 项，按原合同核验。' if history_count else
-                '本需求账本未登记强审动作；是否需要仍按有效合同，不新增审查要求。') if not actions
+                '尚未开展额外的深入审查；是否需要按既定要求判断。') if not actions
                 else '本需求已登记 '+str(len(actions))+' 项审查动作；状态 '+ '、'.join(str(a['state']) for a in actions[-3:]))
         lines += ['', '**强审查情况**', '', _live_bullet('强审查', review_status)]
         gates = list(packet.get('open_gates') or [])
         if any(d['state'] in ('BLOCKED','UNVERIFIED') for d in packet.get('final_deliveries',[])):
             gates.insert(0,{'code':'FINAL_DELIVERY_INCOMPLETE'})
         lines += ['', '**风险**', '']
+        for dependency in coordination.get('dependencies', [])[:2]:
+            lines.append(_live_bullet('前置需求未完成', dependency['upstream_run_id'] +
+                '；影响 ' + dependency['consumer_task_id'] + '；协调者负责自动接续，无需用户逐项裁决。'))
+        for handoff in handoffs[-1:]:
+            lines.append(_live_bullet('后续任务', '先完成当前前置功能和整体验收，再恢复原任务（' +
+                handoff['consumer_task_id'] + '）；原进度保留，不会重新领取。'))
+        if coordination.get('pending_answers'):
+            lines.append(_live_bullet('用户答复待处理', str(len(coordination['pending_answers'])) + ' 条已登记；协调者须核对原提问并执行，登记回执不等于裁决生效。'))
+        for question in coordination.get('user_questions', [])[:2]:
+            lines.append(_live_bullet('需要用户决定', question['question'] + '；裁决编号 ' + question['decision_id']))
         gate_labels={'VERIFICATION_EXCEPTION_HANDOFF_REQUIRED':'补验异常待协调者核证处置',
             'FINAL_DELIVERY_INCOMPLETE':'最终Git交付阻塞或未核验，协调者负责接续',
             'VERIFICATION_EXCEPTION_REPAIR_PENDING':'补验异常返修/复验待落实',
-            'OCR_SERIAL_ACTION_STILL_ACTIVE_OR_UNKNOWN':'OCR仍在途或状态未知',
+            'OCR_SERIAL_ACTION_STILL_ACTIVE_OR_UNKNOWN':'代码审查还在运行，或结果尚未确认，由协调者核对',
             'OCR_VERSION_GATE_BLOCKED':'当前OCR版本尚未准入'}
-        lines.append(_live_bullet('未关闭门禁', '当前门禁：'+'；'.join(gate_labels.get(gate.get('code'),str(gate.get('code') or gate)) for gate in gates[:3])
+        lines.append(_live_bullet('未关闭门禁', '还需要处理：'+'；'.join(gate_labels.get(gate.get('code'),str(gate.get('code') or gate)) for gate in gates[:3])
             + (f'；另有 {len(gates)-3} 项' if len(gates) > 3 else '') if gates
-            else '本次账本快照未列出打开门禁；验收结果仍以各项回执为准。'))
+            else '前置依赖尚未满足；按本区列出的条件解除阻塞，原验收门禁继续核验。' if coordination.get('dependencies')
+            else '本次查询未列出其他阻塞；仍须完成上面列出的测试和审查。'))
         deferred=completion.get('deferred_obligations') or {}
         if deferred.get('count'):
             lines.append(_live_bullet('真实阶段义务',str(deferred['count'])+' 项 · '+
@@ -1049,10 +1128,10 @@ def render_live_progress_fallback(packet, role):
             disposition=dispositions.get(issue.get('id')) if final.get('state')=='COMPLETED' else None
             if disposition:
                 lines.append(_live_bullet('验收处置 '+str(issue.get('id')),
-                    '已登记 · event:'+str(completion.get('disposition_event_id'))+'：'+disposition['reason']))
+                    '已登记：'+disposition['reason']))
             else:
                 lines.append(_live_bullet('验收问题 '+str(issue.get('id')),
-                    '最近回执 event:'+str(completion.get('event_id'))+' · '+str(issue.get('task_id') or '环境/范围核验')+'：'+str(issue.get('summary'))))
+                    str(issue.get('task_id') or '环境/范围核验')+'：'+str(issue.get('summary'))))
         open_exceptions=[i for i in (context or {}).get('verification_exceptions',[]) if i['blocking']]
         for item in open_exceptions[:3]:
             lines.append(_live_bullet('补验异常处置',str(item['task_id'])+' 补验保留未验证结果；协调者负责核证处置并落实返修/调查，'
@@ -1061,6 +1140,13 @@ def render_live_progress_fallback(packet, role):
         if not pending and final.get('state') not in (None,'NOT_PLANNED','COMPLETED'):
             pending=[{'task_id':final.get('validation_task_id') or '最终验收','phase':final_labels.get(final['state'],final['state'])}]
         lines += ['', '**下一步计划**', '']
+        for dependency in coordination.get('dependencies', [])[:2]:
+            lines.append(_live_bullet('协调者接续', dependency['upstream_run_id'] +
+                ' 在全部原生writer核退后继续开发、测试与审查；前置任务、适用最终验收和正式问答完成后自动返回 ' + dependency['consumer_task_id'] + '。'))
+        for handoff in handoffs[-1:]:
+            lines.append(_live_bullet('自动继续', '前置功能、整体验收和需要用户决定的问题处理完后，自动恢复原任务；你明确暂停或改选需求时，按你的新指令执行。'))
+        if coordination.get('pending_answers'):
+            lines.append(_live_bullet('裁决执行责任', '协调者先关联已登记用户原文，再处理对应审查与合入；以业务事件及回执确认生效，不按tick时间预测完成。'))
         unfinished_deliveries=[d for d in packet.get('final_deliveries',[]) if d['state']!='COMPLETED']
         for delivery in unfinished_deliveries[:2]:
             action=('协调者按原生finalize_delivery接续已授权步骤' if delivery['state'] in ('PENDING','READY','RUNNING') else
@@ -1084,6 +1170,13 @@ def render_live_progress_fallback(packet, role):
                 missing = [names.get(name, name) for name, values in (task.get('recorded_checks') or {}).items()
                            if 'PASS' not in values]
                 next_step = '补齐'+ '、'.join(missing)+'结果后由协调者裁决' if missing else '由协调者核对验证证据并裁决'
+                reviews = [action for action in own_actions if action.get('task_id') == task.get('task_id')]
+                if missing == ['OCR'] and reviews:
+                    state = reviews[0].get('state')
+                    next_step = {'RESULT_READY': '审查报告已返回，由协调者核对后决定是否需要返修',
+                        'SUBMITTED': '等待正在运行的代码审查返回结果，再由协调者处理',
+                        'UNKNOWN': '审查结果尚未确认，由协调者先查清情况',
+                        'INCOMPLETE': '审查结果不完整，由协调者查清缺项再处理'}.get(state, next_step)
                 lines.append(_live_bullet(str(task.get('role'))+' 接续条件', str(task.get('task_id'))+' 当前候选已交付，'+next_step+'。'))
             else:
                 lines += history_bullet(task.get('role'), 'next')

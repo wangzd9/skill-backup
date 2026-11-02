@@ -1,0 +1,892 @@
+{
+  "model_latency": [
+    {
+      "role": "A",
+      "model": "/home/sysadmin/data/disk02/jc/models/qwen3.8-27b-fp8",
+      "status": "completed",
+      "count": 764,
+      "duration_p50": 14.38124966621399,
+      "duration_p95": 112.3468644618988,
+      "duration_max": 976.9413521289825,
+      "first_chunk_p95": 8.01468539237976
+    },
+    {
+      "role": "A",
+      "model": "deepseek-v4.1-flash",
+      "status": "error",
+      "count": 6,
+      "duration_p50": 7.452275991439819,
+      "duration_p95": 7.688698053359985,
+      "duration_max": 8.158639192581177,
+      "first_chunk_p95": null
+    },
+    {
+      "role": "B",
+      "model": "/home/sysadmin/data/disk02/jc/models/qwen3.8-27b-fp8",
+      "status": "completed",
+      "count": 477,
+      "duration_p50": 16.29028630256653,
+      "duration_p95": 176.91289973258972,
+      "duration_max": 681.2236757278442,
+      "first_chunk_p95": 7.24908709526062
+    },
+    {
+      "role": "B",
+      "model": "deepseek-v4.1-flash",
+      "status": "completed",
+      "count": 48,
+      "duration_p50": 11.937984943389893,
+      "duration_p95": 33.8800413608551,
+      "duration_max": 58.86406970024109,
+      "first_chunk_p95": 11.207689762115479
+    },
+    {
+      "role": "C",
+      "model": "/home/sysadmin/data/disk02/jc/models/qwen3.8-27b-fp8",
+      "status": "completed",
+      "count": 1337,
+      "duration_p50": 12.415374755859375,
+      "duration_p95": 91.02324199676514,
+      "duration_max": 693.9742629528046,
+      "first_chunk_p95": 4.018920660018921
+    },
+    {
+      "role": "C",
+      "model": "deepseek-v4.1-flash",
+      "status": "completed",
+      "count": 3,
+      "duration_p50": 19.52150058746338,
+      "duration_p95": 19.52150058746338,
+      "duration_max": 20.02793025970459,
+      "first_chunk_p95": 6.099207162857056
+    },
+    {
+      "role": "C",
+      "model": "deepseek-v4.1-flash",
+      "status": "error",
+      "count": 2,
+      "duration_p50": 2.393073558807373,
+      "duration_p95": 2.393073558807373,
+      "duration_max": 2.412310838699341,
+      "first_chunk_p95": null
+    },
+    {
+      "role": "COORDINATOR",
+      "model": "/home/sysadmin/data/disk02/jc/models/qwen3.8-27b-fp8",
+      "status": "completed",
+      "count": 3268,
+      "duration_p50": 30.377212524414062,
+      "duration_p95": 135.30485677719116,
+      "duration_max": 1033.8317699432373,
+      "first_chunk_p95": 14.917610168457031
+    },
+    {
+      "role": "COORDINATOR",
+      "model": "/home/sysadmin/data/disk02/jc/models/qwen3.8-27b-fp8",
+      "status": "error",
+      "count": 1,
+      "duration_p50": 146.57895469665527,
+      "duration_p95": 146.57895469665527,
+      "duration_max": 146.57895469665527,
+      "first_chunk_p95": null
+    },
+    {
+      "role": "COORDINATOR",
+      "model": "deepseek-v4.1-flash",
+      "status": "completed",
+      "count": 23,
+      "duration_p50": 11.793553352355957,
+      "duration_p95": 17.670896291732788,
+      "duration_max": 24.141376972198486,
+      "first_chunk_p95": 10.249898195266724
+    },
+    {
+      "role": "COORDINATOR",
+      "model": "deepseek-v4.1-flash",
+      "status": "error",
+      "count": 1,
+      "duration_p50": 3.055997610092163,
+      "duration_p95": 3.055997610092163,
+      "duration_max": 3.055997610092163,
+      "first_chunk_p95": null
+    },
+    {
+      "role": "TESTER",
+      "model": "/home/sysadmin/data/disk02/jc/models/qwen3.8-27b-fp8",
+      "status": "completed",
+      "count": 455,
+      "duration_p50": 25.142276287078857,
+      "duration_p95": 185.06577920913696,
+      "duration_max": 698.9982628822327,
+      "first_chunk_p95": 10.083801031112671
+    },
+    {
+      "role": "TESTER",
+      "model": "deepseek-v4.1-flash",
+      "status": "completed",
+      "count": 5,
+      "duration_p50": 19.388662099838257,
+      "duration_p95": 73.38184952735901,
+      "duration_max": 108.00144934654236,
+      "first_chunk_p95": 7.115075588226318
+    },
+    {
+      "role": "TESTER",
+      "model": "deepseek-v4.1-flash",
+      "status": "error",
+      "count": 1,
+      "duration_p50": 3.090355157852173,
+      "duration_p95": 3.090355157852173,
+      "duration_max": 3.090355157852173,
+      "first_chunk_p95": null
+    }
+  ],
+  "api_errors": {
+    "0": 11,
+    "1": 1
+  },
+  "execution_business_window": [
+    {
+      "role": "A",
+      "executions": 32,
+      "with_selected_business_transition": 11,
+      "without_selected_business_transition": 21,
+      "caveat": "同角色工作单时间窗关联，未覆盖所有有用分析，不是模型调用因果或空转判定。"
+    },
+    {
+      "role": "B",
+      "executions": 17,
+      "with_selected_business_transition": 2,
+      "without_selected_business_transition": 15,
+      "caveat": "同角色工作单时间窗关联，未覆盖所有有用分析，不是模型调用因果或空转判定。"
+    },
+    {
+      "role": "C",
+      "executions": 89,
+      "with_selected_business_transition": 2,
+      "without_selected_business_transition": 87,
+      "caveat": "同角色工作单时间窗关联，未覆盖所有有用分析，不是模型调用因果或空转判定。"
+    },
+    {
+      "role": "COORDINATOR",
+      "executions": 663,
+      "with_selected_business_transition": 19,
+      "without_selected_business_transition": 644,
+      "caveat": "同角色工作单时间窗关联，未覆盖所有有用分析，不是模型调用因果或空转判定。"
+    },
+    {
+      "role": "TESTER",
+      "executions": 27,
+      "with_selected_business_transition": 16,
+      "without_selected_business_transition": 11,
+      "caveat": "同角色工作单时间窗关联，未覆盖所有有用分析，不是模型调用因果或空转判定。"
+    }
+  ],
+  "native_outcomes": [
+    {
+      "role": "A",
+      "outcome": "COMPLETED",
+      "n": 26
+    },
+    {
+      "role": "A",
+      "outcome": "FAILED",
+      "n": 6
+    },
+    {
+      "role": "B",
+      "outcome": "COMPLETED",
+      "n": 16
+    },
+    {
+      "role": "C",
+      "outcome": "COMPLETED",
+      "n": 88
+    },
+    {
+      "role": "C",
+      "outcome": "FAILED",
+      "n": 1
+    },
+    {
+      "role": "COORDINATOR",
+      "outcome": "COMPLETED",
+      "n": 661
+    },
+    {
+      "role": "COORDINATOR",
+      "outcome": "FAILED",
+      "n": 2
+    },
+    {
+      "role": "TESTER",
+      "outcome": "COMPLETED",
+      "n": 28
+    }
+  ],
+  "top_execution_works": [
+    {
+      "run_id": "prepared-rosbag-catalog-spray-pipeline",
+      "work_id": "work-1e3be6ed30bc4997b37e66b887ffc898",
+      "role": "COORDINATOR",
+      "n": 341,
+      "first": 1793454542.999192,
+      "last": 1793584741.2367392
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-6d508d9edd0743179b165eab1b12fdaa",
+      "role": "COORDINATOR",
+      "n": 269,
+      "first": 1793376179.070285,
+      "last": 1793435279.8893626
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-spray-pipeline",
+      "work_id": "work-7e3e6a233283432ab2017a5b2da973de",
+      "role": "C",
+      "n": 61,
+      "first": 1793517298.9505906,
+      "last": 1793584204.0781708
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-scene-foundation",
+      "work_id": "work-eaaeb0994dfd4f7cbfc62d3de304c59d",
+      "role": "COORDINATOR",
+      "n": 41,
+      "first": 1793435822.5720448,
+      "last": 1793454058.6900072
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-spray-pipeline",
+      "work_id": "work-95800385a42746cb85f7f82b846d2c19",
+      "role": "C",
+      "n": 19,
+      "first": 1793506324.3751094,
+      "last": 1793516222.9660213
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-scene-foundation",
+      "work_id": "work-26ef76727db8415582b52e84bde00ec2",
+      "role": "COORDINATOR",
+      "n": 12,
+      "first": 1793584982.9158351,
+      "last": 1793591703.9478078
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-a100-multi-node",
+      "work_id": "work-05b4512fec3d4ebfad4afbac89029232",
+      "role": "TESTER",
+      "n": 8,
+      "first": 1793376961.782676,
+      "last": 1793390642.2551458
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-spray-pipeline",
+      "work_id": "work-1741dce6022a4a2d9940328ac7884475",
+      "role": "A",
+      "n": 8,
+      "first": 1793467739.220485,
+      "last": 1793471462.5238051
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-scene-foundation",
+      "work_id": "work-88d8e219bbe0419fae412593e03f2ff4",
+      "role": "B",
+      "n": 8,
+      "first": 1793438822.1925325,
+      "last": 1793450941.8849237
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-spray-pipeline",
+      "work_id": "work-72b902965025492f86714ce5ca6ae7fa",
+      "role": "B",
+      "n": 5,
+      "first": 1793506322.9695432,
+      "last": 1793510101.4164348
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-spray-pipeline",
+      "work_id": "work-84bf34926ff44ca9a9db127294f98133",
+      "role": "A",
+      "n": 5,
+      "first": 1793474100.1371882,
+      "last": 1793478842.787389
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-scene-foundation",
+      "work_id": "work-ce2b761c2402479f8b1574c663cb042d",
+      "role": "C",
+      "n": 5,
+      "first": 1793438823.3612947,
+      "last": 1793443739.5124211
+    }
+  ],
+  "recent_rejections": [
+    {
+      "created_at": 1793589747.399842,
+      "verb": "reject_external_action",
+      "code": "EXTERNAL_ACTION_ALREADY_TERMINAL"
+    },
+    {
+      "created_at": 1793584639.0312204,
+      "verb": "work_inputs",
+      "code": "PAGE_AFTER_NOT_PREVIOUSLY_ISSUED"
+    },
+    {
+      "created_at": 1793584632.8548205,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793544418.786935,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793534869.5462375,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793530927.7910564,
+      "verb": "checkpoint",
+      "code": "CHECKPOINT_CONTROL_FIELDS_MISPLACED"
+    },
+    {
+      "created_at": 1793521556.1619208,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793517358.444882,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793514192.4012291,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793511554.8070676,
+      "verb": "ack_events",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793510702.7458804,
+      "verb": "deliver",
+      "code": "CANDIDATE_SCOPE_MISMATCH"
+    },
+    {
+      "created_at": 1793509243.0654037,
+      "verb": "ack_events",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793506384.1472924,
+      "verb": "ack_events",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793506371.5585136,
+      "verb": "ack_events",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793506271.2906709,
+      "verb": "decide",
+      "code": "APPROVAL_REQUIRED_BEFORE_COMPLETION"
+    },
+    {
+      "created_at": 1793504443.0040386,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793503305.9798164,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793502480.028602,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793500608.9804745,
+      "verb": "ack_events",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793500386.8381612,
+      "verb": "adjudicate_service",
+      "code": "COMPLETE_SERVICE_FACTS_AND_SEMANTIC_DECISION_REQUIRED"
+    },
+    {
+      "created_at": 1793500289.7015972,
+      "verb": "adjudicate_service",
+      "code": "COMPLETE_SERVICE_FACTS_AND_SEMANTIC_DECISION_REQUIRED"
+    },
+    {
+      "created_at": 1793499868.347172,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793497974.267662,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793495395.603746,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793490063.3600826,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793489914.1713192,
+      "verb": "adjudicate_service",
+      "code": "FAILURE_CLOSURE_SCOPE_MISMATCH"
+    },
+    {
+      "created_at": 1793487885.244267,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793486467.622072,
+      "verb": "work_inputs",
+      "code": "PAGE_AFTER_ALREADY_PROCESSED"
+    },
+    {
+      "created_at": 1793485343.5091095,
+      "verb": "checkpoint",
+      "code": "EVENT_PREFIX_NOT_ISSUED"
+    },
+    {
+      "created_at": 1793485244.9544778,
+      "verb": "adjudicate_service",
+      "code": "FAILURE_CLOSURE_SCOPE_MISMATCH"
+    }
+  ],
+  "budget_files": {
+    "count": 825,
+    "checkpoint_required": 71,
+    "blocked_actions": {
+      "SESSION_CHECKPOINT_REQUIRED": 70
+    },
+    "request_max": 52,
+    "input_token_max": 163678
+  },
+  "physical_models": [
+    {
+      "role": "A",
+      "kind": "main_request",
+      "outcome": "ERROR",
+      "n": 6,
+      "max_seconds": 8.158506631851196
+    },
+    {
+      "role": "A",
+      "kind": "main_request",
+      "outcome": "SUCCESS",
+      "n": 757,
+      "max_seconds": 976.9413244724274
+    },
+    {
+      "role": "B",
+      "kind": "main_request",
+      "outcome": "SUCCESS",
+      "n": 518,
+      "max_seconds": 681.2236487865448
+    },
+    {
+      "role": "C",
+      "kind": "main_request",
+      "outcome": "ERROR",
+      "n": 1,
+      "max_seconds": 2.3929662704467773
+    },
+    {
+      "role": "C",
+      "kind": "main_request",
+      "outcome": "SUCCESS",
+      "n": 1334,
+      "max_seconds": 693.9742364883423
+    },
+    {
+      "role": "COORDINATOR",
+      "kind": "main_request",
+      "outcome": "ERROR",
+      "n": 3,
+      "max_seconds": 141.25032234191895
+    },
+    {
+      "role": "COORDINATOR",
+      "kind": "main_request",
+      "outcome": "SUCCESS",
+      "n": 3148,
+      "max_seconds": 1033.8317410945892
+    },
+    {
+      "role": "TESTER",
+      "kind": "main_request",
+      "outcome": "SUCCESS",
+      "n": 454,
+      "max_seconds": 698.9982357025146
+    }
+  ],
+  "log_coverage": [
+    {
+      "file": "agent.log",
+      "earliest": 1793557437.0,
+      "latest": 1793591885.0,
+      "levels": {
+        "WARNING": 149,
+        "ERROR": 37
+      },
+      "exception_types": {
+        "OperationalError": 22,
+        "ValueError": 23,
+        "RuntimeError": 12,
+        "nValueError": 2,
+        "ProgrammingError": 1
+      },
+      "codes": [
+        [
+          "WRITE_OUTSIDE_CURRENT_WORK",
+          60
+        ],
+        [
+          "NATIVE_EXECUTION_NOT_LIVE",
+          10
+        ],
+        [
+          "INSUFFICIENT_BALANCE",
+          6
+        ],
+        [
+          "EXPLICIT_NATIVE_USER_DECISION_REQUIRED",
+          4
+        ],
+        [
+          "ROLE_TOOL_BRIDGE_INVALID",
+          4
+        ],
+        [
+          "FILE_OUTSIDE_TASK_SCOPE",
+          3
+        ],
+        [
+          "WORK_IDENTITY_UNVERIFIED",
+          2
+        ],
+        [
+          "EXECUTION_NO_LONGER_WRITABLE",
+          2
+        ],
+        [
+          "BOLD_SINGLE_LEVEL_BULLETS_REQUIRED",
+          2
+        ],
+        [
+          "SIMPLIFIED_CHINESE_REPORT_REQUIRED",
+          1
+        ],
+        [
+          "TOOL_ERROR",
+          1
+        ],
+        [
+          "EXECUTION_OUTCOME_OBSERVED",
+          1
+        ],
+        [
+          "COORDINATOR_SEVEN_SECTIONS_REQUIRED",
+          1
+        ]
+      ]
+    },
+    {
+      "file": "agent.log.1",
+      "earliest": 1793516997.0,
+      "latest": 1793557436.0,
+      "levels": {
+        "WARNING": 171,
+        "ERROR": 65
+      },
+      "exception_types": {
+        "OperationalError": 13,
+        "ValueError": 36,
+        "RuntimeError": 30,
+        "nOSError": 1,
+        "nTypeError": 1
+      },
+      "codes": [
+        [
+          "WRITE_OUTSIDE_CURRENT_WORK",
+          105
+        ],
+        [
+          "NATIVE_EXECUTION_NOT_LIVE",
+          16
+        ],
+        [
+          "INSUFFICIENT_BALANCE",
+          15
+        ],
+        [
+          "ROLE_TOOL_BRIDGE_INVALID",
+          2
+        ],
+        [
+          "BOLD_SINGLE_LEVEL_BULLETS_REQUIRED",
+          1
+        ]
+      ]
+    },
+    {
+      "file": "agent.log.2",
+      "earliest": 1793484730.0,
+      "latest": 1793516997.0,
+      "levels": {
+        "WARNING": 296,
+        "ERROR": 178
+      },
+      "exception_types": {
+        "RuntimeError": 70,
+        "ValueError": 25,
+        "ConnectError": 2,
+        "APIConnectionError": 1,
+        "OperationalError": 14,
+        "nNameError": 1,
+        "ProgrammingError": 3
+      },
+      "codes": [
+        [
+          "WORK_IDENTITY_UNVERIFIED",
+          81
+        ],
+        [
+          "EXECUTION_NO_LONGER_WRITABLE",
+          81
+        ],
+        [
+          "WRITE_OUTSIDE_CURRENT_WORK",
+          72
+        ],
+        [
+          "INSUFFICIENT_BALANCE",
+          36
+        ],
+        [
+          "NATIVE_EXECUTION_NOT_LIVE",
+          12
+        ],
+        [
+          "FILE_OUTSIDE_TASK_SCOPE",
+          3
+        ],
+        [
+          "BOLD_SINGLE_LEVEL_BULLETS_REQUIRED",
+          1
+        ]
+      ]
+    },
+    {
+      "file": "agent.log.3",
+      "earliest": 1793448003.0,
+      "latest": 1793484728.0,
+      "levels": {
+        "WARNING": 277,
+        "ERROR": 166
+      },
+      "exception_types": {
+        "ValueError": 11,
+        "nAttributeError": 1,
+        "RuntimeError": 72
+      },
+      "codes": [
+        [
+          "WORK_IDENTITY_UNVERIFIED",
+          80
+        ],
+        [
+          "EXECUTION_NO_LONGER_WRITABLE",
+          80
+        ],
+        [
+          "INSUFFICIENT_BALANCE",
+          36
+        ],
+        [
+          "WRITE_OUTSIDE_CURRENT_WORK",
+          24
+        ],
+        [
+          "FILE_PATH_REQUIRED",
+          3
+        ],
+        [
+          "TOOL_EXECUTION_REGISTERED",
+          3
+        ],
+        [
+          "FILE_OUTSIDE_TASK_SCOPE",
+          3
+        ],
+        [
+          "PATCH_STRINGS_REQUIRED",
+          3
+        ],
+        [
+          "ROLE_TOOL_BRIDGE_INVALID",
+          2
+        ],
+        [
+          "SCENE_RECONCILE_WORKER_SECRET",
+          2
+        ],
+        [
+          "TOOL_EXECUTION_RE",
+          1
+        ],
+        [
+          "SCENE_RECONCILE_WORKER_S",
+          1
+        ],
+        [
+          "FETCH_HEAD",
+          1
+        ],
+        [
+          "GIT_DISCOVERY_ACROSS_FILESYSTEM",
+          1
+        ]
+      ]
+    },
+    {
+      "file": "errors.log",
+      "earliest": 1793242426.0,
+      "latest": 1793591885.0,
+      "levels": {
+        "WARNING": 1150,
+        "ERROR": 494
+      },
+      "exception_types": {
+        "ValueError": 128,
+        "OperationalError": 54,
+        "AttributeError": 7,
+        "nAttributeError": 1,
+        "RuntimeError": 184,
+        "ConnectError": 2,
+        "APIConnectionError": 1,
+        "nNameError": 1,
+        "ProgrammingError": 4,
+        "nOSError": 1,
+        "nTypeError": 1,
+        "nValueError": 2
+      },
+      "codes": [
+        [
+          "WRITE_OUTSIDE_CURRENT_WORK",
+          270
+        ],
+        [
+          "WORK_IDENTITY_UNVERIFIED",
+          184
+        ],
+        [
+          "EXECUTION_NO_LONGER_WRITABLE",
+          184
+        ],
+        [
+          "INSUFFICIENT_BALANCE",
+          93
+        ],
+        [
+          "NATIVE_EXECUTION_NOT_LIVE",
+          38
+        ],
+        [
+          "QUERY_CORE_METADATA_EXCEEDS_BYTE_BUDGET",
+          18
+        ],
+        [
+          "EXPLICIT_REQUIREMENT_DEVELOPMENT_SOURCE_REQUIRED",
+          16
+        ],
+        [
+          "TOOL_ERROR",
+          14
+        ],
+        [
+          "AUTHORIZATION_EXPIRY_EXCEEDS_NATIVE_LIMIT",
+          12
+        ],
+        [
+          "FILE_OUTSIDE_TASK_SCOPE",
+          12
+        ],
+        [
+          "ROLE_TOOL_BRIDGE_INVALID",
+          11
+        ],
+        [
+          "BOLD_SINGLE_LEVEL_BULLETS_REQUIRED",
+          10
+        ],
+        [
+          "EXPLICIT_NATIVE_USER_DECISION_REQUIRED",
+          8
+        ],
+        [
+          "SPECIFIC_MERGE_TASK_AND_BRANCH_GRANT_REQUIRED",
+          4
+        ],
+        [
+          "FILE_PATH_REQUIRED",
+          3
+        ]
+      ]
+    },
+    {
+      "file": "gateway.log",
+      "earliest": 1793239843.0,
+      "latest": 1793591722.0,
+      "levels": {
+        "WARNING": 18
+      },
+      "exception_types": {
+        "ValueError": 4
+      },
+      "codes": [
+        [
+          "BOLD_SINGLE_LEVEL_BULLETS_REQUIRED",
+          10
+        ],
+        [
+          "QUERY_CORE_METADATA_EXCEEDS_BYTE_BUDGET",
+          6
+        ],
+        [
+          "COORDINATOR_REPORT_TITLE_REQUIRED",
+          2
+        ],
+        [
+          "SIMPLIFIED_CHINESE_REPORT_REQUIRED",
+          1
+        ],
+        [
+          "COORDINATOR_SEVEN_SECTIONS_REQUIRED",
+          1
+        ]
+      ]
+    }
+  ]
+}

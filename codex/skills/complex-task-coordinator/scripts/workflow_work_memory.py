@@ -2,6 +2,32 @@
 import re
 
 
+def checkpoint_memory(db, work, payload):
+    """Default continuation locator; it explicitly makes no fresh conclusion."""
+    from business_ledger import _row,_hash
+    deps={'task_id':work['task_id']} if work.get('task_id') else {}
+    candidate=_row(db.execute('SELECT * FROM candidates WHERE candidate_id=?',(work.get('candidate_id'),)).fetchone())
+    if candidate:deps.update({k:candidate[k] for k in ('candidate_id','head','ac_version')})
+    grants=[_row(r) for r in db.execute('SELECT * FROM authorizations')]
+    deps['authorization_fingerprint']=_hash([g for g in grants if g.get('spec',{}).get('run_id') in (None,work['run_id'])])
+    old=work.get('checkpoint',{}).get('work_memory')
+    try:validate(old)
+    except ValueError:old={'version':1,'entries':[]}
+    previous=[dict(row) for row in old['entries'] if row['id']!='runtime-continuation'][:31]
+    next_step=payload.get('next') or payload.get('next_action') or '核当前任务、候选和检查点，定位下一未完成步骤。'
+    if not isinstance(next_step,str):
+        import json
+        next_step=json.dumps(next_step,ensure_ascii=False)
+    events=[r[0] for r in db.execute("SELECT event_id FROM events WHERE work_id=? AND kind NOT IN "
+        "('EXECUTION_BOUND','EXECUTION_ENDED','EXECUTION_OUTCOME_OBSERVED','TOOL_EXECUTION_REGISTERED',"
+        "'CHECKPOINT_SAVED','WORK_CLAIMED') ORDER BY event_id DESC LIMIT 16",(work['work_id'],))]
+    summary=payload.get('summary','')
+    if not isinstance(summary,str):summary=''
+    return {'version':1,'entries':[*previous,{'id':'runtime-continuation',
+        'conclusion':'历史接续定位，当前证据须重核。'+summary[:1024],
+        'dependencies':deps,'source_event_ids':sorted(events),'next':next_step[:8192]}]}
+
+
 def validate(value):
     if not isinstance(value,dict) or type(value.get('version')) is not int or value['version']!=1 or set(value)-{'version','entries'}:
         raise ValueError('INVALID_WORK_MEMORY_VERSION')

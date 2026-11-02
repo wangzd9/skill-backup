@@ -1,0 +1,29 @@
+{
+  "tables": {
+    "attempts": 67,
+    "authority": 1,
+    "authorizations": 38,
+    "candidates": 58,
+    "commands": 27856,
+    "controls": 6,
+    "decisions": 137,
+    "events": 19697,
+    "execution_tools": 5349,
+    "executions": 3646,
+    "external_actions": 66,
+    "imports": 1,
+    "merges": 11,
+    "outbox": 644,
+    "plans": 5,
+    "role_current": 5,
+    "runs": 9,
+    "tasks": 20,
+    "verifications": 99,
+    "work_contexts": 3,
+    "works": 128
+  },
+  "commands_verified": 27856,
+  "compressed_results_verified": 503,
+  "verified_at": 1793600905.2605376,
+  "all_rowids_and_nonresult_columns_equal": true
+}

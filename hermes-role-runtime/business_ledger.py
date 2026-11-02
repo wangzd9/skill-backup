@@ -505,7 +505,12 @@ class BusinessLedger:
                 return {'can_start_model':True,'reason':'OLD_WORK_SAFE_DRAIN_REQUIRED','work_id':work['work_id'],'drain_only':True}
             if run['control']!='ACTIVE' or current['control']!='ACTIVE':
                 return {'can_start_model':False,'reason':'PAUSED_OR_CANCELLED'}
-            mechanical={'EXECUTION_BOUND','EXECUTION_ENDED','EXECUTION_OUTCOME_OBSERVED','TOOL_EXECUTION_REGISTERED','CHECKPOINT_SAVED','WORK_CLAIMED'}
+            from workflow_coordination import admission_barrier
+            handoff = admission_barrier(self, role, work)
+            if handoff:
+                return handoff
+            mechanical={'EXECUTION_BOUND','EXECUTION_ENDED','EXECUTION_OUTCOME_OBSERVED','TOOL_EXECUTION_REGISTERED',
+                        'CHECKPOINT_SAVED','WORK_CLAIMED','COORDINATION_ATTENTION_REQUIRED'}
             events=[_row(r) for r in db.execute('SELECT * FROM events WHERE event_id>? AND (run_id=? OR run_id IS NULL) ORDER BY event_id',
                                               ((work or {}).get('processed_through',0),run_id))]
             relevant=[v for v in events if v['kind'] not in mechanical
@@ -517,6 +522,9 @@ class BusinessLedger:
                             'work_id':work['work_id'],'drain_only':True,'requires_user_approval':False}
                 waiting=work['checkpoint'].get('waiting_external')
                 if role=='COORDINATOR':
+                    from workflow_user_decisions import pending as pending_answers
+                    if pending_answers(self.snapshot(), run_id):
+                        return {'can_start_model':True,'reason':'PENDING_USER_ANSWER_REVIEW', 'work_id':work['work_id']}
                     from workflow_verification_exceptions import facts as exception_facts
                     # A dated investigation is a bounded internal handoff, not
                     # indefinite external authorization wait. One due wake per
@@ -529,6 +537,13 @@ class BusinessLedger:
                         and last_bound<i['disposition']['payload']['review_after']<=self.clock()]
                     if due:return {'can_start_model':True,'reason':'VERIFICATION_EXCEPTION_REVIEW_DUE',
                         'work_id':work['work_id'],'observation_event_ids':[i['observation_event_id'] for i in due]}
+                if waiting and work['checkpoint'].get('wait_conditions'):
+                    from workflow_wait import condition_review
+                    condition_state=condition_review(db,work,events,self.clock())
+                    if condition_state['changed']:
+                        return {'can_start_model':True,'reason':'WAIT_TARGET_CHANGED',
+                            'work_id':work['work_id'],'wait_conditions':condition_state}
+                    relevant=[]
                 if waiting and not relevant:
                     from workflow_wait import review
                     recheck = review(self, db, work, run)
@@ -543,6 +558,10 @@ class BusinessLedger:
                 if backoff:return backoff
                 return {'can_start_model':True,'reason':'PENDING_BUSINESS_EVENT' if relevant else 'CHECKPOINT_RESUMPTION',
                         'work_id':work['work_id'],'event_ids':[v['event_id'] for v in relevant]}
+            from workflow_coordination import parked_work
+            parked = parked_work(db, run_id, role)
+            if parked:
+                return {'can_start_model': True, 'reason': 'PARKED_DEPENDENCY_WORK_RESUMPTION', 'work_id': parked['work_id']}
             if role=='COORDINATOR':
                 from workflow_completion import facts as completion_facts
                 completion=completion_facts(self.snapshot(),run_id)
@@ -1017,6 +1036,9 @@ class BusinessLedger:
                     # Admit only the existing TESTER's safe-release drain path.
                     drain_only = True
             if not work:
+                from workflow_coordination import parked_work
+                work = parked_work(db, run_id, role)
+            if not work:
                 if role == 'COORDINATOR':
                     work = self._new_work(db,run_id,role,'coordination')
                 elif role == 'TESTER':
@@ -1145,6 +1167,7 @@ class BusinessLedger:
 
     def checkpoint(self, identity, payload, *, command_id, processed_through=None, yield_execution=False):
         def operation(db):
+            nonlocal payload
             work,execution = self._identity(db,identity,allow_drain=True)
             if not isinstance(payload,dict) or len(_json(payload).encode()) > 128*1024:
                 _deny('INVALID_CHECKPOINT')
@@ -1162,8 +1185,19 @@ class BusinessLedger:
             if (not isinstance(waiting, list) or len(waiting)>32
                     or any(not isinstance(value,str) or not value.strip() or len(value)>512 for value in waiting)):
                 _deny('INVALID_WAITING_EXTERNAL', expected='list[str]', recovery='列出真实外部依赖；内部能力故障交给协调者修复')
+            from workflow_wait import freeze_conditions
+            try:
+                conditions=freeze_conditions(db,work,payload.get('wait_conditions'),self.clock()) if waiting else None
+            except ValueError as exc:_deny(str(exc))
+            payload=dict(payload)
+            if conditions is not None:payload['wait_conditions']=conditions
+            from workflow_work_memory import checkpoint_memory
+            if 'work_memory' not in payload:
+                payload['work_memory']=checkpoint_memory(db,work,payload)
             if processed_through is not None:
                 self._ack(db,work,processed_through)
+            from workflow_coordination import request_questions
+            request_questions(self, db, work, payload.get('user_questions', []))
             db.execute('UPDATE works SET checkpoint=? WHERE work_id=?',(_json(payload),work['work_id']))
             if yield_execution:
                 db.execute("UPDATE executions SET state='DRAINING' WHERE execution_id=?",(execution['execution_id'],))

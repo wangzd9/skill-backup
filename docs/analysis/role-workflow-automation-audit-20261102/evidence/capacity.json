@@ -1,0 +1,57 @@
+{
+  "database_bytes": 3175374848,
+  "wal_bytes": 0,
+  "attachments": {
+    "input-pages": {
+      "bytes": 21164674,
+      "files": 3179,
+      "complete": true
+    },
+    "decision-views": {
+      "bytes": 7816829,
+      "files": 898,
+      "complete": true
+    },
+    "query-views": {
+      "bytes": 127315,
+      "files": 19,
+      "complete": false
+    },
+    "delivery-evidence": {
+      "bytes": 0,
+      "files": 0,
+      "complete": false
+    },
+    "decision-metrics": {
+      "bytes": 0,
+      "files": 0,
+      "complete": false
+    },
+    "operations": {
+      "bytes": 0,
+      "files": 0,
+      "complete": false
+    },
+    "services": {
+      "bytes": 0,
+      "files": 0,
+      "complete": false
+    },
+    "mysql-sessions": {
+      "bytes": 0,
+      "files": 0,
+      "complete": false
+    }
+  },
+  "attachments_complete": false,
+  "total_bytes_lower_bound": 3204483666,
+  "sampled_at": 1793594633.3569534,
+  "cached": false,
+  "sample_age_seconds": 0,
+  "scan_limit_entries": 4096,
+  "database_wal_growth_bytes_per_second": 0.0,
+  "state": "CAPACITY_WARNING",
+  "retention": "不在线删除/VACUUM；一致归档须覆盖数据库、WAL和全部引用附件并验证还原。",
+  "attachment_growth_bytes_per_second": null,
+  "historical_compaction_performed": false
+}

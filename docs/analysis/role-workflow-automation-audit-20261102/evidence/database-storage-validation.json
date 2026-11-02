@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-11-02T13:37:54.146430+08:00",
+  "documents": [
+    {
+      "path": "/home/wang/work/doc/analysis/role-workflow-automation-audit-20261102/REPORT.md",
+      "sha256": "15c744dc124d53187107a84ebfd69e7cfb60405c07ed36b030ba0996ceba3c2a"
+    },
+    {
+      "path": "/home/wang/work/doc/analysis/role-workflow-automation-audit-20261102/DATABASE-STORAGE-ASSESSMENT.md",
+      "sha256": "3bdd7c382816923ada6baf8836b809c4eed9d6d167ae604405f217dda6c9a200"
+    },
+    {
+      "path": "/home/wang/work/doc/analysis/role-workflow-automation-audit-20261102/evidence/README.md",
+      "sha256": "a227c5855f3a341ea95d1a2c719018441e94e4c59a3b0d0b705cfbd758cb3d07"
+    }
+  ],
+  "links_checked": 41,
+  "failures": [],
+  "live_database_mutations": false,
+  "runtime_code_changes": false,
+  "validation_scope": "文档链接、JSON与空白校验；SQLite快速检查结果见database-storage-check.json；没有执行迁移、压缩或业务回归。"
+}

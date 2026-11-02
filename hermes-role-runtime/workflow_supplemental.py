@@ -386,6 +386,8 @@ def mysql_session(directory):
     directory=Path(directory).resolve();directory.mkdir(parents=True,exist_ok=True)
     sockets=directory/'socket';sockets.mkdir(exist_ok=True);sockets.chmod(0o777)
     socket=sockets/'mysql.sock'
+    if len(os.fsencode(socket))>=108:
+        raise ValueError('MYSQL_SOCKET_PATH_TOO_LONG: 使用短路径的本地运行目录')
     # MYSQL's socket path limit is small. Bind a short container path and use
     # the host path only in the SQLAlchemy URL supplied by this helper.
     name='role-mysql-'+hashlib.sha256(str(directory).encode()).hexdigest()[:24]
@@ -403,7 +405,7 @@ def mysql_session(directory):
             '--tmpfs','/var/lib/mysql:rw,size=768m',
             '--mount','type=bind,src='+str(sockets)+',dst=/test-socket',
             '-e','MYSQL_ALLOW_EMPTY_PASSWORD=yes','-e','MYSQL_DATABASE=mn01_migration_test',
-            image,'--socket=/test-socket/mysql.sock','--skip-networking','--mysqlx=0']
+            image,'--socket=/test-socket/mysql.sock','--skip-networking','--mysqlx=0','--default-time-zone=+08:00']
         save_json(marker,{'state':'STARTING','name':name,'image':image,'network':'none','database':'mn01_migration_test'})
         container=None
         try:
@@ -457,15 +459,10 @@ def verify(ledger, identity, *, command_id):
             or context.get('run_id')!=work['run_id'] or context.get('task_id')!=work['task_id']
             or context.get('attempt')!=work['attempt']):
         raise ValueError('MYSQL_SUPPLEMENTAL_CONTEXT_REQUIRED')
-    directory=ledger.path.parent/'mysql-sessions'/hashlib.sha256((work['work_id']+command_id).encode()).hexdigest()[:16]
-    from delivery_evidence import execute_candidate_tests
+    from workflow_local_environment import execute_mysql
     # Let the existing runner pick the accepted repo's test interpreter. The
     # profile chooses the test, environment and check name, never the model.
-    with mysql_session(directory) as (url,marker):
-        result=execute_candidate_tests(ledger,identity,work['candidate_id'],
-            ['pytest','-q','tests/test_mn01_migration.py::test_mysql_upgrade_downgrade_roundtrip_real'],
-            command_id=command_id,timeout_seconds=300,report_format='pytest',
-            supersedes=context.get('supersedes',[]),
-            verification_profile='mysql_migration',environment_overrides={'MN01_MYSQL_URL':url},
-            evidence={'inputs':[str(marker)]})
-    return result
+    return execute_mysql(ledger,identity,work['candidate_id'],
+        ['pytest','-q','tests/test_mn01_migration.py::test_mysql_upgrade_downgrade_roundtrip_real'],
+        command_id=command_id,timeout_seconds=300,report_format='pytest',
+        supersedes=context.get('supersedes',[]), verification_profile='mysql_migration')

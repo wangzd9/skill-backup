@@ -110,7 +110,10 @@ class SessionRepairTests(LedgerFixture):
         self.close(worker,identity)
         new_worker,new_identity=self.bind('A')
         self.assertEqual(identity['work_id'],new_identity['work_id'])
-        self.assertEqual(payload['checkpoint'],self.ledger.current_work('A')['checkpoint'])
+        checkpoint=self.ledger.current_work('A')['checkpoint']
+        self.assertEqual(payload['checkpoint'],{key:checkpoint[key] for key in payload['checkpoint']})
+        continuation=next(entry for entry in checkpoint['work_memory']['entries'] if entry['id']=='runtime-continuation')
+        self.assertEqual(payload['checkpoint']['next'],continuation['next'])
         new_scope={**scope,**new_identity}
         self.assertFalse(sessions.observe(self.root,new_scope,api_call_count=0)['checkpoint_required'])
 
@@ -180,6 +183,23 @@ class SessionAttributionTests(unittest.TestCase):
 
 
 class ActivationRepairTests(LedgerFixture):
+    def test_hot_activation_updates_writer_notification_without_replacing_owner(self):
+        import mechanism_activation
+        import workflow_observation
+        worker, identity = self.bind('A')
+        before = self.ledger.snapshot()
+        with mock.patch.object(workflow_observation, 'step', side_effect=AssertionError('old projection')):
+            result = mechanism_activation.activate()
+            self.assertEqual('ACTIVATED', result['state'])
+            fault = {'identity': 'exit', 'type': 'observer_business_writer_exited',
+                'source': str(self.path), 'role': 'A', 'execution_id': identity['execution_id'],
+                'work_id': identity['work_id'], 'severity': 1}
+            state, events = workflow_observation.step({}, {'faults': [fault]}, 100)
+            self.assertEqual([], events)
+            self.assertIn('exit', state['active'])
+        self.assertIsNone(worker.poll())
+        self.assertEqual(before, self.ledger.snapshot())
+
     def test_report_activation_restores_new_helpers_in_old_namespaces(self):
         import mechanism_activation
         import report_summary
@@ -251,7 +271,8 @@ class ActivationRepairTests(LedgerFixture):
             packet=workflow_query.live_progress(pool,'COORDINATOR')
             report=render_live_progress_fallback(packet,'COORDINATOR')
             self.assertIsNone(_progress_report_format_error(report,'COORDINATOR'))
-            self.assertIn('T1 attempt 1 开发中',report)
+            self.assertIn('T1：开发中',report)
+            self.assertNotIn('attempt',report)
             self.assertNotIn('当次只读核验未完成',report)
             self.assertLess(len(json.dumps(packet,ensure_ascii=False).encode()),8192)
             manifest=json.loads(Path(packet['artifacts']['manifest']['path']).read_text())

@@ -213,7 +213,15 @@ class StorageAndRetry(unittest.TestCase):
             second=observe(ledger,at=1400)
             self.assertGreater(second['attachment_growth_bytes_per_second'],0)
             partial=observe(ledger,at=1800,max_entries=1)
-            self.assertFalse(partial['attachments_complete']);self.assertIsNone(partial['attachment_growth_bytes_per_second'])
+            self.assertTrue(partial['attachments_complete'])
+            self.assertTrue(any(item['refresh_in_progress'] for item in partial['attachments'].values()))
+            self.assertEqual(second['attachments']['input-pages']['bytes'],partial['attachments']['input-pages']['bytes'])
+            self.assertIsNone(partial['attachment_growth_bytes_per_second'])
+            fresh=root/'fresh'/'input-pages';fresh.mkdir(parents=True)
+            (fresh/'a').write_bytes(b'a');(fresh/'b').write_bytes(b'b')
+            initial=observe(types.SimpleNamespace(path=fresh.parent/'business.sqlite3'),at=1800,max_entries=1)
+            self.assertFalse(initial['attachments_complete'])
+            self.assertIsNone(initial['attachment_growth_bytes_per_second'])
             self.assertEqual(b'db',db.read_bytes());self.assertEqual(b'attachment',(folder/'a').read_bytes())
 
     def test_same_environment_failure_is_not_replayed_new_candidate_or_input_can_run(self):

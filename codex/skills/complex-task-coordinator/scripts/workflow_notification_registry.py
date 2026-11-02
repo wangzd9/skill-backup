@@ -4,6 +4,10 @@ REGISTRY={kind:{'producer':producer,'renderer':'workflow_reports.render_notifica
     'consumer':'workflow_notifications.drain_business_notifications','target':'event_role',
     'quiet':'suppress','max_pending_age_seconds':1800 if kind.startswith(('INTEGRATION_','FINAL_','REQUIREMENT_','VERIFICATION_EXCEPTION_')) else None}
     for kind,producer in {
+        'DEPENDENCY_RUN_SCHEDULED':'workflow_coordination',
+        'DEPENDENCY_RUN_RETURNED':'workflow_coordination',
+        'COORDINATION_ATTENTION_REQUIRED':'workflow_coordination',
+        'USER_DECISION_REQUESTED':'workflow_coordination',
         'WORK_CLAIMED':'business_ledger','CANDIDATE_DELIVERED':'business_ledger',
         'CANDIDATE_DECIDED':'business_ledger','COORDINATOR_PROGRESS':'workflow_reports',
         'SERVICE_ARTIFACT_RECORDED':'business_ledger','EXTERNAL_ACTION_REJECTED':'business_ledger',
@@ -45,12 +49,14 @@ def diagnostics(ledger):
 def suppress_stale(ledger, item):
     """Explicit durable disposition; never resend UNKNOWN or rewrite events."""
     age=REGISTRY[item['kind']]['max_pending_age_seconds']
-    if age is None or ledger.clock()-item['created_at']<=age:return None
+    from workflow_coordination import notice_current
+    resolved = item['kind'] in ('USER_DECISION_REQUESTED','COORDINATION_ATTENTION_REQUIRED') and not notice_current(ledger,item)
+    if not resolved and (age is None or ledger.clock()-item['created_at']<=age):return None
     def operation(db):
         from business_ledger import _deny,_json
         current=ledger._one(db,'outbox','notification_id',item['notification_id'])
         if current['state']!='PENDING':_deny('STALE_NOTICE_NOT_PENDING')
-        receipt={'reason':'STALE_BUSINESS_NOTICE_NOT_REPLAYED','at':ledger.clock(),
+        receipt={'reason':'COORDINATION_NOTICE_RESOLVED_OR_REPLACED' if resolved else 'STALE_BUSINESS_NOTICE_NOT_REPLAYED','at':ledger.clock(),
             'max_age_seconds':age,'original_event_id':current['event_id'],
             'business_state_unchanged':True}
         db.execute("UPDATE outbox SET state='SUPPRESSED',receipt=? WHERE notification_id=?",

@@ -118,10 +118,13 @@ def payload_schema(action):
         schema=obj({'observation_event_id':{'type':'integer','minimum':1},
             'disposition':{'enum':['repair','investigate','close']},'reason':TEXT,
             'candidate_id':TEXT,'affected_paths':{'type':'array','minItems':1,'maxItems':32,'items':TEXT},
-            'next_action':TEXT,'verification_id':TEXT},['observation_event_id','disposition','reason'])
+            'next_action':TEXT,'verification_id':TEXT,'test_event_id':{'type':'integer','minimum':1}},['observation_event_id','disposition','reason'])
         schema['allOf']=[{'if':{'properties':{'disposition':{'const':value}}},
             'then':{'required':fields}} for value,fields in (
-                ('repair',['candidate_id','affected_paths']),('investigate',['next_action']),('close',['verification_id']))]
+                ('repair',['candidate_id','affected_paths']),('investigate',['next_action']))]
+        schema['allOf'].append({'if':{'properties':{'disposition':{'const':'close'}}},
+            'then':{'oneOf':[{'required':['verification_id'],'not':{'required':['test_event_id']}},
+                             {'required':['test_event_id'],'not':{'required':['verification_id']}}]}})
         return schema
     if action=='environment_recovered':
         return obj({'validation_event_id':{'type':'integer','minimum':1},'summary':TEXT,
@@ -180,17 +183,20 @@ def payload_schema(action):
 
 
 def test_execution_rules():
+    from workflow_local_environment import contract
     return {'pytest':{'argv':'pytest或python -m pytest；保留测试选择和项目插件。',
         'junit_output':'运行时注入；argv不得指定--junitxml或--junit-xml。',
         'example':{'argv':['pytest','-q','<原合同测试路径>'],'report_format':'pytest'}},
         'junit':{'argv':'argv中必须有字面占位{junit_xml}，由运行时替换为本次输出绝对路径。',
             'example':{'argv':['<既有JUnit程序>','--output','{junit_xml}'],'report_format':'junit'}},
         'replay':'同command_id只恢复既有执行；相同候选/命令/环境的失败不换ID盲目重跑，先核原证据并落实变更。',
-        'stability':'pytest保留原两次稳定性运行，UNVERIFIED不能改写为PASS/FAIL。'}
+        'stability':'pytest保留原两次稳定性运行，UNVERIFIED不能改写为PASS/FAIL。',
+        'local_environment':contract()}
 
 
 def test_execution_fields():
-    return {'argv':{'type':'array','minItems':1,'items':TEXT,
+    return {'profile':{'enum':['local','mysql'], 'description':'需要 MySQL 方言、迁移或锁验证时选 mysql；宿主机自动创建隔离 MySQL 8.4 并注入专用数据库地址，无需用户再次选择环境。local为原本地测试。'},
+        'argv':{'type':'array','minItems':1,'items':TEXT,
         'description':'pytest模式不传JUnit输出选项（运行时注入）；junit模式必须包含字面{junit_xml}占位。'},
         'report_format':{'enum':['pytest','junit'],'description':'默认pytest；pytest由运行时管理JUnit及稳定性复跑；junit由既有程序输出到{junit_xml}。'}}
 

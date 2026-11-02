@@ -90,6 +90,11 @@ def next_actions(packet, ledger, *, snapshot=None):
                       '等待原生 writer 核验清零后，新 tick 领取新 run 工作；不得继续发布旧 run 计划或只读空转等待。',
             'payload': {'reason': 'RUN_SWITCHED：安全释放旧 run 工作，保留历史与未决证据'}}]
     if role=='COORDINATOR':
+        from workflow_coordination import dependencies
+        snapshot=ledger.snapshot() if snapshot is None else snapshot
+        for dependency in dependencies(snapshot, selected, ledger.clock()):
+            result.append({'action': 'await_dependency_handoff', **dependency,
+                'reason': '前置需求由原生安全点调度接续；保存检查点并yield，不将内部裁决转交用户、不从本run冒写旧run。'})
         from workflow_preparation import next_actions as preparation_actions
         snapshot=ledger.snapshot() if snapshot is None else snapshot
         result.extend(preparation_actions(snapshot))
@@ -177,10 +182,20 @@ def next_actions(packet, ledger, *, snapshot=None):
                         'failure_closure_preview':closure_preview,
                         'reason':'读审查结果并按冻结AC裁决；完整覆盖不自动等于PASS。逐条核对列出的历史FAIL与本候选修复证据，只有确认已修复且证据覆盖时才在裁决中提交对应supersedes。'})
                 elif action['state']=='INCOMPLETE':
+                    from workflow_query import review_action_projection
+                    attention_ids={a['action_id'] for a in review_action_projection(snapshot,selected)['attention']}
+                    if action['action_id'] not in attention_ids:
+                        continue
                     from workflow_service_recovery import resume_readiness
                     readiness=resume_readiness(ledger,action['action_id'])
                     result.append({'action':'service_resume' if readiness['allowed'] else 'read_file',
                         'action_id':action['action_id'],'recovery':readiness,'evidence':action.get('evidence'),
+                        **({'payload':{'action_id':action['action_id'],
+                            'new_action_id':action['action_id']+'-resume1',
+                            'reason':'已核原服务停止及冻结证据；模型请求超时造成部分未完成，'
+                                     '使用新版串行补审策略减少批间竞争，核验复用已完成批次，'
+                                     '只补未完成范围；不改变代码、规则、模型、超时和一次补审上限。'}}
+                           if readiness.get('code')=='SERIAL_PARTIAL_RECOVERY_READY' else {}),
                         'reason':'用read_file读取evidence.path中的终态及其sources原文，核对真实代码和发现；service_collect重复收集不能代替读证据。'
                                  '仅有原因文字不得原样重跑。已有发现须语义核实，成立则按原授权decide REWORK，'
                                  '不等待用户接受部分覆盖；新快照重新独立验证与完整审查，不能据未完成审查判代码通过。'})

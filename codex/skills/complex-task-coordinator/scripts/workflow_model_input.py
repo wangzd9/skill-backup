@@ -43,7 +43,8 @@ def deduplicate(packet):
             visit(packet[name], '/' + name)
     # All phase rows, owners, applicability and predecessor edges stay inline.
     # Repeated long contract text uses an earlier, exact in-packet occurrence.
-    for name in ('completion', 'integration_validation', 'plans', 'verification_retirements'):
+    for name in ('task', 'tasks', 'run', 'accepted_requirements', 'completion',
+                 'integration_validation', 'plans', 'verification_retirements'):
         if name in packet:
             packet[name] = visit(packet[name], '/' + name, replace=True, strings_only=True)
     for index, event in enumerate(packet.get('events', [])):

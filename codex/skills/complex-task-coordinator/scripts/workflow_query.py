@@ -23,7 +23,8 @@ def report_presentation_contract(role):
     """
     sections = (COORDINATOR_REPORT_SECTIONS if role == 'COORDINATOR'
                 else PERSONAL_REPORT_SECTIONS)
-    return {'role': role, 'sections': list(sections),
+    from workflow_report_text import presentation_instruction
+    return {'role': role, 'sections': list(sections), 'language': presentation_instruction(),
             'heading_style': '每个分区使用 **加粗标题**',
             'body_style': '每区单层短bullet；字段、状态/结论、阻塞/风险、下一步加粗',
             'missing_fact': '保留分区并写明待核实原因，不省略或把历史checkpoint冒充当前状态'}
@@ -64,9 +65,18 @@ def review_action_projection(snapshot, run_id):
         live=action['state'] in ('SUBMITTED','UNKNOWN')
         row={k:action[k] for k in ('action_id','kind','state','candidate_id')}
         row.update({k:candidate[k] for k in ('run_id','task_id','attempt')})
+        # A later complete review covers this exact immutable candidate. Mere
+        # registration, UNKNOWN or another failure cannot retire missing coverage.
+        replacement=next((other for other in reversed(snapshot['external_actions'])
+            if action['state']=='INCOMPLETE' and other['candidate_id']==action['candidate_id']
+            and other['kind']==action['kind'] and other['state'] in ('RESULT_READY','ENDED')
+            and other.get('created_at',0)>action.get('created_at',float('inf'))),None)
         row.update(current_candidate=current,candidate_state=candidate['state'],
             current_attempt=(task or {}).get('attempt'),task_phase=(task or {}).get('phase'),
-            current_attention=live or current and action['state'] in ('RESULT_READY','INCOMPLETE','FAILED','CANCELLED'))
+            current_attention=live or bool(current and task['phase']!='COMPLETED' and not replacement
+                and action['state'] in ('RESULT_READY','INCOMPLETE','FAILED','CANCELLED')))
+        if replacement:
+            row['coverage_replaced_by']=replacement['action_id']
         actions.append(row)
     priority={'UNKNOWN':0,'SUBMITTED':1,'RESULT_READY':2,'FAILED':3,'INCOMPLETE':4,'CANCELLED':5}
     actions.sort(key=lambda a:(priority.get(a['state'],9),a['action_id']))
@@ -85,8 +95,8 @@ def review_action_projection(snapshot, run_id):
 def progress_context(snapshot, run_id, role):
     """Business descriptions for reports; saved narratives keep their own dates."""
     def excerpt(value, limit=800):
-        text = str(value or '').strip()
-        return text if len(text) <= limit else text[:limit] + '…（节选）'
+        from workflow_report_text import excerpt as complete_excerpt
+        return complete_excerpt(value, limit)
     from workflow_preparation import requests as preparation_requests
     roles = ('A', 'B', 'C', 'TESTER') if role == 'COORDINATOR' else (role,)
     result = {'run_id': run_id, 'event_high_water': snapshot['event_high_water'],
@@ -117,9 +127,11 @@ def progress_context(snapshot, run_id, role):
         candidate = next((c for c in reversed(snapshot['candidates'])
             if c['run_id'] == run_id and c['task_id'] == task['task_id']
             and c['attempt'] == task['attempt'] and c['state'] == 'CURRENT'), None)
+        from workflow_report_text import delivery_summary
         result['tasks'][task['task_id']] = {'role': task['role'], 'phase': task['phase'],
             'required_checks': task['required_checks'],
-            'description': excerpt(str(candidate.get('summary') or '').split('\n\n')[0], 500) if candidate else '',
+            'description': delivery_summary(candidate.get('summary'), 500) if candidate else '',
+            'candidate_id': candidate['candidate_id'] if candidate else None,
             'source': 'candidate_delivery' if candidate else 'task_contract'}
     from workflow_completion import facts
     final = facts(snapshot, run_id)
@@ -151,6 +163,9 @@ def progress_context(snapshot, run_id, role):
     from workflow_verification_exceptions import facts as exception_facts,blockers
     result['verification_exceptions']=exception_facts(snapshot,run_id)
     result['mechanism_blockers']=blockers(snapshot,run_id)
+    from workflow_coordination import facts as coordination_facts
+    from time import time
+    result['coordination'] = coordination_facts(snapshot, run_id, time())
     return result
 
 

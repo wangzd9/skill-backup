@@ -181,7 +181,8 @@ class ManualGatewayTests(unittest.IsolatedAsyncioTestCase):
                         '强审查情况','风险','下一步计划'):
             self.assertIn('**'+heading+'**',result)
         self.assertNotIn('[SILENT]',result)
-        self.assertIn('TASK-1 attempt 2 开发中',result)
+        self.assertIn('TASK-1：开发中',result)
+        self.assertNotIn('attempt',result)
         self.assertTrue(all(not line.startswith('- ') or line.startswith('- **') for line in result.splitlines()))
 
     def test_final_reply_hook_leaves_ordinary_questions_untouched(self):
@@ -309,6 +310,17 @@ class ManualGatewayTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual({},submit.call_args.args[3])
         self.assertFalse(submit.call_args.args[4]['current_full'])
         self.assertEqual(text,submit.call_args.args[4]['primary_text'])
+
+    async def test_natural_short_ruling_is_recorded_by_native_ingress(self):
+        self.plugin.native_ready=True
+        with patch.object(module.workflow,'active',return_value=True), \
+             patch.object(module.workflow,'submit_control',return_value={'status':'COMMITTED','request_id':'both'}) as submit, \
+             patch.object(module.workflow,'request_role_wakeup',return_value={'status':'SUBMITTED'}) as wake:
+            result,_=await self.request('两个都批',role='COORDINATOR',message='approve-both')
+        self.assertEqual('role-runtime-user-decision',result['reason'])
+        self.assertEqual('两个都批',submit.call_args.args[4]['primary_text'])
+        self.assertFalse(submit.call_args.args[4]['current_full'])
+        wake.assert_called_once()
 
     async def test_requirement_contract_failure_preserves_verified_native_diagnostic(self):
         with patch.object(module.workflow,'active',return_value=True):

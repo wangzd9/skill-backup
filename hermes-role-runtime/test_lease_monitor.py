@@ -522,6 +522,38 @@ class Schema2ObservationTests(PoolFixture):
         observer.observation_tick(self.home, self.pool_path, at=day, sender=send)
         self.assertTrue(sent)
 
+    def test_schema2_normal_exit_collection_gap_never_queues_writer_alert(self):
+        worker, identity = self.bound_worker()
+        worker.terminate(); worker.wait(timeout=5)
+        now = time.time()
+        before = self.ledger.snapshot()
+        first = self.observe(now)
+        self.assertTrue(any(row['type'] == 'observer_business_writer_exited' for row in first['faults']))
+        self.assertFalse(any(row['type'] == 'observer_business_writer_exited' for row in first['transitions']))
+        self.assertEqual(before, self.ledger.snapshot())
+        self.commit(self.ledger.end_execution(identity, command_id='normal-end'))
+        after_end = self.ledger.snapshot()
+        ended = self.observe(now+4)
+        self.assertIn(identity['execution_id'], ended['closed_execution_ids'])
+        self.assertFalse(any(row['type'] == 'observer_business_writer_exited' for row in ended['anomalies']))
+        self.assertFalse(any(row['type'] == 'observer_business_writer_exited' for row in ended['transitions']))
+        self.assertEqual(after_end, self.ledger.snapshot())
+
+    def test_schema2_persistent_writer_exit_queues_once_and_closes_with_execution(self):
+        worker, identity = self.bound_worker()
+        worker.terminate(); worker.wait(timeout=5)
+        now = time.time()
+        self.observe(now)
+        persistent = self.observe(now+120)
+        writer_events = [row for row in persistent['transitions'] if row['type'] == 'observer_business_writer_exited']
+        self.assertEqual(['first'], [row['transition'] for row in writer_events])
+        again = self.observe(now+180)
+        self.assertFalse(any(row['type'] == 'observer_business_writer_exited' for row in again['transitions']))
+        self.commit(self.ledger.end_execution(identity, command_id='delayed-end'))
+        ended = self.observe(now+181)
+        writer_events = [row for row in ended['transitions'] if row['type'] == 'observer_business_writer_exited']
+        self.assertEqual(['closed_with_execution'], [row['transition'] for row in writer_events])
+
     def test_real_lifecycle_collector_drives_no_activity_and_recovery_through_monitor(self):
         from workflow_activity import (start_coverage, record_tool_start, record_tool_end,
             start_model_coverage, record_model_start, record_model_end)

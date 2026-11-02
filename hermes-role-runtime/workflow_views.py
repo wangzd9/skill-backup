@@ -45,6 +45,8 @@ def business_rows(ledger, packet):
 
 
 def work_packet(ledger, packet):
+    from workflow_local_environment import contract
+    packet['local_test_environment']=contract()
     history=packet.get('execution_history',[])
     packet['execution_history_total']=len(history)
     packet['execution_history_counts']=dict(Counter(r['state'] for r in history))

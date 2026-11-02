@@ -338,6 +338,7 @@ else:
                          ['REVIEW_COMPLETE', 'REVIEW_INCOMPLETE'])
         second = self.make_run('reuse-second', identity_name='reuse', reuse_run=first)
         spec = self.module.load_spec(second)
+        self.assertEqual(1, spec['recovery_policy']['max_parallel_batches'])
         self.assertIn('reuse_session', spec['batches'][0])
         self.assertNotIn('reuse_session', spec['batches'][1])
         before = (self.root / 'calls').read_text().count('review')
@@ -382,6 +383,40 @@ else:
         self.assertEqual('AWAITING_DECISION',result['state'])
         a,b=result['recorded_state']['batches']
         self.assertGreaterEqual(b['started_at'],a['ended_at'])
+
+    def test_partial_recovery_completes_missing_batches_serially_even_when_queue_is_idle(self):
+        with patch.object(self.module,'VERSION','1.7.0'):
+            first=self.make_run('partial-recovery-old',identity_name='partial-recovery')
+        original_spec=(first/'spec.json').read_bytes()
+        self.assertEqual('1.7.0',self.module.load_spec(first)['runtime_version'])
+        (self.root/'mode').write_text('partial')
+        self.module.launch(first)
+        old=self.wait_final(first)
+        self.assertEqual('REVIEW_INCOMPLETE',old['state'])
+        self.assertEqual(['b02'],[b['id'] for b in old['recorded_state']['unstarted_batches']])
+        (self.root/'mode').write_text('complete')
+        (self.root/'waiting').write_text('0')
+        (self.root/'delay').write_text('1.2')
+        second=self.make_run('partial-recovery-new',identity_name='partial-recovery',reuse_run=first)
+        self.assertEqual(original_spec,(first/'spec.json').read_bytes())
+        self.assertEqual('1.7.1',self.module.load_spec(second)['runtime_version'])
+        before=(self.root/'calls').read_text().count('review')
+        self.module.launch(second)
+        result=self.wait_final(second)
+        self.assertEqual('AWAITING_DECISION',result['state'])
+        a,b=result['recorded_state']['batches']
+        self.assertGreaterEqual(b['started_at'],a['ended_at'])
+        self.assertEqual(1,a['admission']['limit'])
+        self.assertEqual(2,a['admission']['observed_limit'])
+        self.assertEqual([],result['recorded_state']['unstarted_batches'])
+        self.assertEqual(before+2,(self.root/'calls').read_text().count('review'))
+        self.assertEqual(self.original_config,self.config.read_bytes())
+
+    def test_unknown_frozen_format_is_rejected_even_with_valid_hash(self):
+        with patch.object(self.module,'VERSION','999.0.0'):
+            directory=self.make_run('unknown-format')
+        with self.assertRaisesRegex(RuntimeError,'SPEC_VERSION_UNSUPPORTED'):
+            self.module.load_spec(directory)
 
 
 if __name__ == '__main__':

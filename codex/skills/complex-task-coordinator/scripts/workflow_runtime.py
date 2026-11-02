@@ -187,7 +187,9 @@ def prepare(job, *, pool_path, execution, home, session_id):
                   enabled_toolsets=toolsets)
     seal_input(packet)
     from workflow_tool_bridge import usage
+    from workflow_report_text import presentation_instruction
     scoped['prompt'] = (
+        presentation_instruction() +
         '使用简体中文处理当前工作单。身份、事件与领取已由程序维护。'
         '只在指定范围内处理本单；用本角色专用工具提交计划、检查点、交付或验证。'
         '不得手写旧租约、ACK、slot-release或continuation。'
@@ -459,7 +461,7 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None, snap
     at = _now(at)
     ledger = open_ledger(pool_path)
     selected=(scope or {}).get('run_id') or (ledger.current_work(role) or {}).get('run_id') or ledger.mode()['current_run_id']
-    snapshot = ledger.snapshot(selected) if snapshot is None else snapshot
+    snapshot = ledger.snapshot(None if role == 'COORDINATOR' else selected) if snapshot is None else snapshot
     row = next((item for item in snapshot['roles'] if item['role'] == role), None)
     if row is None:
         raise ValueError('ROLE_NOT_IN_RUNTIME')
@@ -551,6 +553,8 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None, snap
     packet['historical_failures']=historical_failures(snapshot,run_id) if role=='COORDINATOR' else []
     if (work or {}).get('kind')=='integration_verification':
         packet['integration_validation']=completion_context(snapshot,work)
+    from workflow_coordination import facts as coordination_facts
+    packet['coordination'] = coordination_facts(snapshot, run_id, ledger.clock())
     packet['next_actions']=next_actions(packet,ledger,snapshot=snapshot)
     misplaced=sorted(set((work or {}).get('checkpoint',{}))&{'processed_through','issued_through','yield_execution'})
     if misplaced:
@@ -563,6 +567,9 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None, snap
         packet['next_actions'].insert(0, {'action':'recheck_waiting_external',
             'reason':'先逐项只读核验历史等待是否仍成立；内部工具拒绝不等于缺用户授权；仅更新真实等待，不跳过验收/授权/dirty门禁。',
             'repository_tool':'role_repo_state'})
+    if role == 'COORDINATOR' and packet['coordination']['dependencies']:
+        packet['next_actions'].insert(0, {'action': 'checkpoint',
+            'reason': '已接受的前置需求由原生依赖调度接续；保存本工作单检查点并yield，等待writer核退，不再索要用户逐项批准。'})
     from workflow_progression import approval_state
     packet['candidate_approvals']={c['candidate_id']:approval_state(snapshot,c)
                                    for c in candidates if c['state']=='CURRENT'}
@@ -573,6 +580,8 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None, snap
         from runtime_common import read_json
         from workflow_sessions import _path as budget_path
         packet['session_handoff']=read_json(budget_path(scope['home'],scope),{})
+        from workflow_provider_health import summary as provider_summary
+        packet['provider_health']=provider_summary(scope['home'])
     if work and role in {'A','B','C'}:
         from workflow_delivery import contract as delivery_contract
         packet['delivery_evidence']=delivery_contract(ledger,work)
@@ -581,6 +590,13 @@ def current_input(pool_path, role, *, scope=None, at=None, event_page=None, snap
     from workflow_work_memory import inspect as memory_inspect
     memory=memory_inspect(snapshot,work)
     if memory is not None:packet['work_memory_validation']=memory
+    if work:
+        packet['checkpoint_preparation']={'action':'checkpoint','payload':{
+            'checkpoint':{'summary':'<填写本轮动作、结果及证据定位>',
+                'next':'<填写下一处文件/接口及未完成步骤>','waiting_external':[]},
+            'yield_execution':True},
+            'ack_policy':'正文没有水位。实际处理完已发行输入后，单独使用paging.ack_action；不得从event_high_water推断已读。',
+            'defaults':'程序补齐带当前依赖的历史接续定位；waiting_external非空时冻结等待对象，最长15分钟复核。'}
     if not model_view:
         return packet
     packet['decision_context']=startup_index(ledger,packet,snapshot)
@@ -762,11 +778,8 @@ def _validated_command(scope, action, payload, identity, *, command_id):
         return ledger.decide(identity, payload['candidate_id'], payload['decision'],
                              evidence=payload.get('evidence'), command_id=command_id)
     if action == 'verify':
-        from delivery_evidence import execute_candidate_tests
-        return execute_candidate_tests(ledger, identity, payload['candidate_id'], payload['argv'],
-            command_id=command_id, timeout_seconds=payload.get('timeout_seconds', 300),
-            supersedes=payload.get('supersedes'), evidence=payload.get('evidence'),
-            report_format=payload.get('report_format', 'pytest'))
+        from workflow_local_environment import verify_candidate
+        return verify_candidate(ledger, identity, payload, command_id=command_id)
     if action == 'close_verification':
         return ledger.close_verification(identity, payload['verification_id'], payload['supersedes'], command_id=command_id)
     if action.startswith('service_'):
@@ -999,7 +1012,7 @@ def request_business_wakeups(scope, result):
         return {'state':'NOT_APPLICABLE','reason':'NO_BUSINESS_EVENT'}
     events=open_ledger(scope['pool_path']).events(after=event_id-1,through=event_id,limit=1)
     if not events or events[0]['kind'] in {'CHECKPOINT_SAVED','EXECUTION_BOUND','EXECUTION_ENDED','EXECUTION_OUTCOME_OBSERVED',
-                                         'TOOL_EXECUTION_REGISTERED','WORK_CLAIMED'}:
+                                         'TOOL_EXECUTION_REGISTERED','WORK_CLAIMED','COORDINATION_ATTENTION_REQUIRED'}:
         return {'state':'NOT_APPLICABLE','reason':'MECHANICAL_EVENT'}
     committed_at['event_id']=event_id
     home = scope.get('home')

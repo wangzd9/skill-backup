@@ -1,0 +1,130 @@
+{
+  "state": "AWAITING_DECISION",
+  "started_at": null,
+  "ended_at": "2026-11-02T04:25:57.400810+00:00",
+  "updated_at": "2026-11-02T04:25:57.400800+00:00",
+  "batches": [
+    {
+      "id": "b01",
+      "files": [
+        "app/scene/result_batch_v2/__init__.py"
+      ],
+      "state": "REVIEW_COMPLETE",
+      "returncode": 0,
+      "reused": true,
+      "session_file": "/home/wang/.opencodereview/sessions/home-wang-.hermes-role-pool.runtime-workspaces-work-96f00672ca354a5c9bb09f77f9564846/beecc746-d7b1-477f-8694-1cdb6d0e362e.jsonl"
+    },
+    {
+      "id": "b02",
+      "files": [
+        "app/scene/result_batch_v2/canonical.py"
+      ],
+      "state": "REVIEW_COMPLETE",
+      "returncode": 0,
+      "reused": true,
+      "session_file": "/home/wang/.opencodereview/sessions/home-wang-.hermes-role-pool.runtime-workspaces-work-96f00672ca354a5c9bb09f77f9564846/5d1ddfaa-eca4-44c2-b27e-c8d960283426.jsonl"
+    },
+    {
+      "id": "b03",
+      "files": [
+        "app/scene/result_batch_v2/errors.py"
+      ],
+      "state": "REVIEW_COMPLETE",
+      "returncode": 0,
+      "reused": true,
+      "session_file": "/home/wang/.opencodereview/sessions/home-wang-.hermes-role-pool.runtime-workspaces-work-96f00672ca354a5c9bb09f77f9564846/175e01c7-56df-4b1a-aa7f-608f4a998528.jsonl"
+    },
+    {
+      "id": "b04",
+      "files": [
+        "app/scene/result_batch_v2/objects.py"
+      ],
+      "state": "REVIEW_COMPLETE",
+      "started_at": "2026-11-02T03:21:22.347235+00:00",
+      "admission": {
+        "observed_at": "2026-11-02T03:21:21.761875+00:00",
+        "metrics_url": "http://192.168.2.45:8002/metrics",
+        "waiting": 1.0,
+        "limit": 1,
+        "reason": "LOCAL_QUEUE_OBSERVED",
+        "observed_limit": 2,
+        "recovery_policy": "SERIAL_PARTIAL_RECOVERY"
+      },
+      "pid": 1052808,
+      "process_start_ticks": "152489053",
+      "returncode": 0,
+      "ended_at": "2026-11-02T03:39:03.542024+00:00",
+      "duration_seconds": 1060.97,
+      "session_file": "/home/wang/.opencodereview/sessions/home-wang-.hermes-role-pool.runtime-workspaces-work-96f00672ca354a5c9bb09f77f9564846/390820d7-f3c2-46ae-865d-d6e74e298666.jsonl"
+    },
+    {
+      "id": "b05",
+      "files": [
+        "app/scene/result_batch_v2/planning.py"
+      ],
+      "state": "REVIEW_COMPLETE",
+      "started_at": "2026-11-02T03:39:04.336484+00:00",
+      "admission": {
+        "observed_at": "2026-11-02T03:39:03.716433+00:00",
+        "metrics_url": "http://192.168.2.45:8002/metrics",
+        "waiting": 0.0,
+        "limit": 1,
+        "reason": "LOCAL_QUEUE_OBSERVED",
+        "observed_limit": 2,
+        "recovery_policy": "SERIAL_PARTIAL_RECOVERY"
+      },
+      "pid": 1137753,
+      "process_start_ticks": "152595254",
+      "returncode": 0,
+      "ended_at": "2026-11-02T03:59:34.145387+00:00",
+      "duration_seconds": 1229.56,
+      "session_file": "/home/wang/.opencodereview/sessions/home-wang-.hermes-role-pool.runtime-workspaces-work-96f00672ca354a5c9bb09f77f9564846/b0bcf1e4-d82e-4c18-a6b1-afca6e289ffa.jsonl"
+    },
+    {
+      "id": "b06",
+      "files": [
+        "app/scene/result_batch_v2/state.py"
+      ],
+      "state": "REVIEW_COMPLETE",
+      "started_at": "2026-11-02T03:59:35.018779+00:00",
+      "admission": {
+        "observed_at": "2026-11-02T03:59:34.296758+00:00",
+        "metrics_url": "http://192.168.2.45:8002/metrics",
+        "waiting": 0.0,
+        "limit": 1,
+        "reason": "LOCAL_QUEUE_OBSERVED",
+        "observed_limit": 2,
+        "recovery_policy": "SERIAL_PARTIAL_RECOVERY"
+      },
+      "pid": 1239792,
+      "process_start_ticks": "152718321",
+      "returncode": 0,
+      "ended_at": "2026-11-02T04:11:55.998612+00:00",
+      "duration_seconds": 740.75,
+      "session_file": "/home/wang/.opencodereview/sessions/home-wang-.hermes-role-pool.runtime-workspaces-work-96f00672ca354a5c9bb09f77f9564846/814b5011-c3ac-4b8b-9e5d-704416ebf81a.jsonl"
+    },
+    {
+      "id": "b07",
+      "files": [
+        "app/schemas/scene_result_batch_v2.py"
+      ],
+      "state": "REVIEW_COMPLETE",
+      "started_at": "2026-11-02T04:11:56.825293+00:00",
+      "admission": {
+        "observed_at": "2026-11-02T04:11:56.177160+00:00",
+        "metrics_url": "http://192.168.2.45:8002/metrics",
+        "waiting": 0.0,
+        "limit": 1,
+        "reason": "LOCAL_QUEUE_OBSERVED",
+        "observed_limit": 2,
+        "recovery_policy": "SERIAL_PARTIAL_RECOVERY"
+      },
+      "pid": 1281538,
+      "process_start_ticks": "152792504",
+      "returncode": 0,
+      "ended_at": "2026-11-02T04:25:57.222584+00:00",
+      "duration_seconds": 840.15,
+      "session_file": "/home/wang/.opencodereview/sessions/home-wang-.hermes-role-pool.runtime-workspaces-work-96f00672ca354a5c9bb09f77f9564846/a4831ab1-1420-470c-91e6-e4a06e7f371f.jsonl"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "database": "/home/wang/work/doc/analysis/role-workflow-automation-audit-20261102/implementation-evidence/ledger-rehearsal.sqlite3",
+  "before_bytes": 3175636992,
+  "after_bytes": 546267136,
+  "changed_commands": 503,
+  "old_result_bytes": 2858990934,
+  "new_result_bytes": 233615846,
+  "roundtrip_verified": 503,
+  "roundtrip_digest": "362e247efb06b64aad51029a23ae2be402a92f825362c985c9f4048363a2e4bd",
+  "counts": {
+    "commands": 27856,
+    "events": 19697,
+    "works": 128,
+    "candidates": 58,
+    "verifications": 99
+  },
+  "quick_check": "ok",
+  "attachments_added": 0,
+  "online_cutover_performed": false
+}

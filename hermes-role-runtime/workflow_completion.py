@@ -456,12 +456,8 @@ def verify(ledger, identity, payload, *, command_id):
     invalid=preflight_test_request(payload['argv'],kwargs['timeout_seconds'],kwargs['evidence'],kwargs['report_format'])
     if invalid:return invalid
     if payload.get('profile','local')=='mysql':
-        from workflow_supplemental import mysql_session
-        directory=ledger.path.parent/'mysql-sessions'/hashlib.sha256((work['work_id']+command_id).encode()).hexdigest()[:16]
-        with mysql_session(directory) as (url,marker):
-            kwargs['evidence']={**kwargs['evidence'],'inputs':[*(kwargs['evidence'].get('inputs') or []),str(marker)]}
-            return execute_candidate_tests(ledger,identity,None,payload['argv'],
-                verification_profile='integration_mysql',environment_overrides={'MN01_MYSQL_URL':url},**kwargs)
+        from workflow_local_environment import execute_mysql
+        return execute_mysql(ledger,identity,None,payload['argv'],verification_profile='integration_mysql',**kwargs)
     return execute_candidate_tests(ledger,identity,None,payload['argv'],verification_profile='integration_local',**kwargs)
 
 

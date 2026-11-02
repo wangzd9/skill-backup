@@ -1,0 +1,2070 @@
+{
+  "window_basis": "独立审查llm_response时间；角色账本按请求started_at，边界不同，不作完整全系统总量。",
+  "scope": "仅当前诊断文件可定位的独立审查会话；会话路径及response身份去重，包含失败尝试已报告用量，不保证覆盖在途、未报告或其他强审。",
+  "diagnosis_files": 219,
+  "unique_session_files": 209,
+  "session_bytes_scanned": 283827432,
+  "failures": {},
+  "totals": {
+    "post_oct31_to_now": {
+      "responses": 752,
+      "prompt_tokens": 18804175,
+      "prompt_tokens_calls": 752,
+      "completion_tokens": 1881771,
+      "completion_tokens_calls": 752
+    },
+    "last_24h": {
+      "responses": 125,
+      "prompt_tokens": 2700658,
+      "prompt_tokens_calls": 125,
+      "completion_tokens": 299896,
+      "completion_tokens_calls": 125
+    },
+    "pre_three_full_days": {
+      "responses": 1383,
+      "prompt_tokens": 38265192,
+      "prompt_tokens_calls": 1383,
+      "completion_tokens": 2599059,
+      "completion_tokens_calls": 1383
+    }
+  },
+  "sessions": [
+    {
+      "session_ref": "6e9bddd51c05aa5a",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 39,
+          "prompt_tokens": 1224269,
+          "prompt_tokens_calls": 39,
+          "completion_tokens": 134458,
+          "completion_tokens_calls": 39
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "f003ee10a9020061",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 45,
+          "prompt_tokens": 1300865,
+          "prompt_tokens_calls": 45,
+          "completion_tokens": 114414,
+          "completion_tokens_calls": 45
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "54c82c754ce3ee44",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 47,
+          "prompt_tokens": 1748234,
+          "prompt_tokens_calls": 47,
+          "completion_tokens": 126114,
+          "completion_tokens_calls": 47
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "19006d169bb037e9",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 15,
+          "prompt_tokens": 566463,
+          "prompt_tokens_calls": 15,
+          "completion_tokens": 59773,
+          "completion_tokens_calls": 15
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "c3221bc6f7d6fd76",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 11,
+          "prompt_tokens": 290198,
+          "prompt_tokens_calls": 11,
+          "completion_tokens": 10091,
+          "completion_tokens_calls": 11
+        }
+      }
+    },
+    {
+      "session_ref": "b50aba9d6e3cf0dd",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 17,
+          "prompt_tokens": 603636,
+          "prompt_tokens_calls": 17,
+          "completion_tokens": 60380,
+          "completion_tokens_calls": 17
+        }
+      }
+    },
+    {
+      "session_ref": "188745c543f17b5b",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 23,
+          "prompt_tokens": 662247,
+          "prompt_tokens_calls": 23,
+          "completion_tokens": 24120,
+          "completion_tokens_calls": 23
+        }
+      }
+    },
+    {
+      "session_ref": "75a2f31e9137862c",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 17,
+          "prompt_tokens": 367551,
+          "prompt_tokens_calls": 17,
+          "completion_tokens": 12857,
+          "completion_tokens_calls": 17
+        }
+      }
+    },
+    {
+      "session_ref": "2f9a457495c8b0ce",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 7,
+          "prompt_tokens": 93854,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 4868,
+          "completion_tokens_calls": 7
+        }
+      }
+    },
+    {
+      "session_ref": "57bc7e2fcb794996",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 6,
+          "prompt_tokens": 91426,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 5093,
+          "completion_tokens_calls": 6
+        }
+      }
+    },
+    {
+      "session_ref": "6fe84bb5309ddc82",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 3,
+          "prompt_tokens": 35267,
+          "prompt_tokens_calls": 3,
+          "completion_tokens": 6259,
+          "completion_tokens_calls": 3
+        }
+      }
+    },
+    {
+      "session_ref": "ae7c1dbdaf6ee550",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 11,
+          "prompt_tokens": 358072,
+          "prompt_tokens_calls": 11,
+          "completion_tokens": 21740,
+          "completion_tokens_calls": 11
+        }
+      }
+    },
+    {
+      "session_ref": "32fd64ba5d5252f3",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 5,
+          "prompt_tokens": 90499,
+          "prompt_tokens_calls": 5,
+          "completion_tokens": 7754,
+          "completion_tokens_calls": 5
+        }
+      }
+    },
+    {
+      "session_ref": "b3160410e4e43324",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 17,
+          "prompt_tokens": 708542,
+          "prompt_tokens_calls": 17,
+          "completion_tokens": 32390,
+          "completion_tokens_calls": 17
+        }
+      }
+    },
+    {
+      "session_ref": "ef2ce0bee5b4fb3a",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 33,
+          "prompt_tokens": 769922,
+          "prompt_tokens_calls": 33,
+          "completion_tokens": 110182,
+          "completion_tokens_calls": 33
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "1e4e691e5ee23a23",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 9,
+          "prompt_tokens": 215241,
+          "prompt_tokens_calls": 9,
+          "completion_tokens": 36378,
+          "completion_tokens_calls": 9
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "df521d9e60f23325",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 13,
+          "prompt_tokens": 285089,
+          "prompt_tokens_calls": 13,
+          "completion_tokens": 10542,
+          "completion_tokens_calls": 13
+        }
+      }
+    },
+    {
+      "session_ref": "d8cb7b20bce472e4",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 25,
+          "prompt_tokens": 641116,
+          "prompt_tokens_calls": 25,
+          "completion_tokens": 38551,
+          "completion_tokens_calls": 25
+        }
+      }
+    },
+    {
+      "session_ref": "7813a6c996fae64e",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 20,
+          "prompt_tokens": 363173,
+          "prompt_tokens_calls": 20,
+          "completion_tokens": 15663,
+          "completion_tokens_calls": 20
+        }
+      }
+    },
+    {
+      "session_ref": "fa1b31c6979312b9",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 30,
+          "prompt_tokens": 835457,
+          "prompt_tokens_calls": 30,
+          "completion_tokens": 30146,
+          "completion_tokens_calls": 30
+        }
+      }
+    },
+    {
+      "session_ref": "9ddf706d00e62a59",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 7,
+          "prompt_tokens": 68414,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 1800,
+          "completion_tokens_calls": 7
+        }
+      }
+    },
+    {
+      "session_ref": "989e9965db36383d",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 6,
+          "prompt_tokens": 53593,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 2529,
+          "completion_tokens_calls": 6
+        }
+      }
+    },
+    {
+      "session_ref": "6db76edd35939bfb",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 3,
+          "prompt_tokens": 36838,
+          "prompt_tokens_calls": 3,
+          "completion_tokens": 6557,
+          "completion_tokens_calls": 3
+        }
+      }
+    },
+    {
+      "session_ref": "6c3ab3947495e946",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 24,
+          "prompt_tokens": 908547,
+          "prompt_tokens_calls": 24,
+          "completion_tokens": 84788,
+          "completion_tokens_calls": 24
+        }
+      }
+    },
+    {
+      "session_ref": "c517fb66c21a2ea5",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 9,
+          "prompt_tokens": 98679,
+          "prompt_tokens_calls": 9,
+          "completion_tokens": 7696,
+          "completion_tokens_calls": 9
+        }
+      }
+    },
+    {
+      "session_ref": "0869d135969d35e4",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 52,
+          "prompt_tokens": 2370980,
+          "prompt_tokens_calls": 52,
+          "completion_tokens": 177961,
+          "completion_tokens_calls": 52
+        }
+      }
+    },
+    {
+      "session_ref": "a6f00be4ab4cdf7e",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 4,
+          "prompt_tokens": 51678,
+          "prompt_tokens_calls": 4,
+          "completion_tokens": 9101,
+          "completion_tokens_calls": 4
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "1f3ba50bed97eb96",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 33,
+          "prompt_tokens": 874219,
+          "prompt_tokens_calls": 33,
+          "completion_tokens": 61233,
+          "completion_tokens_calls": 33
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "c2ae30fb2d43cda2",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 34,
+          "prompt_tokens": 989341,
+          "prompt_tokens_calls": 34,
+          "completion_tokens": 31168,
+          "completion_tokens_calls": 34
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "356eb912ca11633c",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 25,
+          "prompt_tokens": 465731,
+          "prompt_tokens_calls": 25,
+          "completion_tokens": 59558,
+          "completion_tokens_calls": 25
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "3160412fbb550426",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 26,
+          "prompt_tokens": 751079,
+          "prompt_tokens_calls": 26,
+          "completion_tokens": 55062,
+          "completion_tokens_calls": 26
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "ffdd6989fcbd26b3",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 19,
+          "prompt_tokens": 226686,
+          "prompt_tokens_calls": 19,
+          "completion_tokens": 26716,
+          "completion_tokens_calls": 19
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "7b0713a1fccbbd41",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 6,
+          "prompt_tokens": 75245,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 8195,
+          "completion_tokens_calls": 6
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "6d8b16b4c7c43b4f",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 7,
+          "prompt_tokens": 77257,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 3296,
+          "completion_tokens_calls": 7
+        }
+      }
+    },
+    {
+      "session_ref": "7d01f186281b7b32",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 2,
+          "prompt_tokens": 16451,
+          "prompt_tokens_calls": 2,
+          "completion_tokens": 1847,
+          "completion_tokens_calls": 2
+        }
+      }
+    },
+    {
+      "session_ref": "318a99593f69ac6c",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 18,
+          "prompt_tokens": 434403,
+          "prompt_tokens_calls": 18,
+          "completion_tokens": 37063,
+          "completion_tokens_calls": 18
+        }
+      }
+    },
+    {
+      "session_ref": "564d9fd05655ab5e",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 7,
+          "prompt_tokens": 138863,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 12620,
+          "completion_tokens_calls": 7
+        }
+      }
+    },
+    {
+      "session_ref": "72d0158a0d435d59",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 21,
+          "prompt_tokens": 298549,
+          "prompt_tokens_calls": 21,
+          "completion_tokens": 32255,
+          "completion_tokens_calls": 21
+        }
+      }
+    },
+    {
+      "session_ref": "c7db7dd8f9ae6c8c",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 19,
+          "prompt_tokens": 461467,
+          "prompt_tokens_calls": 19,
+          "completion_tokens": 22792,
+          "completion_tokens_calls": 19
+        }
+      }
+    },
+    {
+      "session_ref": "75d201316c4e6fd0",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 10,
+          "prompt_tokens": 201335,
+          "prompt_tokens_calls": 10,
+          "completion_tokens": 6536,
+          "completion_tokens_calls": 10
+        }
+      }
+    },
+    {
+      "session_ref": "aad8f9b3ac7d6b9f",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 21,
+          "prompt_tokens": 352559,
+          "prompt_tokens_calls": 21,
+          "completion_tokens": 48509,
+          "completion_tokens_calls": 21
+        }
+      }
+    },
+    {
+      "session_ref": "3242b75b106dd953",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 5,
+          "prompt_tokens": 71165,
+          "prompt_tokens_calls": 5,
+          "completion_tokens": 4108,
+          "completion_tokens_calls": 5
+        }
+      }
+    },
+    {
+      "session_ref": "72c291ac103a68e3",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 21,
+          "prompt_tokens": 777957,
+          "prompt_tokens_calls": 21,
+          "completion_tokens": 70493,
+          "completion_tokens_calls": 21
+        }
+      }
+    },
+    {
+      "session_ref": "8d463fc3d6ac0507",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 5,
+          "prompt_tokens": 53128,
+          "prompt_tokens_calls": 5,
+          "completion_tokens": 8406,
+          "completion_tokens_calls": 5
+        }
+      }
+    },
+    {
+      "session_ref": "3cec3dbc1344b7bf",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 19,
+          "prompt_tokens": 540483,
+          "prompt_tokens_calls": 19,
+          "completion_tokens": 44109,
+          "completion_tokens_calls": 19
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "815e6ccdc6d496bb",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 12,
+          "prompt_tokens": 264008,
+          "prompt_tokens_calls": 12,
+          "completion_tokens": 34553,
+          "completion_tokens_calls": 12
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "e3221c9f197670f0",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 8,
+          "prompt_tokens": 180231,
+          "prompt_tokens_calls": 8,
+          "completion_tokens": 14579,
+          "completion_tokens_calls": 8
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "748843e35ff96ce7",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 8,
+          "prompt_tokens": 202499,
+          "prompt_tokens_calls": 8,
+          "completion_tokens": 35129,
+          "completion_tokens_calls": 8
+        }
+      }
+    },
+    {
+      "session_ref": "e0a09de58502fefb",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 13,
+          "prompt_tokens": 304630,
+          "prompt_tokens_calls": 13,
+          "completion_tokens": 34267,
+          "completion_tokens_calls": 13
+        }
+      }
+    },
+    {
+      "session_ref": "4dc2e5af6abe00e4",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 9,
+          "prompt_tokens": 191339,
+          "prompt_tokens_calls": 9,
+          "completion_tokens": 6046,
+          "completion_tokens_calls": 9
+        }
+      }
+    },
+    {
+      "session_ref": "14f5a055e0f55e31",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 7,
+          "prompt_tokens": 146236,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 3590,
+          "completion_tokens_calls": 7
+        }
+      }
+    },
+    {
+      "session_ref": "eb7bdbd3043a4216",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 14,
+          "prompt_tokens": 348366,
+          "prompt_tokens_calls": 14,
+          "completion_tokens": 21881,
+          "completion_tokens_calls": 14
+        }
+      }
+    },
+    {
+      "session_ref": "9f0cb889b2d737d4",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 6,
+          "prompt_tokens": 90317,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 7008,
+          "completion_tokens_calls": 6
+        }
+      }
+    },
+    {
+      "session_ref": "39f9f2e7b1787f6a",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 6,
+          "prompt_tokens": 98366,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 7186,
+          "completion_tokens_calls": 6
+        }
+      }
+    },
+    {
+      "session_ref": "98945b0b2dcdc17d",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 51,
+          "prompt_tokens": 1098418,
+          "prompt_tokens_calls": 51,
+          "completion_tokens": 37615,
+          "completion_tokens_calls": 51
+        }
+      }
+    },
+    {
+      "session_ref": "e4740b27e953c106",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 14,
+          "prompt_tokens": 338225,
+          "prompt_tokens_calls": 14,
+          "completion_tokens": 10912,
+          "completion_tokens_calls": 14
+        }
+      }
+    },
+    {
+      "session_ref": "b61fdacf604879dd",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 29,
+          "prompt_tokens": 1006686,
+          "prompt_tokens_calls": 29,
+          "completion_tokens": 34400,
+          "completion_tokens_calls": 29
+        }
+      }
+    },
+    {
+      "session_ref": "046c250462eacb4d",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 30,
+          "prompt_tokens": 460770,
+          "prompt_tokens_calls": 30,
+          "completion_tokens": 18751,
+          "completion_tokens_calls": 30
+        }
+      }
+    },
+    {
+      "session_ref": "76850ac622953515",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 12,
+          "prompt_tokens": 293734,
+          "prompt_tokens_calls": 12,
+          "completion_tokens": 12595,
+          "completion_tokens_calls": 12
+        }
+      }
+    },
+    {
+      "session_ref": "b3175613724e14ae",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 12,
+          "prompt_tokens": 141858,
+          "prompt_tokens_calls": 12,
+          "completion_tokens": 4016,
+          "completion_tokens_calls": 12
+        }
+      }
+    },
+    {
+      "session_ref": "704eef277cde000d",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 2,
+          "prompt_tokens": 13896,
+          "prompt_tokens_calls": 2,
+          "completion_tokens": 938,
+          "completion_tokens_calls": 2
+        }
+      }
+    },
+    {
+      "session_ref": "9e715fc21bff9202",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 4,
+          "prompt_tokens": 42590,
+          "prompt_tokens_calls": 4,
+          "completion_tokens": 6463,
+          "completion_tokens_calls": 4
+        }
+      }
+    },
+    {
+      "session_ref": "2ae2bb032a9ec262",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 20,
+          "prompt_tokens": 673710,
+          "prompt_tokens_calls": 20,
+          "completion_tokens": 45518,
+          "completion_tokens_calls": 20
+        }
+      }
+    },
+    {
+      "session_ref": "d14e84cb416351de",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 6,
+          "prompt_tokens": 56785,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 2773,
+          "completion_tokens_calls": 6
+        }
+      }
+    },
+    {
+      "session_ref": "0a4c9236fb102b75",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 61,
+          "prompt_tokens": 2962464,
+          "prompt_tokens_calls": 61,
+          "completion_tokens": 211090,
+          "completion_tokens_calls": 61
+        }
+      }
+    },
+    {
+      "session_ref": "1a440ad7c2342f0b",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 16,
+          "prompt_tokens": 318183,
+          "prompt_tokens_calls": 16,
+          "completion_tokens": 48037,
+          "completion_tokens_calls": 16
+        }
+      }
+    },
+    {
+      "session_ref": "6cb2add33e994954",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 5,
+          "prompt_tokens": 104835,
+          "prompt_tokens_calls": 5,
+          "completion_tokens": 19088,
+          "completion_tokens_calls": 5
+        }
+      }
+    },
+    {
+      "session_ref": "56571608dd8a3414",
+      "diagnosis_reference_count": 2,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 7,
+          "prompt_tokens": 147681,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 15629,
+          "completion_tokens_calls": 7
+        }
+      }
+    },
+    {
+      "session_ref": "dc4f22991c5de924",
+      "diagnosis_reference_count": 2,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 68,
+          "prompt_tokens": 2409659,
+          "prompt_tokens_calls": 68,
+          "completion_tokens": 99840,
+          "completion_tokens_calls": 68
+        }
+      }
+    },
+    {
+      "session_ref": "cb59004a446cdf5e",
+      "diagnosis_reference_count": 2,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 4,
+          "prompt_tokens": 54545,
+          "prompt_tokens_calls": 4,
+          "completion_tokens": 4908,
+          "completion_tokens_calls": 4
+        }
+      }
+    },
+    {
+      "session_ref": "a1a2e7f0b1567e91",
+      "diagnosis_reference_count": 2,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 9,
+          "prompt_tokens": 86309,
+          "prompt_tokens_calls": 9,
+          "completion_tokens": 3197,
+          "completion_tokens_calls": 9
+        }
+      }
+    },
+    {
+      "session_ref": "868cd91858ab9929",
+      "diagnosis_reference_count": 2,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 5,
+          "prompt_tokens": 42113,
+          "prompt_tokens_calls": 5,
+          "completion_tokens": 1668,
+          "completion_tokens_calls": 5
+        }
+      }
+    },
+    {
+      "session_ref": "fe9ea335f3858d0e",
+      "diagnosis_reference_count": 2,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 22,
+          "prompt_tokens": 303777,
+          "prompt_tokens_calls": 22,
+          "completion_tokens": 26877,
+          "completion_tokens_calls": 22
+        }
+      }
+    },
+    {
+      "session_ref": "5d1ff5bd5389c5cf",
+      "diagnosis_reference_count": 2,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 8,
+          "prompt_tokens": 98548,
+          "prompt_tokens_calls": 8,
+          "completion_tokens": 4927,
+          "completion_tokens_calls": 8
+        }
+      }
+    },
+    {
+      "session_ref": "43867e290d92be1f",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 32,
+          "prompt_tokens": 1874390,
+          "prompt_tokens_calls": 32,
+          "completion_tokens": 132032,
+          "completion_tokens_calls": 32
+        }
+      }
+    },
+    {
+      "session_ref": "b4233431f3bf290c",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 18,
+          "prompt_tokens": 332092,
+          "prompt_tokens_calls": 18,
+          "completion_tokens": 9790,
+          "completion_tokens_calls": 18
+        }
+      }
+    },
+    {
+      "session_ref": "771ea621ba4a3317",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 34,
+          "prompt_tokens": 937603,
+          "prompt_tokens_calls": 34,
+          "completion_tokens": 65003,
+          "completion_tokens_calls": 34
+        }
+      }
+    },
+    {
+      "session_ref": "0e24b2321405f32b",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 15,
+          "prompt_tokens": 281124,
+          "prompt_tokens_calls": 15,
+          "completion_tokens": 16370,
+          "completion_tokens_calls": 15
+        }
+      }
+    },
+    {
+      "session_ref": "3e69abf9a0f8ecd2",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 9,
+          "prompt_tokens": 99957,
+          "prompt_tokens_calls": 9,
+          "completion_tokens": 2209,
+          "completion_tokens_calls": 9
+        }
+      }
+    },
+    {
+      "session_ref": "26dd06d07ab35186",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 4,
+          "prompt_tokens": 32073,
+          "prompt_tokens_calls": 4,
+          "completion_tokens": 1510,
+          "completion_tokens_calls": 4
+        }
+      }
+    },
+    {
+      "session_ref": "2dbb72c56b81a9af",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 5,
+          "prompt_tokens": 65386,
+          "prompt_tokens_calls": 5,
+          "completion_tokens": 11016,
+          "completion_tokens_calls": 5
+        }
+      }
+    },
+    {
+      "session_ref": "87cf833e0b3b181f",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 8,
+          "prompt_tokens": 106386,
+          "prompt_tokens_calls": 8,
+          "completion_tokens": 4540,
+          "completion_tokens_calls": 8
+        }
+      }
+    },
+    {
+      "session_ref": "ae228c19bfe2bcd0",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 42,
+          "prompt_tokens": 1867889,
+          "prompt_tokens_calls": 42,
+          "completion_tokens": 173588,
+          "completion_tokens_calls": 42
+        }
+      }
+    },
+    {
+      "session_ref": "8b3ada6b5c43afce",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 16,
+          "prompt_tokens": 335321,
+          "prompt_tokens_calls": 16,
+          "completion_tokens": 7745,
+          "completion_tokens_calls": 16
+        }
+      }
+    },
+    {
+      "session_ref": "fbc936f449cbc2d2",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 22,
+          "prompt_tokens": 860169,
+          "prompt_tokens_calls": 22,
+          "completion_tokens": 43707,
+          "completion_tokens_calls": 22
+        }
+      }
+    },
+    {
+      "session_ref": "63578ea51083c966",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 7,
+          "prompt_tokens": 67705,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 6070,
+          "completion_tokens_calls": 7
+        }
+      }
+    },
+    {
+      "session_ref": "b0e4f04fa50b7eb0",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 18,
+          "prompt_tokens": 497824,
+          "prompt_tokens_calls": 18,
+          "completion_tokens": 18939,
+          "completion_tokens_calls": 18
+        }
+      }
+    },
+    {
+      "session_ref": "f2620a97fd16cb09",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 9,
+          "prompt_tokens": 85303,
+          "prompt_tokens_calls": 9,
+          "completion_tokens": 3721,
+          "completion_tokens_calls": 9
+        }
+      }
+    },
+    {
+      "session_ref": "8046073ae820dc79",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 6,
+          "prompt_tokens": 44954,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 2797,
+          "completion_tokens_calls": 6
+        }
+      }
+    },
+    {
+      "session_ref": "88b91d471383cab8",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 4,
+          "prompt_tokens": 39371,
+          "prompt_tokens_calls": 4,
+          "completion_tokens": 6244,
+          "completion_tokens_calls": 4
+        }
+      }
+    },
+    {
+      "session_ref": "f343fa470cce3878",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 12,
+          "prompt_tokens": 319600,
+          "prompt_tokens_calls": 12,
+          "completion_tokens": 22993,
+          "completion_tokens_calls": 12
+        }
+      }
+    },
+    {
+      "session_ref": "c643d3153771985f",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 12,
+          "prompt_tokens": 283119,
+          "prompt_tokens_calls": 12,
+          "completion_tokens": 4757,
+          "completion_tokens_calls": 12
+        }
+      }
+    },
+    {
+      "session_ref": "d1ef3988321bcde8",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 24,
+          "prompt_tokens": 948210,
+          "prompt_tokens_calls": 24,
+          "completion_tokens": 88926,
+          "completion_tokens_calls": 24
+        }
+      }
+    },
+    {
+      "session_ref": "3bab2ca188c67030",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 51,
+          "prompt_tokens": 2300161,
+          "prompt_tokens_calls": 51,
+          "completion_tokens": 158670,
+          "completion_tokens_calls": 51
+        }
+      }
+    },
+    {
+      "session_ref": "79fc326e76014891",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 11,
+          "prompt_tokens": 272722,
+          "prompt_tokens_calls": 11,
+          "completion_tokens": 37853,
+          "completion_tokens_calls": 11
+        }
+      }
+    },
+    {
+      "session_ref": "ab228c09a6a9d17e",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 7,
+          "prompt_tokens": 149980,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 18054,
+          "completion_tokens_calls": 7
+        }
+      }
+    },
+    {
+      "session_ref": "c0a3a98ec5ec5631",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 8,
+          "prompt_tokens": 116883,
+          "prompt_tokens_calls": 8,
+          "completion_tokens": 37184,
+          "completion_tokens_calls": 8
+        }
+      }
+    },
+    {
+      "session_ref": "7517a589fcff34c6",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 7,
+          "prompt_tokens": 93468,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 15478,
+          "completion_tokens_calls": 7
+        }
+      }
+    },
+    {
+      "session_ref": "65504bb867993f81",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 48,
+          "prompt_tokens": 1331204,
+          "prompt_tokens_calls": 48,
+          "completion_tokens": 101078,
+          "completion_tokens_calls": 48
+        }
+      }
+    },
+    {
+      "session_ref": "85bf092397d179fb",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 5,
+          "prompt_tokens": 67414,
+          "prompt_tokens_calls": 5,
+          "completion_tokens": 11478,
+          "completion_tokens_calls": 5
+        }
+      }
+    },
+    {
+      "session_ref": "e085633b6fadebd0",
+      "diagnosis_reference_count": 2,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 7,
+          "prompt_tokens": 133651,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 16598,
+          "completion_tokens_calls": 7
+        },
+        "last_24h": {
+          "responses": 7,
+          "prompt_tokens": 133651,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 16598,
+          "completion_tokens_calls": 7
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "7b379742078c37b0",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 8,
+          "prompt_tokens": 143639,
+          "prompt_tokens_calls": 8,
+          "completion_tokens": 17383,
+          "completion_tokens_calls": 8
+        },
+        "last_24h": {
+          "responses": 8,
+          "prompt_tokens": 143639,
+          "prompt_tokens_calls": 8,
+          "completion_tokens": 17383,
+          "completion_tokens_calls": 8
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "25946cc263589d29",
+      "diagnosis_reference_count": 2,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 6,
+          "prompt_tokens": 61510,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 7467,
+          "completion_tokens_calls": 6
+        },
+        "last_24h": {
+          "responses": 6,
+          "prompt_tokens": 61510,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 7467,
+          "completion_tokens_calls": 6
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "2d7338edc9c9a3ee",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 6,
+          "prompt_tokens": 92154,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 11272,
+          "completion_tokens_calls": 6
+        },
+        "last_24h": {
+          "responses": 6,
+          "prompt_tokens": 92154,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 11272,
+          "completion_tokens_calls": 6
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "75915e6c2370d75e",
+      "diagnosis_reference_count": 2,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 4,
+          "prompt_tokens": 26627,
+          "prompt_tokens_calls": 4,
+          "completion_tokens": 1442,
+          "completion_tokens_calls": 4
+        },
+        "last_24h": {
+          "responses": 4,
+          "prompt_tokens": 26627,
+          "prompt_tokens_calls": 4,
+          "completion_tokens": 1442,
+          "completion_tokens_calls": 4
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "a08c70e5e7fa6155",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 9,
+          "prompt_tokens": 151317,
+          "prompt_tokens_calls": 9,
+          "completion_tokens": 5507,
+          "completion_tokens_calls": 9
+        }
+      }
+    },
+    {
+      "session_ref": "f3778f58ee02dc6d",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 12,
+          "prompt_tokens": 161469,
+          "prompt_tokens_calls": 12,
+          "completion_tokens": 8068,
+          "completion_tokens_calls": 12
+        }
+      }
+    },
+    {
+      "session_ref": "835afdea172e5f34",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 13,
+          "prompt_tokens": 282451,
+          "prompt_tokens_calls": 13,
+          "completion_tokens": 21693,
+          "completion_tokens_calls": 13
+        }
+      }
+    },
+    {
+      "session_ref": "a9cfea8e82d9adbb",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 9,
+          "prompt_tokens": 152192,
+          "prompt_tokens_calls": 9,
+          "completion_tokens": 14737,
+          "completion_tokens_calls": 9
+        }
+      }
+    },
+    {
+      "session_ref": "aa368f352701b63d",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 10,
+          "prompt_tokens": 149539,
+          "prompt_tokens_calls": 10,
+          "completion_tokens": 10107,
+          "completion_tokens_calls": 10
+        }
+      }
+    },
+    {
+      "session_ref": "cfd5c59d8a6fd3b4",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {},
+        "last_24h": {},
+        "pre_three_full_days": {
+          "responses": 6,
+          "prompt_tokens": 75065,
+          "prompt_tokens_calls": 6,
+          "completion_tokens": 3136,
+          "completion_tokens_calls": 6
+        }
+      }
+    },
+    {
+      "session_ref": "f6e758f1168ae147",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 3,
+          "prompt_tokens": 21916,
+          "prompt_tokens_calls": 3,
+          "completion_tokens": 5099,
+          "completion_tokens_calls": 3
+        },
+        "last_24h": {
+          "responses": 3,
+          "prompt_tokens": 21916,
+          "prompt_tokens_calls": 3,
+          "completion_tokens": 5099,
+          "completion_tokens_calls": 3
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "3d180ce5aa02028a",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 1,
+          "prompt_tokens": 5460,
+          "prompt_tokens_calls": 1,
+          "completion_tokens": 8061,
+          "completion_tokens_calls": 1
+        },
+        "last_24h": {
+          "responses": 1,
+          "prompt_tokens": 5460,
+          "prompt_tokens_calls": 1,
+          "completion_tokens": 8061,
+          "completion_tokens_calls": 1
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "36fb6de926d5be9d",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 5,
+          "prompt_tokens": 41648,
+          "prompt_tokens_calls": 5,
+          "completion_tokens": 1868,
+          "completion_tokens_calls": 5
+        },
+        "last_24h": {
+          "responses": 5,
+          "prompt_tokens": 41648,
+          "prompt_tokens_calls": 5,
+          "completion_tokens": 1868,
+          "completion_tokens_calls": 5
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "036ceb7ce390ce94",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 23,
+          "prompt_tokens": 424384,
+          "prompt_tokens_calls": 23,
+          "completion_tokens": 65867,
+          "completion_tokens_calls": 23
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "b2c7d25490a59765",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 14,
+          "prompt_tokens": 290464,
+          "prompt_tokens_calls": 14,
+          "completion_tokens": 31787,
+          "completion_tokens_calls": 14
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "307901c63a2a76d7",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 7,
+          "prompt_tokens": 85026,
+          "prompt_tokens_calls": 7,
+          "completion_tokens": 10737,
+          "completion_tokens_calls": 7
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "06c6624a0e29d4f9",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 10,
+          "prompt_tokens": 217074,
+          "prompt_tokens_calls": 10,
+          "completion_tokens": 20138,
+          "completion_tokens_calls": 10
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "673ded4f51d09e89",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 9,
+          "prompt_tokens": 76693,
+          "prompt_tokens_calls": 9,
+          "completion_tokens": 11683,
+          "completion_tokens_calls": 9
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "7806e98abb74c120",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 22,
+          "prompt_tokens": 478359,
+          "prompt_tokens_calls": 22,
+          "completion_tokens": 71219,
+          "completion_tokens_calls": 22
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "8b712ee40c96844e",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 26,
+          "prompt_tokens": 662774,
+          "prompt_tokens_calls": 26,
+          "completion_tokens": 64103,
+          "completion_tokens_calls": 26
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "4dbcd5aaf80b1247",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 8,
+          "prompt_tokens": 153759,
+          "prompt_tokens_calls": 8,
+          "completion_tokens": 7065,
+          "completion_tokens_calls": 8
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "21f400d58e8d59c3",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 20,
+          "prompt_tokens": 466091,
+          "prompt_tokens_calls": 20,
+          "completion_tokens": 47463,
+          "completion_tokens_calls": 20
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "9820c1f71a2ed85f",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 22,
+          "prompt_tokens": 704466,
+          "prompt_tokens_calls": 22,
+          "completion_tokens": 78721,
+          "completion_tokens_calls": 22
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "60046b138d963d51",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 32,
+          "prompt_tokens": 815937,
+          "prompt_tokens_calls": 32,
+          "completion_tokens": 76904,
+          "completion_tokens_calls": 32
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "e972452d8a7f0a8e",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 37,
+          "prompt_tokens": 1048174,
+          "prompt_tokens_calls": 37,
+          "completion_tokens": 60734,
+          "completion_tokens_calls": 37
+        },
+        "last_24h": {
+          "responses": 37,
+          "prompt_tokens": 1048174,
+          "prompt_tokens_calls": 37,
+          "completion_tokens": 60734,
+          "completion_tokens_calls": 37
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "2107a7f5fde004f5",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 10,
+          "prompt_tokens": 225499,
+          "prompt_tokens_calls": 10,
+          "completion_tokens": 51148,
+          "completion_tokens_calls": 10
+        },
+        "last_24h": {
+          "responses": 10,
+          "prompt_tokens": 225499,
+          "prompt_tokens_calls": 10,
+          "completion_tokens": 51148,
+          "completion_tokens_calls": 10
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "02d0d13f2c9b6a1d",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 21,
+          "prompt_tokens": 522714,
+          "prompt_tokens_calls": 21,
+          "completion_tokens": 74629,
+          "completion_tokens_calls": 21
+        },
+        "last_24h": {
+          "responses": 21,
+          "prompt_tokens": 522714,
+          "prompt_tokens_calls": 21,
+          "completion_tokens": 74629,
+          "completion_tokens_calls": 21
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "d624358c0eaa2e81",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 17,
+          "prompt_tokens": 377666,
+          "prompt_tokens_calls": 17,
+          "completion_tokens": 44195,
+          "completion_tokens_calls": 17
+        },
+        "last_24h": {
+          "responses": 17,
+          "prompt_tokens": 377666,
+          "prompt_tokens_calls": 17,
+          "completion_tokens": 44195,
+          "completion_tokens_calls": 17
+        },
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "678a1ff989bb7a01",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 30,
+          "prompt_tokens": 801145,
+          "prompt_tokens_calls": 30,
+          "completion_tokens": 85895,
+          "completion_tokens_calls": 30
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    },
+    {
+      "session_ref": "aff18d7766b7c035",
+      "diagnosis_reference_count": 1,
+      "windows": {
+        "post_oct31_to_now": {
+          "responses": 30,
+          "prompt_tokens": 683650,
+          "prompt_tokens_calls": 30,
+          "completion_tokens": 84700,
+          "completion_tokens_calls": 30
+        },
+        "last_24h": {},
+        "pre_three_full_days": {}
+      }
+    }
+  ]
+}

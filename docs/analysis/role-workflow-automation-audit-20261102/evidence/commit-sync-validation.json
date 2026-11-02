@@ -1,0 +1,108 @@
+{
+  "tree": "d50bed398e85c19f71a3ed22a0bc46fbf3fcb1b4",
+  "commit": "389849b4a0288d2d1fc7a86fcd2ba12b2b1e9b8a",
+  "compiled": true,
+  "successful": false,
+  "accepted_for_source_backup_only": true,
+  "snapshot_status": "WORK_IN_PROGRESS_SOURCE_SNAPSHOT",
+  "verified_basis_commit": "760848cdd932db875d8fdbcbdc617108cc00b611",
+  "verification_basis": {
+    "tree": "ffe22cd1e7fe21b4fe2544b4ca862285abb268e4",
+    "compiled": true,
+    "successful": false,
+    "accepted_with_preexisting_failures": true,
+    "broader_regression": {
+      "tree": "30370e1196232e8fff766b79d4040b16ee916e18",
+      "modules": [
+        "tests.test_local_mysql_environment",
+        "tests.test_coordination_flow",
+        "tests.test_report_language",
+        "tests.test_coordinator_reporting_repair",
+        "tests.test_manual_gateway",
+        "tests.test_mechanism_repair",
+        "tests.test_workflow_completion",
+        "tests.test_workflow_observation",
+        "tests.test_workflow_query",
+        "tests.test_workflow_services",
+        "test_lease_monitor",
+        "test_ocr_runtime",
+        "tests.test_workflow_audit_optimization",
+        "tests.test_effectiveness_repair.StorageAndRetry.test_capacity_caches_complete_inventory_and_marks_partial_lower_bounds"
+      ],
+      "tests_run": 243,
+      "failures": 3,
+      "errors": 1,
+      "skipped": 0,
+      "compiled": true,
+      "successful": false,
+      "failure_ids": [
+        "test_lease_monitor.LeaseMonitorTests.test_generation_and_delivery_receipts_quiet_unknown_and_no_duplicate_send",
+        "test_lease_monitor.Schema2ObservationTests.test_open_compaction_and_persisted_request_gap_cannot_certify_inactivity",
+        "tests.test_effectiveness_repair.StorageAndRetry.test_capacity_caches_complete_inventory_and_marks_partial_lower_bounds"
+      ],
+      "error_ids": [
+        "tests.test_local_mysql_environment.LocalMySQLTests.test_incomplete_request_requires_reconciliation_not_new_database"
+      ],
+      "baseline_commit": "6447ca7e652df5b8c9255c614da080871cab3c5f",
+      "preexisting_failure_ids": [
+        "test_lease_monitor.LeaseMonitorTests.test_generation_and_delivery_receipts_quiet_unknown_and_no_duplicate_send",
+        "test_lease_monitor.Schema2ObservationTests.test_open_compaction_and_persisted_request_gap_cannot_certify_inactivity"
+      ],
+      "new_failure_ids": [
+        "tests.test_effectiveness_repair.StorageAndRetry.test_capacity_caches_complete_inventory_and_marks_partial_lower_bounds"
+      ],
+      "accepted_with_preexisting_failures": false,
+      "duration_seconds": 168.35
+    },
+    "final_tree_changed_paths": [
+      "scripts/compact_ledger.py",
+      "tests/test_effectiveness_repair.py",
+      "tests/test_local_mysql_environment.py",
+      "workflow_local_environment.py",
+      "workflow_runtime_identity.py",
+      "workflow_verification_exceptions.py",
+      "workflow_work_memory.py"
+    ],
+    "final_focused_regression": {
+      "modules": [
+        "tests.test_local_mysql_environment",
+        "tests.test_workflow_audit_optimization",
+        "tests.test_mechanism_repair",
+        "tests.test_workflow_completion",
+        "tests.test_workflow_services",
+        "tests.test_effectiveness_repair.StorageAndRetry.test_capacity_caches_complete_inventory_and_marks_partial_lower_bounds"
+      ],
+      "tests_run": 59,
+      "failures": 0,
+      "errors": 0,
+      "failure_ids": [],
+      "error_ids": [],
+      "successful": true,
+      "duration_seconds": 64.96,
+      "resolved_previous_failure_ids": [
+        "tests.test_effectiveness_repair.StorageAndRetry.test_capacity_caches_complete_inventory_and_marks_partial_lower_bounds",
+        "tests.test_local_mysql_environment.LocalMySQLTests.test_incomplete_request_requires_reconciliation_not_new_database"
+      ]
+    },
+    "preexisting_failure_ids": [
+      "test_lease_monitor.LeaseMonitorTests.test_generation_and_delivery_receipts_quiet_unknown_and_no_duplicate_send",
+      "test_lease_monitor.Schema2ObservationTests.test_open_compaction_and_persisted_request_gap_cannot_certify_inactivity"
+    ],
+    "notice": "Broad suite and final focused checks use the recorded frozen trees; two baseline failures remain. No deployment or live database operation performed."
+  },
+  "followup_tests": {
+    "modules": [
+      "tests.test_local_mysql_environment",
+      "tests.test_workflow_audit_optimization",
+      "tests.test_mechanism_repair.ActivationRepairTests"
+    ],
+    "tests_run": 31,
+    "failures": 0,
+    "errors": 0,
+    "successful": true,
+    "failure_ids": [],
+    "error_ids": [],
+    "duration_seconds": 30.92
+  },
+  "notice": "Source backup of in-progress changes. The previous verified snapshot and final follow-up tests are recorded separately; not full acceptance or deployment."
+}

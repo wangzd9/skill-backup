@@ -187,8 +187,9 @@ class CoordinatorNoticeTests(LedgerFixture):
             'external_actions': [{'kind':'ocr','run_id':'other-run','task_id':'FOREIGN-TASK',
                                   'action_id':'foreign','state':'INCOMPLETE'}]}
         text = render_live_progress_fallback(packet, 'COORDINATOR')
-        for expected in ('节点分配事务', 'CODE-01', '间歇死锁', '取得独立验证结果', '2026-10-30T13:00', 'event:86'):
+        for expected in ('节点分配事务', 'CODE-01', '间歇死锁', '取得独立测试结果', '2026-10-30T13:00'):
             self.assertIn(expected, text)
+        self.assertNotIn('event:', text)
         self.assertIsNone(_coordinator_progress_format_error(text))
         self.assertNotIn('FOREIGN-TASK', text)
         Path(ref['path']).write_text('{}')
@@ -260,6 +261,193 @@ class CoordinatorNoticeTests(LedgerFixture):
 
 
 class ReviewRecoveryTests(WorkflowServiceTests):
+    def incomplete_timeout(self, *, parallel_limit=2, nested_deadline=False):
+        from workflow_services import collect_service_result
+        import hashlib
+        class Partial(ExternalService):
+            def submit(adapter,kind,frozen,request,directory):
+                reference=super().submit(kind,frozen,request,directory)
+                native=directory/'native';native.mkdir()
+                reference['native_directory']=str(native)
+                (native/'spec.json').write_text(json.dumps({'run_id':'isolated-timeout-run','retry_depth':0,
+                    'request_timeout_seconds':900,'concurrency_policy':{'idle_limit':parallel_limit},
+                    'batches':[{'id':f'b{i:02}','files':[f'isolated-{i}.py']} for i in range(1,8)]}))
+                (native/'state.json').write_text(json.dumps({'state':'REVIEW_INCOMPLETE','batches':[
+                    {'id':f'b{i:02}','state':('HARD_DEADLINE' if nested_deadline and i==4 else
+                                            'REVIEW_COMPLETE' if i<=3 else 'REVIEW_INCOMPLETE'),
+                     'returncode':0 if i<=3 else 1} for i in range(1,6)]}))
+                for i in (4,5):
+                    (native/f'b{i:02}-diagnosis.json').write_text(json.dumps({
+                        'manifest_failures':[{'classification':'timeout'}]}))
+                return reference
+            def collect(adapter,kind,reference):
+                value=super().collect(kind,reference)
+                value['sources'].extend({'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()}
+                    for p in Path(reference['native_directory']).iterdir())
+                return value
+        adapter=Partial(self.root,incomplete=True)
+        self.assertCommitted(self.submit(adapter))
+        self.assertCommitted(collect_service_result(self.ledger,'ocr-one',command_id='collect-timeout',adapter=adapter))
+        return Path(next(self.path.parent.glob('services/*/native')))
+
+    def test_timeout_recovery_explains_failed_and_unstarted_batches_without_writing(self):
+        from workflow_service_recovery import resume_readiness
+        self.incomplete_timeout()
+        before=self.ledger.snapshot()
+        recovery=resume_readiness(self.ledger,'ocr-one')
+        self.assertTrue(recovery['allowed'])
+        self.assertEqual('SERIAL_PARTIAL_RECOVERY_READY',recovery['code'])
+        self.assertEqual(1,recovery['repair']['max_parallel_batches'])
+        self.assertEqual(['b01','b02','b03'],recovery['diagnosis']['completed_batches'])
+        self.assertEqual(['b04','b05'],recovery['diagnosis']['request_timeouts'])
+        self.assertEqual(['b06','b07'],recovery['diagnosis']['unstarted_batches'])
+        self.assertFalse(recovery['diagnosis']['business_pass'])
+        self.assertEqual(before,self.ledger.snapshot())
+
+    def test_timeout_recovery_uses_native_owner_command_with_exact_action_scope(self):
+        from workflow_progression import next_actions
+        self.incomplete_timeout()
+        snapshot=self.ledger.snapshot()
+        packet={**snapshot,'role':'COORDINATOR','run':snapshot['runs'][0],
+                'work':self.ledger.current_work('COORDINATOR')}
+        action=next(a for a in next_actions(packet,self.ledger) if a.get('action_id')=='ocr-one')
+        self.assertEqual('service_resume',action['action'])
+        self.assertEqual('ocr-one',action['payload']['action_id'])
+        self.assertEqual('ocr-one-resume1',action['payload']['new_action_id'])
+        self.assertFalse(self.ledger.snapshot()['verifications'])
+
+    def test_timeout_diagnosis_tamper_cannot_authorize_recovery(self):
+        from workflow_service_recovery import resume_readiness
+        native=self.incomplete_timeout()
+        (native/'b04-diagnosis.json').write_text('{}')
+        self.assertEqual('RESUME_DIAGNOSIS_UNVERIFIED',resume_readiness(self.ledger,'ocr-one')['code'])
+
+    def test_fresh_submission_cannot_bypass_partial_recovery_or_consume_authorization(self):
+        from workflow_services import submit_service
+        self.incomplete_timeout()
+        before=self.ledger.snapshot()
+        adapter=ExternalService(self.root)
+        adapter.preflight=mock.Mock(side_effect=AssertionError('不可启动新全量审查'))
+        result=submit_service(self.ledger,self.coord,self.candidate_id,'ocr',
+            {'background_text':'换背景或编号不构成修复'},action_id='fresh-loop',
+            authorization=self.authorization,command_id='fresh-loop',adapter=adapter)
+        self.assertEqual('OCR_PARTIAL_RECOVERY_REQUIRED',result['code'])
+        self.assertFalse(result['dispatch_performed'])
+        self.assertFalse(result['authorization_consumed'])
+        adapter.preflight.assert_not_called()
+        self.assertEqual(before,self.ledger.snapshot())
+
+    def test_linked_partial_recovery_still_uses_the_native_submission_boundary(self):
+        from workflow_service_recovery import resume
+        self.incomplete_timeout()
+        adapter=ExternalService(self.root)
+        with mock.patch('workflow_services.NativeServices',return_value=adapter):
+            result=resume(self.ledger,self.coord,'ocr-one','linked-retry','隔离测试已核串行补审方案',
+                          authorization=self.authorization,command_id='linked-retry')
+        self.assertCommitted(result)
+        self.assertEqual(1,adapter.calls)
+        self.assertEqual('DUPLICATE_REVIEW',__import__('workflow_service_recovery').resume_readiness(self.ledger,'ocr-one')['code'])
+
+    def test_native_entry_also_rejects_a_stale_clients_fresh_dispatch(self):
+        from workflow_services import _directory, validate_native_action
+        self.incomplete_timeout()
+        # Simulate a client loaded before the new submit gate, entirely in tmp.
+        with mock.patch('workflow_query.review_action_projection',return_value={'attention':[]}):
+            self.assertCommitted(self.submit(ExternalService(self.root),action='stale-client'))
+        path=_directory(self.ledger,'stale-client')/'invocation.json'
+        value=json.loads(path.read_text());value['state']='DISPATCHING'
+        path.write_text(json.dumps(value));path.chmod(0o600)
+        before=self.ledger.snapshot()
+        with mock.patch('workflow_services.time.time',return_value=self.now):
+            with self.assertRaisesRegex(ValueError,'OCR_PARTIAL_RECOVERY_REQUIRED'):
+                validate_native_action(path,'ocr',{})
+        self.assertEqual(before,self.ledger.snapshot())
+
+    def test_already_serial_or_nested_deadline_does_not_consume_retry(self):
+        from workflow_service_recovery import resume_readiness, resume
+        self.incomplete_timeout(parallel_limit=1, nested_deadline=True)
+        before=self.ledger.snapshot()
+        self.assertEqual('ROOT_CAUSE_REPAIR_REQUIRED',resume_readiness(self.ledger,'ocr-one')['code'])
+        with mock.patch('workflow_services.submit_service',side_effect=AssertionError('不可派发')):
+            result=resume(self.ledger,self.coord,'ocr-one','blocked-retry','隔离测试拒绝原样重跑',
+                          command_id='blocked-retry')
+        self.assertFalse(result['authorization_consumed'])
+        self.assertEqual(before,self.ledger.snapshot())
+
+    def test_already_serial_timeout_requires_actual_repair(self):
+        from workflow_service_recovery import resume_readiness
+        self.incomplete_timeout(parallel_limit=1)
+        before=self.ledger.snapshot()
+        self.assertEqual('ROOT_CAUSE_REPAIR_REQUIRED',resume_readiness(self.ledger,'ocr-one')['code'])
+        self.assertEqual(before,self.ledger.snapshot())
+
+    def test_review_failure_ages_escalate_once_per_level_without_user_question(self):
+        from workflow_coordination import attention
+        self.incomplete_timeout()
+        initial=self.assertCommitted(attention(self.ledger)[0])
+        self.assertEqual('DUPLICATE',attention(self.ledger)[0]['status'])
+        self.now+=901
+        first=self.assertCommitted(attention(self.ledger)[0])
+        self.assertEqual('DUPLICATE',attention(self.ledger)[0]['status'])
+        self.now+=2700
+        second=self.assertCommitted(attention(self.ledger)[0])
+        notices=[o for o in self.ledger.outbox_items(include_terminal=True)
+                 if o['kind']=='COORDINATION_ATTENTION_REQUIRED']
+        self.assertEqual([0,1,2],[o['payload']['escalation_level'] for o in notices])
+        self.assertEqual(3,len({initial['event_id'],first['event_id'],second['event_id']}))
+        self.assertFalse(self.ledger.snapshot()['verifications'])
+        self.assertTrue(all(not n['payload']['user_questions'] for n in notices))
+
+    def test_partial_failure_notice_explains_coverage_in_chinese(self):
+        from workflow_reports import render_notification
+        self.incomplete_timeout()
+        notice=next(o for o in self.ledger.outbox_items(include_terminal=True)
+                    if o['kind']=='SERVICE_ARTIFACT_RECORDED')
+        before=self.ledger.snapshot()
+        text=render_notification(self.ledger,notice)
+        self.assertIn('共7批，已完成3批，未完成2批，另有2批尚未开始',text)
+        self.assertIn('2批发生模型请求超时',text)
+        self.assertNotIn('INCOMPLETE',text)
+        self.assertNotIn('attempt',text)
+        self.assertEqual(before,self.ledger.snapshot())
+
+    def test_only_later_complete_same_candidate_review_retires_old_attention(self):
+        from copy import deepcopy
+        from workflow_coordination import facts
+        from workflow_query import review_action_projection
+        self.incomplete_timeout()
+        original=self.ledger.snapshot()
+        prior=original['external_actions'][-1]
+        # Clearly isolated synthetic projections: no real review or result is recorded.
+        for state in ('SUBMITTED','UNKNOWN','INCOMPLETE','FAILED','RESULT_READY','ENDED'):
+            snapshot=deepcopy(original)
+            snapshot['external_actions'].append({**prior,'action_id':'synthetic-successor',
+                'state':state,'created_at':prior['created_at']+1})
+            view=review_action_projection(snapshot,'run-one')
+            old=next(a for a in view['actions'] if a['action_id']=='ocr-one')
+            self.assertEqual(state not in ('RESULT_READY','ENDED'),old['current_attention'],state)
+            reviews=facts(snapshot,'run-one',self.now)['reviews']
+            self.assertEqual(old['current_attention'],any(a['action_id']=='ocr-one' for a in reviews),state)
+            if state in ('RESULT_READY','ENDED'):
+                from workflow_progression import next_actions
+                packet={**snapshot,'role':'COORDINATOR','run':snapshot['runs'][0],
+                        'work':self.ledger.current_work('COORDINATOR')}
+                actions=next_actions(packet,self.ledger,snapshot=snapshot)
+                self.assertFalse(any(a.get('action_id')=='ocr-one' for a in actions))
+        self.assertEqual(original,self.ledger.snapshot())
+
+    def test_completed_task_retires_old_failure_but_keeps_global_unknown_gate(self):
+        from copy import deepcopy
+        from workflow_query import review_action_projection
+        self.incomplete_timeout()
+        snapshot=deepcopy(self.ledger.snapshot())
+        prior=snapshot['external_actions'][-1]
+        next(t for t in snapshot['tasks'] if t['task_id']=='T1')['phase']='COMPLETED'
+        snapshot['external_actions'].append({**prior,'action_id':'synthetic-unknown','state':'UNKNOWN'})
+        view=review_action_projection(snapshot,'run-one')
+        self.assertEqual(['synthetic-unknown'],[a['action_id'] for a in view['attention']])
+        self.assertEqual('INCOMPLETE',next(a for a in view['actions'] if a['action_id']=='ocr-one')['state'])
+
     def incomplete(self,action='ocr-one'):
         from workflow_services import collect_service_result, _directory
         adapter=ExternalService(self.root,incomplete=True)

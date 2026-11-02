@@ -15,7 +15,12 @@ def answer_source(text):
     # broadens semantic recognition after that verification.
     if re.search(r'[?？`\n]|^(?:引用|如果|假如|不要|暂不|是否|能否)', primary):
         return None
-    if re.fullmatch(r'[A-Za-z][。！!]?', primary):
+    ruling = re.fullmatch(r'(?:请)?(?:两个|这两个|两项|这两项|全部|都)(?:都)?(?:批|批准|同意|通过)(?:了)?[。！!]?', primary)
+    if ruling:
+        return {'answer': primary, 'choice': None, 'decision_id': None}
+    if re.fullmatch(r'(?:同意|批准|不批准|不同意|两个都不批)[。！!]?', primary):
+        return {'answer': primary, 'choice': None, 'decision_id': None}
+    if re.fullmatch(r'[A-Za-z0-9][。！!]?', primary):
         return {'answer':primary,'choice':primary[0].lower(),'decision_id':None}
     short = re.fullmatch(r'(?:请)?(?:按|采用|选择)(?:解读|方案|选项)\s*([a-zA-Z0-9])\s*[。！!]?', primary)
     if short:
@@ -55,7 +60,9 @@ def record(ledger, target, provenance, *, command_id):
         row = _row(db.execute("SELECT * FROM events WHERE run_id=? AND role='COORDINATOR' "
                              "AND kind='CHECKPOINT_SAVED' AND created_at<=? ORDER BY event_id DESC LIMIT 1",
                              (run_id,context_at)).fetchone())
-        context = {'event_id': row['event_id'], 'checkpoint': row['payload'].get('checkpoint', {})} if row else None
+        from workflow_coordination import questions
+        context = {'event_id': row['event_id'], 'checkpoint': row['payload'].get('checkpoint', {})} if row else {}
+        context['questions'] = questions(ledger.snapshot(), run_id)
         request_id = 'user-decision:' + provenance['chat_id'] + ':' + provenance['message_id']
         event_id = ledger._event(db, 'USER_DECISION_RECORDED', {
             'request_id': request_id, **parsed, 'provenance': provenance, 'context': context,
@@ -70,7 +77,9 @@ def record(ledger, target, provenance, *, command_id):
 
 
 def pending(snapshot, run_id):
-    events = [e for e in snapshot['events'] if e['run_id'] == run_id]
+    from workflow_coordination import related_runs
+    runs = related_runs(snapshot, run_id)
+    events = [e for e in snapshot['events'] if e['run_id'] in runs]
     resolved = {e['payload']['request_id'] for e in events if e['kind'] == 'USER_DECISION_RESOLVED'}
     result=[]
     for event in events:
@@ -87,8 +96,10 @@ def resolve(ledger, identity, payload, *, command_id):
         work, _ = ledger._identity(db, identity)
         if work['role'] != 'COORDINATOR':
             _deny('COORDINATOR_REQUIRED')
+        from workflow_coordination import related_runs
+        runs = related_runs(ledger.snapshot(), work['run_id'])
         events = [_row(row) for row in db.execute(
-            "SELECT * FROM events WHERE run_id=? AND kind='USER_DECISION_RECORDED'", (work['run_id'],))]
+            "SELECT * FROM events WHERE kind='USER_DECISION_RECORDED'") if row['run_id'] in runs]
         recorded = next((e for e in events if e['payload']['request_id'] == payload['request_id']), None)
         if not recorded:
             _deny('USER_DECISION_REQUEST_NOT_FOUND')
@@ -98,11 +109,11 @@ def resolve(ledger, identity, payload, *, command_id):
         # Reconcile the answer explicitly. This event does not approve a
         # candidate, modify AC, grant service/push rights or fabricate a PASS.
         existing = [_row(row) for row in db.execute(
-            "SELECT * FROM events WHERE run_id=? AND kind='USER_DECISION_RESOLVED'", (work['run_id'],))]
+            "SELECT * FROM events WHERE kind='USER_DECISION_RESOLVED'") if row['run_id'] in runs]
         if any(e['payload']['request_id'] == payload['request_id'] for e in existing):
             _deny('USER_DECISION_ALREADY_RESOLVED')
         event_id = ledger._event(db, 'USER_DECISION_RESOLVED', payload,
-            run_id=work['run_id'], work_id=work['work_id'], role='COORDINATOR')
+            run_id=recorded['run_id'], work_id=work['work_id'], role='COORDINATOR')
         result={'event_id': event_id, 'request_id': payload['request_id'], 'state': 'RESOLVED'}
         if payload['decision_id']=='close_verification':
             from workflow_verification_lifecycle import request_from_resolved_decision

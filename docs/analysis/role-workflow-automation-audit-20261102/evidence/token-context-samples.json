@@ -1,0 +1,2769 @@
+{
+  "window": {
+    "start": 1793376000.0,
+    "end": 1793598924.431144
+  },
+  "sampling": "每个角色在窗口内最近八个业务会话；非随机样本，字节不换算成token。",
+  "samples": [
+    {
+      "session_ref": "bf14c98b38c01aa2",
+      "role": "COORDINATOR",
+      "first_at": 1793598191.3187852,
+      "initial_message_bytes": 163505,
+      "packet_found": true,
+      "packet_bytes": 111124,
+      "projection": {
+        "after_bytes_without_metrics": 107482,
+        "before_bytes": 116118,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 10,
+        "terminal_authorizations_archived": 4,
+        "version": 1
+      },
+      "task_count": 6,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "tasks",
+          "bytes": 29352
+        },
+        {
+          "field": "plans",
+          "bytes": 24345
+        },
+        {
+          "field": "events",
+          "bytes": 8453
+        },
+        {
+          "field": "historical_failures",
+          "bytes": 8323
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "completion",
+          "bytes": 5152
+        },
+        {
+          "field": "external_actions",
+          "bytes": 4379
+        },
+        {
+          "field": "work",
+          "bytes": 4031
+        },
+        {
+          "field": "candidates",
+          "bytes": 2931
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2813
+        },
+        {
+          "field": "verifications",
+          "bytes": 2747
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 2282
+        }
+      ]
+    },
+    {
+      "session_ref": "30378a5c8bafa096",
+      "role": "COORDINATOR",
+      "first_at": 1793595254.3751101,
+      "initial_message_bytes": 156108,
+      "packet_found": true,
+      "packet_bytes": 103727,
+      "projection": {
+        "after_bytes_without_metrics": 100239,
+        "before_bytes": 107440,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 10,
+        "terminal_authorizations_archived": 4,
+        "version": 1
+      },
+      "task_count": 6,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "tasks",
+          "bytes": 29352
+        },
+        {
+          "field": "plans",
+          "bytes": 24345
+        },
+        {
+          "field": "historical_failures",
+          "bytes": 8323
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "completion",
+          "bytes": 5152
+        },
+        {
+          "field": "external_actions",
+          "bytes": 4379
+        },
+        {
+          "field": "candidates",
+          "bytes": 2931
+        },
+        {
+          "field": "events",
+          "bytes": 2881
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2813
+        },
+        {
+          "field": "work",
+          "bytes": 2594
+        },
+        {
+          "field": "verifications",
+          "bytes": 2359
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 2282
+        }
+      ]
+    },
+    {
+      "session_ref": "1748e19f4fb24f2d",
+      "role": "COORDINATOR",
+      "first_at": 1793595128.4023473,
+      "initial_message_bytes": 173075,
+      "packet_found": true,
+      "packet_bytes": 120694,
+      "projection": {
+        "after_bytes_without_metrics": 116900,
+        "before_bytes": 126245,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 11,
+        "terminal_authorizations_archived": 4,
+        "version": 1
+      },
+      "task_count": 6,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "tasks",
+          "bytes": 29352
+        },
+        {
+          "field": "plans",
+          "bytes": 24345
+        },
+        {
+          "field": "events",
+          "bytes": 21845
+        },
+        {
+          "field": "historical_failures",
+          "bytes": 8323
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "completion",
+          "bytes": 5152
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3528
+        },
+        {
+          "field": "candidates",
+          "bytes": 2931
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2544
+        },
+        {
+          "field": "work",
+          "bytes": 2491
+        },
+        {
+          "field": "verifications",
+          "bytes": 2359
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 2282
+        }
+      ]
+    },
+    {
+      "session_ref": "5f9e7595fb3e354f",
+      "role": "COORDINATOR",
+      "first_at": 1793594587.348809,
+      "initial_message_bytes": 166194,
+      "packet_found": true,
+      "packet_bytes": 113813,
+      "projection": {
+        "after_bytes_without_metrics": 110217,
+        "before_bytes": 119360,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 11,
+        "terminal_authorizations_archived": 4,
+        "version": 1
+      },
+      "task_count": 6,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "tasks",
+          "bytes": 29352
+        },
+        {
+          "field": "plans",
+          "bytes": 24345
+        },
+        {
+          "field": "events",
+          "bytes": 16000
+        },
+        {
+          "field": "historical_failures",
+          "bytes": 8323
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "completion",
+          "bytes": 5152
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3528
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2527
+        },
+        {
+          "field": "verifications",
+          "bytes": 2359
+        },
+        {
+          "field": "work",
+          "bytes": 2289
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 2282
+        },
+        {
+          "field": "candidates",
+          "bytes": 2195
+        }
+      ]
+    },
+    {
+      "session_ref": "9db960377aafe8b9",
+      "role": "COORDINATOR",
+      "first_at": 1793593631.4802516,
+      "initial_message_bytes": 152556,
+      "packet_found": true,
+      "packet_bytes": 100175,
+      "projection": {
+        "after_bytes_without_metrics": 96737,
+        "before_bytes": 103299,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 10,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 6,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "tasks",
+          "bytes": 29352
+        },
+        {
+          "field": "plans",
+          "bytes": 24345
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "historical_failures",
+          "bytes": 5472
+        },
+        {
+          "field": "completion",
+          "bytes": 5152
+        },
+        {
+          "field": "events",
+          "bytes": 4104
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3878
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2653
+        },
+        {
+          "field": "work",
+          "bytes": 2289
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 2282
+        },
+        {
+          "field": "candidates",
+          "bytes": 2195
+        },
+        {
+          "field": "verifications",
+          "bytes": 1957
+        }
+      ]
+    },
+    {
+      "session_ref": "c7f4b869f20ce831",
+      "role": "COORDINATOR",
+      "first_at": 1793593333.2290459,
+      "initial_message_bytes": 159109,
+      "packet_found": true,
+      "packet_bytes": 106728,
+      "projection": {
+        "after_bytes_without_metrics": 103346,
+        "before_bytes": 108366,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 9,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 6,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "tasks",
+          "bytes": 29352
+        },
+        {
+          "field": "plans",
+          "bytes": 24345
+        },
+        {
+          "field": "events",
+          "bytes": 9096
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "historical_failures",
+          "bytes": 5472
+        },
+        {
+          "field": "completion",
+          "bytes": 5152
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3665
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3446
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 2282
+        },
+        {
+          "field": "work",
+          "bytes": 2212
+        },
+        {
+          "field": "candidates",
+          "bytes": 2195
+        },
+        {
+          "field": "verifications",
+          "bytes": 1957
+        }
+      ]
+    },
+    {
+      "session_ref": "0150645745c42975",
+      "role": "COORDINATOR",
+      "first_at": 1793592915.5650635,
+      "initial_message_bytes": 151496,
+      "packet_found": true,
+      "packet_bytes": 99115,
+      "projection": {
+        "after_bytes_without_metrics": 95758,
+        "before_bytes": 102243,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 10,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 6,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "tasks",
+          "bytes": 29352
+        },
+        {
+          "field": "plans",
+          "bytes": 24345
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "historical_failures",
+          "bytes": 5472
+        },
+        {
+          "field": "completion",
+          "bytes": 5152
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3665
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3446
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 2282
+        },
+        {
+          "field": "work",
+          "bytes": 2212
+        },
+        {
+          "field": "candidates",
+          "bytes": 2195
+        },
+        {
+          "field": "verifications",
+          "bytes": 1957
+        },
+        {
+          "field": "next_actions",
+          "bytes": 1498
+        }
+      ]
+    },
+    {
+      "session_ref": "76564ce45bf1cd95",
+      "role": "COORDINATOR",
+      "first_at": 1793592613.95702,
+      "initial_message_bytes": 151839,
+      "packet_found": true,
+      "packet_bytes": 99458,
+      "projection": {
+        "after_bytes_without_metrics": 96096,
+        "before_bytes": 102887,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 10,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 6,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "tasks",
+          "bytes": 29352
+        },
+        {
+          "field": "plans",
+          "bytes": 24345
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "historical_failures",
+          "bytes": 5472
+        },
+        {
+          "field": "completion",
+          "bytes": 5152
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3665
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3446
+        },
+        {
+          "field": "work",
+          "bytes": 2518
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 2282
+        },
+        {
+          "field": "candidates",
+          "bytes": 2195
+        },
+        {
+          "field": "verifications",
+          "bytes": 1957
+        },
+        {
+          "field": "events",
+          "bytes": 1521
+        }
+      ]
+    },
+    {
+      "session_ref": "fbafbc6afba87809",
+      "role": "A",
+      "first_at": 1793504465.2227216,
+      "initial_message_bytes": 123176,
+      "packet_found": true,
+      "packet_bytes": 91003,
+      "projection": {
+        "after_bytes_without_metrics": 87577,
+        "before_bytes": 97696,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 16,
+        "terminal_authorizations_archived": 6,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 46352
+        },
+        {
+          "field": "candidates",
+          "bytes": 5323
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "external_actions",
+          "bytes": 4524
+        },
+        {
+          "field": "verifications",
+          "bytes": 4304
+        },
+        {
+          "field": "tasks",
+          "bytes": 4173
+        },
+        {
+          "field": "task",
+          "bytes": 4171
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "scope",
+          "bytes": 1130
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 770
+        }
+      ]
+    },
+    {
+      "session_ref": "f155686a2be8462f",
+      "role": "A",
+      "first_at": 1793500620.4260309,
+      "initial_message_bytes": 119897,
+      "packet_found": true,
+      "packet_bytes": 87724,
+      "projection": {
+        "after_bytes_without_metrics": 84448,
+        "before_bytes": 94239,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 16,
+        "terminal_authorizations_archived": 5,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 46352
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "candidates",
+          "bytes": 4183
+        },
+        {
+          "field": "tasks",
+          "bytes": 4173
+        },
+        {
+          "field": "task",
+          "bytes": 4171
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "verifications",
+          "bytes": 3520
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3171
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "scope",
+          "bytes": 1130
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 770
+        }
+      ]
+    },
+    {
+      "session_ref": "de2a0ddd638b14f8",
+      "role": "A",
+      "first_at": 1793496128.6584854,
+      "initial_message_bytes": 138239,
+      "packet_found": true,
+      "packet_bytes": 106066,
+      "projection": {
+        "after_bytes_without_metrics": 102625,
+        "before_bytes": 105119,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 2,
+        "terminal_authorizations_archived": 4,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 61234
+        },
+        {
+          "field": "work",
+          "bytes": 6105
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "tasks",
+          "bytes": 4173
+        },
+        {
+          "field": "task",
+          "bytes": 4171
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "candidates",
+          "bytes": 3453
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "verifications",
+          "bytes": 3132
+        },
+        {
+          "field": "external_actions",
+          "bytes": 2025
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "scope",
+          "bytes": 1130
+        }
+      ]
+    },
+    {
+      "session_ref": "5e1c0a32ec442dc3",
+      "role": "A",
+      "first_at": 1793495467.807091,
+      "initial_message_bytes": 141284,
+      "packet_found": true,
+      "packet_bytes": 109111,
+      "projection": {
+        "after_bytes_without_metrics": 105219,
+        "before_bytes": 108236,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 7,
+        "terminal_authorizations_archived": 4,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 63402
+        },
+        {
+          "field": "work",
+          "bytes": 7109
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "tasks",
+          "bytes": 4173
+        },
+        {
+          "field": "task",
+          "bytes": 4171
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "candidates",
+          "bytes": 3453
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "verifications",
+          "bytes": 3132
+        },
+        {
+          "field": "external_actions",
+          "bytes": 2025
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "scope",
+          "bytes": 1130
+        }
+      ]
+    },
+    {
+      "session_ref": "41e923e5bb060aca",
+      "role": "A",
+      "first_at": 1793494444.7916794,
+      "initial_message_bytes": 117635,
+      "packet_found": true,
+      "packet_bytes": 85462,
+      "projection": {
+        "after_bytes_without_metrics": 82308,
+        "before_bytes": 91771,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 16,
+        "terminal_authorizations_archived": 4,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 46352
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "tasks",
+          "bytes": 4173
+        },
+        {
+          "field": "task",
+          "bytes": 4171
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "candidates",
+          "bytes": 3453
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "verifications",
+          "bytes": 3132
+        },
+        {
+          "field": "external_actions",
+          "bytes": 2025
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "scope",
+          "bytes": 1130
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 770
+        }
+      ]
+    },
+    {
+      "session_ref": "3e9e6153fcaf2c63",
+      "role": "A",
+      "first_at": 1793491272.8444974,
+      "initial_message_bytes": 82331,
+      "packet_found": true,
+      "packet_bytes": 50158,
+      "projection": {
+        "after_bytes_without_metrics": 47765,
+        "before_bytes": 54524,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 2,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 7628
+        },
+        {
+          "field": "work",
+          "bytes": 6212
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "tasks",
+          "bytes": 4173
+        },
+        {
+          "field": "task",
+          "bytes": 4171
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "verifications",
+          "bytes": 2349
+        },
+        {
+          "field": "candidates",
+          "bytes": 2335
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "external_actions",
+          "bytes": 1519
+        },
+        {
+          "field": "scope",
+          "bytes": 1130
+        }
+      ]
+    },
+    {
+      "session_ref": "0eb8a67ed5fe2653",
+      "role": "A",
+      "first_at": 1793490783.8960493,
+      "initial_message_bytes": 137766,
+      "packet_found": true,
+      "packet_bytes": 105593,
+      "projection": {
+        "after_bytes_without_metrics": 102085,
+        "before_bytes": 103623,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 3,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 63826
+        },
+        {
+          "field": "work",
+          "bytes": 5574
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "tasks",
+          "bytes": 4173
+        },
+        {
+          "field": "task",
+          "bytes": 4171
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "verifications",
+          "bytes": 2349
+        },
+        {
+          "field": "candidates",
+          "bytes": 2335
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "external_actions",
+          "bytes": 1519
+        },
+        {
+          "field": "scope",
+          "bytes": 1130
+        }
+      ]
+    },
+    {
+      "session_ref": "1921d7a90255904d",
+      "role": "A",
+      "first_at": 1793490067.3306224,
+      "initial_message_bytes": 115227,
+      "packet_found": true,
+      "packet_bytes": 83054,
+      "projection": {
+        "after_bytes_without_metrics": 80020,
+        "before_bytes": 89155,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 16,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 46352
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "tasks",
+          "bytes": 4173
+        },
+        {
+          "field": "task",
+          "bytes": 4171
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "verifications",
+          "bytes": 2349
+        },
+        {
+          "field": "candidates",
+          "bytes": 2335
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "external_actions",
+          "bytes": 1519
+        },
+        {
+          "field": "scope",
+          "bytes": 1130
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 770
+        }
+      ]
+    },
+    {
+      "session_ref": "0553a73b0991783b",
+      "role": "B",
+      "first_at": 1793594468.0279684,
+      "initial_message_bytes": 93845,
+      "packet_found": true,
+      "packet_bytes": 57473,
+      "projection": {
+        "after_bytes_without_metrics": 54816,
+        "before_bytes": 65092,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 1,
+        "terminal_authorizations_archived": 1,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "work",
+          "bytes": 10991
+        },
+        {
+          "field": "events",
+          "bytes": 9464
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "tasks",
+          "bytes": 4889
+        },
+        {
+          "field": "task",
+          "bytes": 4887
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "scope",
+          "bytes": 1361
+        },
+        {
+          "field": "coordination",
+          "bytes": 935
+        },
+        {
+          "field": "execution_history",
+          "bytes": 892
+        },
+        {
+          "field": "local_test_environment",
+          "bytes": 810
+        }
+      ]
+    },
+    {
+      "session_ref": "3756f5209a0e64ce",
+      "role": "B",
+      "first_at": 1793593150.3952796,
+      "initial_message_bytes": 144493,
+      "packet_found": true,
+      "packet_bytes": 108121,
+      "projection": {
+        "after_bytes_without_metrics": 104381,
+        "before_bytes": 106757,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 3,
+        "terminal_authorizations_archived": 1,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 62052
+        },
+        {
+          "field": "work",
+          "bytes": 8389
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "tasks",
+          "bytes": 4889
+        },
+        {
+          "field": "task",
+          "bytes": 4887
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "coordination",
+          "bytes": 1487
+        },
+        {
+          "field": "scope",
+          "bytes": 1361
+        },
+        {
+          "field": "local_test_environment",
+          "bytes": 810
+        },
+        {
+          "field": "verifications",
+          "bytes": 784
+        }
+      ]
+    },
+    {
+      "session_ref": "def9b19e11b651b2",
+      "role": "B",
+      "first_at": 1793592068.7166734,
+      "initial_message_bytes": 144547,
+      "packet_found": true,
+      "packet_bytes": 108175,
+      "projection": {
+        "after_bytes_without_metrics": 104357,
+        "before_bytes": 104722,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 1,
+        "terminal_authorizations_archived": 1,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 60634
+        },
+        {
+          "field": "work",
+          "bytes": 9988
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "tasks",
+          "bytes": 4889
+        },
+        {
+          "field": "task",
+          "bytes": 4887
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "coordination",
+          "bytes": 1487
+        },
+        {
+          "field": "scope",
+          "bytes": 1361
+        },
+        {
+          "field": "local_test_environment",
+          "bytes": 810
+        },
+        {
+          "field": "verifications",
+          "bytes": 784
+        }
+      ]
+    },
+    {
+      "session_ref": "432d7e55d872a30a",
+      "role": "B",
+      "first_at": 1793590387.3813145,
+      "initial_message_bytes": 136986,
+      "packet_found": true,
+      "packet_bytes": 101382,
+      "projection": {
+        "after_bytes_without_metrics": 97578,
+        "before_bytes": 97943,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 1,
+        "terminal_authorizations_archived": 1,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 60634
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "tasks",
+          "bytes": 4889
+        },
+        {
+          "field": "task",
+          "bytes": 4887
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "work",
+          "bytes": 3324
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "coordination",
+          "bytes": 1487
+        },
+        {
+          "field": "scope",
+          "bytes": 1361
+        },
+        {
+          "field": "local_test_environment",
+          "bytes": 810
+        },
+        {
+          "field": "verifications",
+          "bytes": 784
+        }
+      ]
+    },
+    {
+      "session_ref": "c768e37cc632713a",
+      "role": "B",
+      "first_at": 1793588951.6372006,
+      "initial_message_bytes": 143807,
+      "packet_found": true,
+      "packet_bytes": 108203,
+      "projection": {
+        "after_bytes_without_metrics": 104397,
+        "before_bytes": 104762,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 1,
+        "terminal_authorizations_archived": 1,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 60634
+        },
+        {
+          "field": "work",
+          "bytes": 11620
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "tasks",
+          "bytes": 4889
+        },
+        {
+          "field": "task",
+          "bytes": 4887
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "scope",
+          "bytes": 1361
+        },
+        {
+          "field": "coordination",
+          "bytes": 1210
+        },
+        {
+          "field": "verifications",
+          "bytes": 784
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 767
+        }
+      ]
+    },
+    {
+      "session_ref": "99f5706a7b6473fd",
+      "role": "B",
+      "first_at": 1793587748.2181833,
+      "initial_message_bytes": 141078,
+      "packet_found": true,
+      "packet_bytes": 105474,
+      "projection": {
+        "after_bytes_without_metrics": 101910,
+        "before_bytes": 103039,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 4,
+        "terminal_authorizations_archived": 1,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 64070
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "work",
+          "bytes": 5601
+        },
+        {
+          "field": "tasks",
+          "bytes": 4889
+        },
+        {
+          "field": "task",
+          "bytes": 4887
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "scope",
+          "bytes": 1361
+        },
+        {
+          "field": "coordination",
+          "bytes": 1191
+        },
+        {
+          "field": "verifications",
+          "bytes": 784
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 767
+        }
+      ]
+    },
+    {
+      "session_ref": "d04e277c13656089",
+      "role": "B",
+      "first_at": 1793587209.8174348,
+      "initial_message_bytes": 119474,
+      "packet_found": true,
+      "packet_bytes": 83870,
+      "projection": {
+        "after_bytes_without_metrics": 80662,
+        "before_bytes": 93202,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 19,
+        "terminal_authorizations_archived": 1,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 47551
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "tasks",
+          "bytes": 4889
+        },
+        {
+          "field": "task",
+          "bytes": 4887
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "scope",
+          "bytes": 1361
+        },
+        {
+          "field": "coordination",
+          "bytes": 1191
+        },
+        {
+          "field": "verifications",
+          "bytes": 784
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 767
+        },
+        {
+          "field": "candidates",
+          "bytes": 736
+        }
+      ]
+    },
+    {
+      "session_ref": "efb3dcdf8b42f0b0",
+      "role": "B",
+      "first_at": 1793510107.671469,
+      "initial_message_bytes": 88892,
+      "packet_found": true,
+      "packet_bytes": 56719,
+      "projection": {
+        "after_bytes_without_metrics": 54489,
+        "before_bytes": 62164,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 4,
+        "terminal_authorizations_archived": 0,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 22836
+        },
+        {
+          "field": "work",
+          "bytes": 7109
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "tasks",
+          "bytes": 2797
+        },
+        {
+          "field": "task",
+          "bytes": 2795
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "scope",
+          "bytes": 1073
+        },
+        {
+          "field": "execution_history",
+          "bytes": 638
+        },
+        {
+          "field": "delivery_evidence",
+          "bytes": 599
+        },
+        {
+          "field": "business_progress",
+          "bytes": 535
+        }
+      ]
+    },
+    {
+      "session_ref": "1b735c76064fdc14",
+      "role": "C",
+      "first_at": 1793598192.3974319,
+      "initial_message_bytes": 142765,
+      "packet_found": true,
+      "packet_bytes": 106393,
+      "projection": {
+        "after_bytes_without_metrics": 102567,
+        "before_bytes": 103600,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 1,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 60634
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "tasks",
+          "bytes": 5160
+        },
+        {
+          "field": "task",
+          "bytes": 5158
+        },
+        {
+          "field": "work",
+          "bytes": 4563
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3020
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "verifications",
+          "bytes": 1575
+        },
+        {
+          "field": "candidates",
+          "bytes": 1462
+        },
+        {
+          "field": "coordination",
+          "bytes": 1217
+        }
+      ]
+    },
+    {
+      "session_ref": "3d8a0279af358050",
+      "role": "C",
+      "first_at": 1793595369.8155246,
+      "initial_message_bytes": 146604,
+      "packet_found": true,
+      "packet_bytes": 110232,
+      "projection": {
+        "after_bytes_without_metrics": 106612,
+        "before_bytes": 108409,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 4,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 64070
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "tasks",
+          "bytes": 5160
+        },
+        {
+          "field": "task",
+          "bytes": 5158
+        },
+        {
+          "field": "work",
+          "bytes": 5093
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3020
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "verifications",
+          "bytes": 1575
+        },
+        {
+          "field": "candidates",
+          "bytes": 1462
+        },
+        {
+          "field": "coordination",
+          "bytes": 1217
+        }
+      ]
+    },
+    {
+      "session_ref": "8bb2b860a0fcd4b0",
+      "role": "C",
+      "first_at": 1793594766.9396467,
+      "initial_message_bytes": 125222,
+      "packet_found": true,
+      "packet_bytes": 88850,
+      "projection": {
+        "after_bytes_without_metrics": 85589,
+        "before_bytes": 98797,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 19,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 47551
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "tasks",
+          "bytes": 5160
+        },
+        {
+          "field": "task",
+          "bytes": 5158
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3198
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3020
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "verifications",
+          "bytes": 1575
+        },
+        {
+          "field": "candidates",
+          "bytes": 1462
+        },
+        {
+          "field": "scope",
+          "bytes": 1191
+        },
+        {
+          "field": "coordination",
+          "bytes": 935
+        }
+      ]
+    },
+    {
+      "session_ref": "3a2109c6c24e42d4",
+      "role": "C",
+      "first_at": 1793584212.9359329,
+      "initial_message_bytes": 83988,
+      "packet_found": true,
+      "packet_bytes": 51815,
+      "projection": {
+        "after_bytes_without_metrics": 49590,
+        "before_bytes": 55799,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 1,
+        "terminal_authorizations_archived": 0,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 15343
+        },
+        {
+          "field": "work",
+          "bytes": 6995
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3597
+        },
+        {
+          "field": "tasks",
+          "bytes": 3181
+        },
+        {
+          "field": "task",
+          "bytes": 3179
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "execution_history",
+          "bytes": 1270
+        },
+        {
+          "field": "scope",
+          "bytes": 1112
+        },
+        {
+          "field": "next_actions",
+          "bytes": 713
+        },
+        {
+          "field": "delivery_evidence",
+          "bytes": 599
+        }
+      ]
+    },
+    {
+      "session_ref": "c3401d9471339d1a",
+      "role": "C",
+      "first_at": 1793583128.5151434,
+      "initial_message_bytes": 76190,
+      "packet_found": true,
+      "packet_bytes": 44017,
+      "projection": {
+        "after_bytes_without_metrics": 41975,
+        "before_bytes": 48658,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 2,
+        "terminal_authorizations_archived": 0,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 7714
+        },
+        {
+          "field": "work",
+          "bytes": 7153
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3597
+        },
+        {
+          "field": "tasks",
+          "bytes": 3181
+        },
+        {
+          "field": "task",
+          "bytes": 3179
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "execution_history",
+          "bytes": 1270
+        },
+        {
+          "field": "scope",
+          "bytes": 1112
+        },
+        {
+          "field": "next_actions",
+          "bytes": 713
+        },
+        {
+          "field": "delivery_evidence",
+          "bytes": 599
+        }
+      ]
+    },
+    {
+      "session_ref": "8225c2cb56f586f4",
+      "role": "C",
+      "first_at": 1793581924.9696662,
+      "initial_message_bytes": 75749,
+      "packet_found": true,
+      "packet_bytes": 43576,
+      "projection": {
+        "after_bytes_without_metrics": 41541,
+        "before_bytes": 47890,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 1,
+        "terminal_authorizations_archived": 0,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 7291
+        },
+        {
+          "field": "work",
+          "bytes": 7135
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3597
+        },
+        {
+          "field": "tasks",
+          "bytes": 3181
+        },
+        {
+          "field": "task",
+          "bytes": 3179
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "execution_history",
+          "bytes": 1270
+        },
+        {
+          "field": "scope",
+          "bytes": 1112
+        },
+        {
+          "field": "next_actions",
+          "bytes": 713
+        },
+        {
+          "field": "delivery_evidence",
+          "bytes": 599
+        }
+      ]
+    },
+    {
+      "session_ref": "2a709ffd1abc10ca",
+      "role": "C",
+      "first_at": 1793580726.0872636,
+      "initial_message_bytes": 74827,
+      "packet_found": true,
+      "packet_bytes": 42654,
+      "projection": {
+        "after_bytes_without_metrics": 40630,
+        "before_bytes": 46371,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 2,
+        "terminal_authorizations_archived": 0,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 7305
+        },
+        {
+          "field": "work",
+          "bytes": 6199
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3597
+        },
+        {
+          "field": "tasks",
+          "bytes": 3181
+        },
+        {
+          "field": "task",
+          "bytes": 3179
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "execution_history",
+          "bytes": 1270
+        },
+        {
+          "field": "scope",
+          "bytes": 1112
+        },
+        {
+          "field": "next_actions",
+          "bytes": 713
+        },
+        {
+          "field": "delivery_evidence",
+          "bytes": 599
+        }
+      ]
+    },
+    {
+      "session_ref": "0776c8e0b7472839",
+      "role": "C",
+      "first_at": 1793579639.7406304,
+      "initial_message_bytes": 76358,
+      "packet_found": true,
+      "packet_bytes": 44185,
+      "projection": {
+        "after_bytes_without_metrics": 42111,
+        "before_bytes": 49402,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 2,
+        "terminal_authorizations_archived": 0,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "work",
+          "bytes": 7773
+        },
+        {
+          "field": "events",
+          "bytes": 7262
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 3597
+        },
+        {
+          "field": "tasks",
+          "bytes": 3181
+        },
+        {
+          "field": "task",
+          "bytes": 3179
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1843
+        },
+        {
+          "field": "execution_history",
+          "bytes": 1270
+        },
+        {
+          "field": "scope",
+          "bytes": 1112
+        },
+        {
+          "field": "next_actions",
+          "bytes": 713
+        },
+        {
+          "field": "delivery_evidence",
+          "bytes": 599
+        }
+      ]
+    },
+    {
+      "session_ref": "a7d985199ea80b62",
+      "role": "TESTER",
+      "first_at": 1793598851.696234,
+      "initial_message_bytes": 127590,
+      "packet_found": true,
+      "packet_bytes": 88299,
+      "projection": {
+        "after_bytes_without_metrics": 85402,
+        "before_bytes": 98610,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 19,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 47551
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "tasks",
+          "bytes": 5156
+        },
+        {
+          "field": "task",
+          "bytes": 5154
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3020
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2596
+        },
+        {
+          "field": "candidates",
+          "bytes": 2190
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1845
+        },
+        {
+          "field": "verifications",
+          "bytes": 1575
+        },
+        {
+          "field": "coordination",
+          "bytes": 1217
+        },
+        {
+          "field": "scope",
+          "bytes": 905
+        }
+      ]
+    },
+    {
+      "session_ref": "1a8a4b90ae254d1b",
+      "role": "TESTER",
+      "first_at": 1793594830.6844215,
+      "initial_message_bytes": 122750,
+      "packet_found": true,
+      "packet_bytes": 83459,
+      "projection": {
+        "after_bytes_without_metrics": 80786,
+        "before_bytes": 93326,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 19,
+        "terminal_authorizations_archived": 1,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 47551
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5678
+        },
+        {
+          "field": "tasks",
+          "bytes": 4885
+        },
+        {
+          "field": "task",
+          "bytes": 4883
+        },
+        {
+          "field": "completion",
+          "bytes": 4336
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2596
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1845
+        },
+        {
+          "field": "candidates",
+          "bytes": 1469
+        },
+        {
+          "field": "coordination",
+          "bytes": 935
+        },
+        {
+          "field": "scope",
+          "bytes": 910
+        },
+        {
+          "field": "local_test_environment",
+          "bytes": 810
+        },
+        {
+          "field": "verifications",
+          "bytes": 784
+        }
+      ]
+    },
+    {
+      "session_ref": "e6f20e7918750467",
+      "role": "TESTER",
+      "first_at": 1793510767.631465,
+      "initial_message_bytes": 107732,
+      "packet_found": true,
+      "packet_bytes": 72798,
+      "projection": {
+        "after_bytes_without_metrics": 70506,
+        "before_bytes": 78916,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 16,
+        "terminal_authorizations_archived": 0,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 46352
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "tasks",
+          "bytes": 2793
+        },
+        {
+          "field": "task",
+          "bytes": 2791
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2596
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1845
+        },
+        {
+          "field": "scope",
+          "bytes": 897
+        },
+        {
+          "field": "candidates",
+          "bytes": 723
+        },
+        {
+          "field": "work",
+          "bytes": 701
+        },
+        {
+          "field": "business_progress",
+          "bytes": 536
+        },
+        {
+          "field": "local_development_automation",
+          "bytes": 516
+        }
+      ]
+    },
+    {
+      "session_ref": "82e1ffe35802e347",
+      "role": "TESTER",
+      "first_at": 1793505132.38662,
+      "initial_message_bytes": 125153,
+      "packet_found": true,
+      "packet_bytes": 90219,
+      "projection": {
+        "after_bytes_without_metrics": 87119,
+        "before_bytes": 97238,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 16,
+        "terminal_authorizations_archived": 6,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 46352
+        },
+        {
+          "field": "candidates",
+          "bytes": 6048
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "external_actions",
+          "bytes": 4524
+        },
+        {
+          "field": "verifications",
+          "bytes": 4304
+        },
+        {
+          "field": "tasks",
+          "bytes": 4169
+        },
+        {
+          "field": "task",
+          "bytes": 4167
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2596
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1845
+        },
+        {
+          "field": "scope",
+          "bytes": 897
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 770
+        }
+      ]
+    },
+    {
+      "session_ref": "0ff59c3831be7386",
+      "role": "TESTER",
+      "first_at": 1793501948.207877,
+      "initial_message_bytes": 122288,
+      "packet_found": true,
+      "packet_bytes": 87354,
+      "projection": {
+        "after_bytes_without_metrics": 84406,
+        "before_bytes": 94197,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 16,
+        "terminal_authorizations_archived": 5,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 46352
+        },
+        {
+          "field": "candidates",
+          "bytes": 5320
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "tasks",
+          "bytes": 4169
+        },
+        {
+          "field": "task",
+          "bytes": 4167
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "verifications",
+          "bytes": 3520
+        },
+        {
+          "field": "external_actions",
+          "bytes": 3171
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2596
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1845
+        },
+        {
+          "field": "scope",
+          "bytes": 897
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 770
+        }
+      ]
+    },
+    {
+      "session_ref": "7f8c8d90bc25e673",
+      "role": "TESTER",
+      "first_at": 1793497324.89032,
+      "initial_message_bytes": 119614,
+      "packet_found": true,
+      "packet_bytes": 84680,
+      "projection": {
+        "after_bytes_without_metrics": 81852,
+        "before_bytes": 91315,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 16,
+        "terminal_authorizations_archived": 4,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 46352
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "candidates",
+          "bytes": 4180
+        },
+        {
+          "field": "tasks",
+          "bytes": 4169
+        },
+        {
+          "field": "task",
+          "bytes": 4167
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "verifications",
+          "bytes": 3132
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2596
+        },
+        {
+          "field": "external_actions",
+          "bytes": 2025
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1845
+        },
+        {
+          "field": "scope",
+          "bytes": 897
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 770
+        }
+      ]
+    },
+    {
+      "session_ref": "4a7ee15d5cf7cb0b",
+      "role": "TESTER",
+      "first_at": 1793491687.4844444,
+      "initial_message_bytes": 117594,
+      "packet_found": true,
+      "packet_bytes": 82660,
+      "projection": {
+        "after_bytes_without_metrics": 79954,
+        "before_bytes": 89089,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 16,
+        "terminal_authorizations_archived": 3,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 46352
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "tasks",
+          "bytes": 4169
+        },
+        {
+          "field": "task",
+          "bytes": 4167
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "candidates",
+          "bytes": 3450
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2596
+        },
+        {
+          "field": "verifications",
+          "bytes": 2349
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1845
+        },
+        {
+          "field": "external_actions",
+          "bytes": 1519
+        },
+        {
+          "field": "scope",
+          "bytes": 897
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 770
+        }
+      ]
+    },
+    {
+      "session_ref": "70300f50d23e6ebf",
+      "role": "TESTER",
+      "first_at": 1793487547.8413713,
+      "initial_message_bytes": 115186,
+      "packet_found": true,
+      "packet_bytes": 80252,
+      "projection": {
+        "after_bytes_without_metrics": 77666,
+        "before_bytes": 86475,
+        "measurement": "compact UTF-8 JSON bytes; not measured tokens",
+        "policy": "same_as为本包JSON Pointer，可递归展开；detail_source为完整哈希归档，未展开不等于已读。保留每条事件及结果、全部阶段义务、FAIL/UNKNOWN和非终态动作授权；只由原工具显式ACK。",
+        "same_packet_references": 16,
+        "terminal_authorizations_archived": 2,
+        "version": 1
+      },
+      "task_count": 1,
+      "work_memory_present": false,
+      "fields": [
+        {
+          "field": "events",
+          "bytes": 46352
+        },
+        {
+          "field": "accepted_requirements",
+          "bytes": 5284
+        },
+        {
+          "field": "tasks",
+          "bytes": 4169
+        },
+        {
+          "field": "task",
+          "bytes": 4167
+        },
+        {
+          "field": "completion",
+          "bytes": 3902
+        },
+        {
+          "field": "decision_context",
+          "bytes": 2596
+        },
+        {
+          "field": "candidates",
+          "bytes": 2332
+        },
+        {
+          "field": "runtime_capabilities",
+          "bytes": 1845
+        },
+        {
+          "field": "verifications",
+          "bytes": 1566
+        },
+        {
+          "field": "external_actions",
+          "bytes": 1012
+        },
+        {
+          "field": "scope",
+          "bytes": 897
+        },
+        {
+          "field": "detail_artifacts",
+          "bytes": 769
+        }
+      ]
+    }
+  ]
+}

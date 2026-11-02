@@ -93,7 +93,10 @@ class WorkflowServiceTests(LedgerFixture):
         self.assertEqual(adjudicate_service(self.ledger,self.coord,'ocr-one','PASS','不能跳过缺覆盖',command_id='bad-pass')['code'],
                          'COMPLETE_SERVICE_FACTS_AND_SEMANTIC_DECISION_REQUIRED')
         other=ExternalService(self.root)
-        second=self.assertCommitted(self.submit(other,action='ocr-two'))
+        second=self.assertCommitted(submit_service(self.ledger,self.coord,self.candidate_id,'ocr',
+            {'background_file':'isolated-background','reuse_action_id':'ocr-one',
+             'retry_reason':'隔离适配器模拟修复后有来源关联的结果，用于核验篡改保护'},
+            action_id='ocr-two',authorization=self.authorization,command_id='submit-ocr-two',adapter=other))
         self.assertCommitted(collect_service_result(self.ledger,'ocr-two',command_id='ready',adapter=other))
         Path(second['reference']['source']).write_text('tampered')
         self.assertEqual(adjudicate_service(self.ledger,self.coord,'ocr-two','PASS','原文已核',command_id='tampered')['code'],

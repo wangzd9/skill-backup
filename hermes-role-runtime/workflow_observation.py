@@ -134,6 +134,12 @@ def step(prior_state, observation, now):
                                    'write_diagnostics_source_unverified',
                                    'observer_write_closure_source_unverified'}
 
+    def is_writer_exit(row):
+        return row.get('type') == 'observer_business_writer_exited'
+
+    def is_debounced(row):
+        return is_diagnostic(row) or is_writer_exit(row)
+
     def diagnostic_identity(row):
         # The observer fault and the projection fallback describe one source
         # episode. Their payloads (and therefore their old identities) differ,
@@ -148,9 +154,10 @@ def step(prior_state, observation, now):
                               for key, row in previous.items() if is_diagnostic(row)}
     normalized = {}
     for key, row in previous.items():
+        if is_debounced(row) and 'notification_ready_at' not in row:
+            # Pre-debounce cursors already generated a first notification.
+            row.setdefault('notified_at', row.get('first_seen', now))
         if is_diagnostic(row):
-            if 'notification_ready_at' not in row:
-                row.setdefault('notified_at', row.get('first_seen', now))
             normalized_key = diagnostic_identity(row)
             old = normalized.get(normalized_key)
             if old is not None and 'notified_at' in old:
@@ -226,17 +233,20 @@ def step(prior_state, observation, now):
     # 120-second episode before notifying and the same stable interval before
     # announcing recovery. This suppresses alert flapping without hiding the
     # source state from read-only health views.
-    diagnostic_debounce = 120
+    # Native workers exit before the next business collector clears their
+    # writer binding. Keep that fact immediately visible, but do not notify on
+    # the normal collection gap (the scheduler observes before collecting).
+    notification_debounce = 120
     for key, row in list(current.items()):
         old = previous.get(key)
-        if is_diagnostic(row):
+        if is_debounced(row):
             reported = old is not None and 'notified_at' in old
             restarted = old is None or (not reported and
                 (old.get('clear_candidate_at') is not None or old.get('failure_interrupted')))
             first_seen = now if restarted else old['first_seen']
             row = {**row, 'first_seen': first_seen, 'last_seen': now,
                    'episode': digest([key, now]) if restarted else old['episode'],
-                   'notification_ready_at': first_seen + diagnostic_debounce}
+                   'notification_ready_at': first_seen + notification_debounce}
             if reported:
                 row['notified_at'] = old['notified_at']
             row.pop('clear_candidate_at', None)
@@ -276,6 +286,24 @@ def step(prior_state, observation, now):
         # A fresh per-source fact can certify just that source. Older callers
         # without source maps retain their conservative global-blindness rule.
         verified = source_fact and source_fact.get('state') == 'OBSERVED'
+        if is_writer_exit(old):
+            # A readable ledger or a replacement owner cannot certify this
+            # execution recovered. Require its verified empty terminal scope,
+            # or positive evidence that the very same writer is present again.
+            ended = old.get('execution_id') in observation.get('closed_execution_ids', [])
+            present = any(value.get('execution_id') == old.get('execution_id')
+                and value.get('writers_present') and value.get('writer_scope_verified')
+                and value.get('scope_identity_verified')
+                for roles in observation.get('roles', {}).values()
+                for role in roles for value in role.get('executions', []))
+            if not ended and not present:
+                current[key] = {**old, 'failure_interrupted': True}
+                continue
+            if 'notified_at' in old:
+                transition = 'closed_with_execution' if ended else 'recovered'
+                transitions.append({**old, 'event_id': digest([old['episode'], transition]),
+                    'transition': transition, 'severity': 0, 'occurred_at': now, 'observed_at': now})
+            continue
         if is_diagnostic(old):
             if not verified:
                 # Missing/unknown samples prove neither sustained failure nor
@@ -288,7 +316,7 @@ def step(prior_state, observation, now):
             if clear_at is None:
                 current[key] = {**old, 'clear_candidate_at': now}
                 continue
-            if now - clear_at < diagnostic_debounce:
+            if now - clear_at < notification_debounce:
                 current[key] = old
                 continue
             if 'notified_at' not in old:

@@ -48,8 +48,28 @@ def compact_result(ledger, result):
 
 
 def expand_result(ledger, result):
+    if 'events_compressed' in result:
+        import base64,zlib
+        ref=result['events_compressed']
+        if ref.get('codec')!='zlib-base64-v1':raise ValueError('UNKNOWN_INPUT_ARCHIVE_CODEC')
+        raw=zlib.decompress(base64.b64decode(ref['data'],validate=True))
+        if len(raw)!=ref['bytes'] or hashlib.sha256(raw).hexdigest()!=ref['sha256']:
+            raise ValueError('INPUT_ARCHIVE_CONTENT_CHANGED')
+        return {**{k:v for k,v in result.items() if k!='events_compressed'},'events':json.loads(raw)}
     if 'events_ref' not in result or 'events' in result:return result
     return {**result,'events':read(ledger,result['events_ref'])}
+
+
+def compress_legacy_result(result, *, threshold=1048576):
+    """Keep identities/decisions inline and losslessly encode only old events."""
+    if 'events' not in result or 'events_compressed' in result:return result
+    import base64,zlib
+    raw=json.dumps(result['events'],ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()
+    if len(raw)<threshold:return result
+    ref={'codec':'zlib-base64-v1','bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),
+         'data':base64.b64encode(zlib.compress(raw,9)).decode('ascii')}
+    if len(ref['data'])+256>=len(raw):return result
+    return {**{k:v for k,v in result.items() if k!='events'},'events_compressed':ref}
 
 
 def bounded_events(ledger, rows, *, max_bytes=65536):

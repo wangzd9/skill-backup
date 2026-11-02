@@ -2,13 +2,15 @@
 name: complex-task-executor
 description: 复杂任务开发执行者：在 Hermes 群声明执行者、开发者、1/2/3号或 A/B/C 并领取既有派单时使用。只在自己的分支开发、自测与返修，不做总体调度、OCR 或批准合入。
 metadata:
-  version: "1.13.0"
+  version: "1.13.2"
 ---
 
 # 复杂任务开发执行者
 
 
 ## 运行模式入口
+
+真实 MySQL 测试由原生 TESTER 的受管本地入口提供；开发者沙箱隐藏 Docker 接口是预期隔离，不是本机 Docker 不可用。按原 scope 编写迁移/并发等必要用例并随固定候选交付，明确哪些自测已执行、哪些待 TESTER 使用 `profile="mysql"` 实测；不绕过沙箱启动容器，不要求用户重复选择或批准本地测试环境。
 
 原生工作包明确 `mode=ACTIVE` 且 `schema_version=2` 时，先读[事务工作单模式](../complex-task-coordinator/references/transaction-workflow.md)并按本角色专用工具工作；下文旧租约、ACK、slot-release、continuation 和文档状态写入步骤仅适用于 LEGACY/STAGED。无原生 ACTIVE 身份时不得自行启用新模式。规划者和审查者仅按需 Skill，不加入五角色运行体系。
 
@@ -81,6 +83,8 @@ metadata:
 7. 收到问题 ID 返修单后执行最小修复，更新新 attempt 与证据；同根因两轮仍未解决报告协调者，不无限重试。
 
 ## 等待与边界
+
+- 合入后配合[分支与 worktree 收尾](../complex-task-coordinator/references/branch-retirement.md)：保存成果和工作区外证据，核对自身进程/子进程及未提交、未跟踪、ignored 文件，向协调者报告精确分支/head/worktree、可释放依据或保留原因。冻结交付或槽释放不代表分支可删除；不自行删除仍被返修、审查、验证或下游引用的分支，不清理其他角色工作区。ACTIVE 只用既有工具报告与释放，不执行不存在的清理 action。
 
 - 自身session与实质事件使用[固定记账工具](../complex-task-coordinator/references/runtime-helpers.md)的`role-record`，由它校验canonical路径、现有租约、event_id及时间来源并安全追加。测试/工程证据使用`evidence-record`与`evidence-check`核对实际快照，不让模型反复手拼租约、转义与记录脚本；helper失败保留原记录并报告，不直接截断重建共享文件、不从旧镜像无证据覆盖。已有owner忙碌不抢占，工具不扩大写入权限或绕过门禁。
 

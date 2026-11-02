@@ -1,0 +1,30 @@
+{
+  "window": {
+    "start": 1793376000.0,
+    "end": 1793591781.5548604,
+    "timezone": "Asia/Shanghai",
+    "note": "三自然日截至采集时点；读取不断运行的系统，各查询不是同一长事务。"
+  },
+  "counts": {
+    "matched_error_mentions": 51,
+    "same_entry_trace_contains_string_script": 44,
+    "unclassified_or_other_trace": 7
+  },
+  "fields": {
+    "column:state": 8,
+    "column:updated_at": 1,
+    "table:business_commands_result": 1,
+    "column:status": 5,
+    "column:action": 1,
+    "column:candidate_id": 1,
+    "column:run_id": 19,
+    "column:id": 8,
+    "column:ts": 1,
+    "column:ended_at": 1,
+    "column:task_id": 1,
+    "column:d.task_id": 2,
+    "column:head_sha": 2
+  },
+  "method": "按日志时间戳条目分组，只看同条目中异常前最后一个Traceback；解码日志文字中的换行，不输出原文。",
+  "limits": "提及数不按请求去重；条目可能包含引用的异常。<string>表明临时脚本来源线索，不据此排除其余运行时问题。旧sql-errors.json的frames只是邻近行，禁止当作调用栈归因。"
+}

@@ -252,7 +252,9 @@ class RuntimePlugin:
             if identity['session_kind']=='summary' and scope and scope.get('workflow_version'):
                 from report_analysis import contract
                 return contract(identity['role'])
-            language='面向用户的答复、cron final、完成和定时汇报默认使用简体中文；技术标识、命令、路径和必要错误原文可保留。直接给结论、证据、阻塞和下一步，不输出英文工作草稿或逐步自问自答。'
+            from workflow_report_text import presentation_instruction
+            language=('面向用户的答复、cron final、完成和定时汇报默认使用简体中文；不输出英文工作草稿。'
+                      + presentation_instruction())
             progress_format=_manual_progress_instruction(identity['role'])
             if progress_format:
                 language+=' '+progress_format
@@ -774,11 +776,23 @@ class RuntimePlugin:
         self.record_model_activity('end',**metadata)
         self.record_api_time('end',**metadata)
         self.record_usage('end',**metadata)
+        self.record_provider_health(True,metadata)
 
     def on_api_error(self, **metadata):
         self.record_model_activity('error',**metadata)
         self.record_api_time('error',**metadata)
         self.record_usage('error',**metadata)
+        self.record_provider_health(False,metadata)
+
+    def record_provider_health(self,success,metadata):
+        try:
+            session_id=metadata.get('session_id','')
+            if not self.api_identity(session_id):return
+            from workflow_provider_health import record
+            route=getattr(self,'provider_route_keys',{}).get(session_id,{})
+            record(self.home,success=success,scope=self._frozen_scope(session_id),**{**metadata,**route})
+        except Exception:
+            logger.warning('供应健康回执未保存；原请求状态不变',exc_info=True)
 
     def usage_routes(self):
         import yaml
@@ -1051,6 +1065,11 @@ class RuntimePlugin:
 
     def on_api(self,session_id='',model='',request=None,system_prompt=None,**metadata):
         try:
+            from workflow_runtime_identity import adopt
+            adopt(self.home,getattr(self,'activation_identity',None),self._frozen_scope(session_id),metadata.get('api_request_id'))
+        except Exception:
+            logger.warning('进程采用回执未保存；请求继续执行',exc_info=True)
+        try:
             from workflow_sessions import observe
             observe(self.home,self._frozen_scope(session_id),session_id=session_id,
                     api_call_count=metadata.get('api_call_count',0),
@@ -1085,6 +1104,13 @@ class RuntimePlugin:
             if not config.get('enabled',False): return None
             decision=self.router.decision(config)
             runtime=self.router.runtime(config,decision['route'])
+            from workflow_provider_health import cooldown
+            unavailable=cooldown(self.home,runtime.get('provider',''),runtime.get('model',''))
+            if unavailable:
+                return {'error':'当前供应路线处于故障冷却，保留任务及原证据，维护责任已记录；到期按原策略复核。',
+                    'retry_after':unavailable['retry_after']}
+            if not hasattr(self,'provider_route_keys'):self.provider_route_keys={}
+            self.provider_route_keys[session_id]={'provider':runtime.get('provider',''),'model':runtime.get('model','')}
             return {'runtime':runtime,'reason':decision['reason']}
         except Exception:
             logger.warning('角色模型选路失败；阻止本次请求，避免绕过本地保护',exc_info=True)
@@ -1128,7 +1154,8 @@ def register(ctx):
     from hermes_constants import get_hermes_home
     home=Path(get_hermes_home())
     from runtime_common import save_json
-    save_json(home/'runtime/role-observation/mechanism-activation.json',activate_current_runtime())
+    from workflow_runtime_identity import record_activation
+    activation_identity=record_activation(home,activate_current_runtime())
     native_ready=False
     try:
         activation=activate_current_native_policy()
@@ -1142,6 +1169,7 @@ def register(ctx):
                          coordinator_chat_ids=ctx.get_config('coordinator_chat_ids',[]),native_ready=native_ready,
                          pool_path=ctx.get_config('pool_path',str(home/'role-pool.json')),
                          notification_budget=ctx.get_config('notification_budget',None))
+    plugin.activation_identity=activation_identity
     from workflow_file_tools import install
     try:
         file_backend = install(ctx, plugin)

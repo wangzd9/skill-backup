@@ -11,7 +11,7 @@ def basis(ledger, candidate, argv, profile, report_format, evidence, environment
     for kind in ('inputs','config'):
         for name in evidence.get(kind,[]):
             path=(Path(candidate['repo'])/name).resolve()
-            if profile in ('mysql_migration','integration_mysql') and path.name=='ready.json' and path.is_relative_to(ledger.path.parent/'mysql-sessions'):
+            if profile in ('mysql_migration','integration_mysql','candidate_mysql') and path.name=='ready.json' and path.is_relative_to(ledger.path.parent/'mysql-sessions'):
                 # A fresh disposable instance is not a fixture repair. Preserve
                 # the actual image/version and isolation contract, not its ID.
                 value=json.loads(path.read_bytes())

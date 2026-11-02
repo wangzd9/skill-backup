@@ -1,0 +1,156 @@
+{
+  "collected_at": "2026-11-02T12:54:04.124611+08:00",
+  "git_head": "6447ca7e652df5b8c9255c614da080871cab3c5f",
+  "scope": "实际工作区源码；只读哈希，不代表新建议已实施或已实际采用",
+  "findings": [
+    {
+      "id": "F1",
+      "title": "等待与进展口径",
+      "priority": "P1",
+      "classification": "confirmed_code_limitation",
+      "sources": [
+        {
+          "path": "/home/wang/work/hermes-role-runtime/business_ledger.py",
+          "line": 481,
+          "sha256": "3b7a59251e1cc575bed9f2e1d50ef47ac2ad39a2fc4dd514adf4e79637fcc0cf"
+        },
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_resumption.py",
+          "line": 5,
+          "sha256": "4c5f4d605cc26a93b35e7c3049ff2052046656b1d80b10e7b36959ad0e97c5e1"
+        },
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_wait.py",
+          "line": 23,
+          "sha256": "c669dfc88cb6aa0cf90d63c752531970c596b8ba3286eff399ec04686d98df74"
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "title": "测试入口异常接手与稳定环境身份",
+      "priority": "P1",
+      "classification": "confirmed_integration_omissions_impact_unverified",
+      "sources": [
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_verification_retry.py",
+          "line": 7,
+          "sha256": "2714f6b40d8cd79ce9c9a37610a25204700b1987a918914b71a1f9c9b9640a89"
+        },
+        {
+          "path": "/home/wang/work/hermes-role-runtime/delivery_evidence.py",
+          "line": 301,
+          "sha256": "ab1d4af9a0b85a4d1863d1963d0a885312e2349ff9f3823a12645d7364f103d7"
+        },
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_verification_exceptions.py",
+          "line": 77,
+          "sha256": "a6b0c0a42f96d28db697e25f3e87f2d176ce84d832760297da489d755f75e593"
+        },
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_local_environment.py",
+          "line": 53,
+          "sha256": "d6740080670e4083800a5ddaf691b99b102bcecdbba528ac8789901823e4dfef"
+        },
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_supplemental.py",
+          "line": 385,
+          "sha256": "4a0a9842ff51b99cdacd39c4ad270a4726c929e24863d30869ad6b7fc933c2de"
+        }
+      ]
+    },
+    {
+      "id": "F3",
+      "title": "机械参数准备与工具采用",
+      "priority": "P1",
+      "classification": "observed_usage_failures",
+      "sources": [
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_decision_context.py",
+          "line": 321,
+          "sha256": "eb7dcb126a7b41307ac1cc7c9e723a00a2dcc5139df14fb02e2ba91af104c89d"
+        },
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_contracts.py",
+          "line": 98,
+          "sha256": "5fea5bbe49173a2e582a3a506424716b8b196d709c3a9a9938c96cc61023f383"
+        }
+      ]
+    },
+    {
+      "id": "F4",
+      "title": "接续记忆采用",
+      "priority": "P1",
+      "classification": "observed_adoption_gap",
+      "sources": [
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_work_memory.py",
+          "line": 35,
+          "sha256": "dc45c7553a2963ee44ded2b264ca838d284cd1fb409447aab667bc620099f89a"
+        }
+      ]
+    },
+    {
+      "id": "F5",
+      "title": "模型健康与阶段耗时",
+      "priority": "P1",
+      "classification": "observed_errors_and_code_scope_gap",
+      "sources": [
+        {
+          "path": "/home/wang/work/hermes-role-runtime/model_routing.py",
+          "line": 103,
+          "sha256": "dfdbf1719b1efc722cfb4f12e6288ce04d0b10ef3b3dc537befc3f0a73552f0b"
+        }
+      ]
+    },
+    {
+      "id": "F6",
+      "title": "发布与实际采用追踪",
+      "priority": "P1",
+      "classification": "observed_metadata_drift",
+      "sources": [
+        {
+          "path": "/home/wang/work/hermes-role-runtime/__init__.py",
+          "line": 1129,
+          "sha256": "c66a864895d7342bb5d583a95e0d3236a9ac3b8484b84cfd9e24ec43e37b12a9"
+        },
+        {
+          "path": "/home/wang/work/hermes-role-runtime/mechanism_activation.py",
+          "line": 1,
+          "sha256": "d4032cf053aab1d2af595dd20a083c771e4bfbc5fd5db365566a89ec644c0746"
+        }
+      ]
+    },
+    {
+      "id": "F7",
+      "title": "容量采样与历史归档",
+      "priority": "P2",
+      "classification": "confirmed_sampling_limitation",
+      "sources": [
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_capacity.py",
+          "line": 5,
+          "sha256": "10ad751a2fa0d341496f0de9886c47d512e030d1de1183b8d2c85e5fbfc77474"
+        }
+      ]
+    },
+    {
+      "id": "F8",
+      "title": "环境验收映射及整链回放",
+      "priority": "P1",
+      "classification": "business_coverage_pending_and_validation_recommendation",
+      "sources": [
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_completion.py",
+          "line": 280,
+          "sha256": "c596aba7d0997dd318e7383e19f2e7f98e5953559d3f2e6d2e8a1d727fff707c"
+        },
+        {
+          "path": "/home/wang/work/hermes-role-runtime/workflow_local_environment.py",
+          "line": 5,
+          "sha256": "d6740080670e4083800a5ddaf691b99b102bcecdbba528ac8789901823e4dfef"
+        }
+      ]
+    }
+  ]
+}

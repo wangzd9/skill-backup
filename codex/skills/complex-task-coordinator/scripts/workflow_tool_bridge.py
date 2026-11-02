@@ -23,6 +23,9 @@ def usage(role, *, include_background=False):
           +json.dumps(example,ensure_ascii=False)+'。只填已核实的事实。'
           '收到环境不可用时修复验证环境，不把它当代码缺陷返修。'
           'next_actions为safe_release且有原生退休请求时，TESTER自行收口并退出，不等待用户批准或先刷新基线。')
+    text+=('本地真实数据库测试：普通verify与verify_integration均可选profile="mysql"，宿主机自动提供隔离MySQL8.4，'
+           '注入DATABASE_URL/ROLE_TEST_MYSQL_URL/MN01_MYSQL_URL并清理自身容器。开发者沙箱无Docker是预期隔离，'
+           '不是本机缺环境；由TESTER固定候选验证，不要求用户再次选择环境。缺用例或skip不算MySQL通过。')
     if role in {'A','B','C'}:
         text+=('开发用 write_file/patch 在本单私有仓库的冻结文件范围内编辑；内容通过 stdin 进入受限沙箱。'
                'terminal 用于自测及提交；不要反复重试被 hardline 拦截的大段内联命令。')
@@ -55,11 +58,17 @@ def usage(role, *, include_background=False):
                'repair需observation_event_id、当前candidate_id、原scope内affected_paths及核证reason，原writer退出后原生落实新attempt。'
                '已完成任务不走extend_task_scope，不等MN-07先失败；内部机制缺口不等于缺用户授权。'
                'ACTIVE 启动原因看 admission_hint，不从旧 pool.current 推断；writer fence 表示同角色写执行占用。'
-               'waiting_external 会定期重新核验；工具拒绝码和条件证据须逐项读取，不把历史 checkpoint 当实时事实。')
+               'waiting_external 会定期重新核验；工具拒绝码和条件证据须逐项读取，不把历史 checkpoint 当实时事实。'
+               'coordination.dependencies为冻结合同明确依赖的已接受本地需求，由原生调度在全部writer核退后自动接续，完成后返回下游。'
+               '遇await_dependency_handoff保存checkpoint并yield；DRAINING由需求选择产生，不等于用户暂停或要求用户逐候选裁决。'
+               '内部候选裁决仍由协调者按证据执行，不把登记用户答复当APPROVE。'
+               '确需用户决定时checkpoint.user_questions填[{decision_id,question,options:[选项1,选项2],reason}]；'
+               '该记录进入持久通知并保留夜间未决事项，不能仅在next/waiting_external里口头声称已上报。'
+               '答复登记后用resolve_user_decision关联原问题并执行对应动作；必须用账本回执确认生效，不预测下一tick必定合入。')
     elif role=='TESTER':
         text+=('integration_verification是最终集成验证，固定目标/原合同见integration_validation。'
                '用verify_integration分批执行，payload含argv、profile=local/mysql、report_format及timeout_seconds；'
-               'mysql由受控临时8.4实例提供MN01_MYSQL_URL，不接生产连接。结果保留INTEGRATION_TEST_RECORDED事件。'
+               'mysql由受控临时8.4实例提供三个固定数据库变量，不接生产连接。结果保留INTEGRATION_TEST_RECORDED事件。'
                '按integration_validation.plan.obligations区分local_validation/local_closure/real_nodes/production，不能用协调收口作测试前置。'
                '逐AC完成本地义务后deliver_integration，checks逐项填id/result/mode/test_event_ids/notes；coverage逐项给obligation_id、phase、contract_sha256、scenario、assertion、environment、test_event_id、case_id（JUnit的classname::name）。AC10报告索引用event_ids。'
                'issues填id/kind/task_id/test_event_ids/summary及blocking/confidence/accepted_scope/ac_ids/disposition/owner。仅已确认且阻断本地合同的code issue自动返修。非阻断或范围外须rationale和review_required=true，协调者逐项复核才能收口。'

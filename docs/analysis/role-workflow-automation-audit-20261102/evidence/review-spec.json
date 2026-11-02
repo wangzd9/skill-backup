@@ -1,0 +1,13 @@
+{
+  "version": null,
+  "request_timeout_seconds": 900,
+  "retry_depth": 1,
+  "concurrency_policy": {
+    "kind": "local_waiting",
+    "metrics_url": "http://192.168.2.45:8002/metrics",
+    "threshold": 1,
+    "idle_limit": 2,
+    "busy_limit": 1
+  },
+  "partial_recovery": null
+}

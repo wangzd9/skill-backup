@@ -295,6 +295,16 @@ def submit_service(ledger, identity, candidate_id, kind, request, *, action_id,
                 return {'status':'REJECTED','code':'EXTERNAL_ACTION_ID_CONFLICT'}
             return {'status':'DUPLICATE','action_id':action_id,'state':previous['state'],
                     'reference':previous.get('reference'),'replay_allowed':False}
+        if kind=='ocr' and not request.get('reuse_action_id'):
+            from workflow_query import review_action_projection
+            unresolved={a['action_id'] for a in review_action_projection(snapshot,candidate['run_id'])['attention']
+                        if a['candidate_id']==candidate_id and a['kind']=='ocr' and a['state']=='INCOMPLETE'}
+            if unresolved:
+                return {'status':'REJECTED','code':'OCR_PARTIAL_RECOVERY_REQUIRED',
+                        'action_ids':sorted(unresolved),'next_action':'service_resume',
+                        'message':'此候选已有未完成审查；先核原始证据，通过补审关联原动作。'
+                                  '不得换编号或背景另开全量审查；身份变化须先交维护者核实。',
+                        'dispatch_performed':False,'authorization_consumed':False}
         selected_adapter=adapter or NativeServices()
         if hasattr(selected_adapter,'preflight'):
             try:
@@ -453,6 +463,11 @@ def validate_native_action(path, kind, scope):
               'review_id':value['action_id']}
     if any(str(value)!=str(expected[key]) for key,value in scope.items()):
         raise ValueError('WORKFLOW_NATIVE_SERVICE_SCOPE_MISMATCH')
+    if kind=='ocr' and value['state']=='DISPATCHING' and not value['request'].get('reuse_action_id'):
+        from workflow_query import review_action_projection
+        if any(a['candidate_id']==candidate['candidate_id'] and a['kind']=='ocr' and a['state']=='INCOMPLETE'
+               for a in review_action_projection(snapshot,run['run_id'])['attention']):
+            raise ValueError('OCR_PARTIAL_RECOVERY_REQUIRED')
     return {'authorization_id':auth['authorization_id'],'project':run['requirement_root'],
             'repo':candidate['repo'],'task_id':candidate['task_id'],'action_id':value['action_id']}
 

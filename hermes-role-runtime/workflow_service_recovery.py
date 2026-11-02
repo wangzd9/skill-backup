@@ -49,11 +49,53 @@ def resume_readiness(ledger, action_id):
                 return {'allowed':False,'code':'RESUME_DIAGNOSIS_UNVERIFIED'}
             if invocation.get('request',{}).get('reuse_action_id')==action_id:
                 return {'allowed':False,'code':'DUPLICATE_REVIEW'}
-        if state.get('state')=='HARD_DEADLINE':
+        if (state.get('state')=='HARD_DEADLINE' or any(
+                entry.get('state')=='HARD_DEADLINE' for entry in state.get('batches',[]))):
             return {'allowed':False,'code':'ROOT_CAUSE_REPAIR_REQUIRED'}
+        diagnosis=recovery_diagnosis(ledger,action_id)
+        if diagnosis and diagnosis['request_timeouts']:
+            from ocr_runtime import partial_recovery_policy
+            repair=partial_recovery_policy(spec)
+            if repair['previous_parallel_limit']<=repair['max_parallel_batches']:
+                return {'allowed':False,'code':'ROOT_CAUSE_REPAIR_REQUIRED','diagnosis':diagnosis,
+                        'next_action':'原审查已经串行，不能把相同调度写成修复；先核模型服务和请求证据，交维护者处理。'}
+            return {'allowed':True,'code':'SERIAL_PARTIAL_RECOVERY_READY',
+                    'diagnosis':diagnosis,'repair':repair,
+                    'next_action':'原服务已停止；沿用原候选及有效授权，只复用核验完整的批次，'
+                                  '剩余批次按新版串行策略补审一次；完整报告返回后由协调者逐项裁决。'}
         return {'allowed':True,'code':'DIAGNOSIS_AND_REPAIR_REASON_REQUIRED'}
-    except (OSError,ValueError,TypeError):
+    except (OSError,ValueError,TypeError,KeyError):
         return {'allowed':False,'code':'RESUME_DIAGNOSIS_UNVERIFIED'}
+
+
+def recovery_diagnosis(ledger, action_id):
+    """Explain partial coverage from hashed evidence, never from missing comments."""
+    from workflow_services import _action
+    prior=_action(ledger,action_id)
+    if prior['state']!='INCOMPLETE' or not prior.get('evidence'):
+        return None
+    native,_=reuse_source(ledger,action_id,prior['candidate_id'])
+    spec=read_json(native/'spec.json');state=read_json(native/'state.json')
+    terminal=read_json(prior['evidence']['path'])
+    sources={Path(s['path']).resolve() for s in terminal.get('sources',[])}
+    planned={b['id'] for b in spec['batches']}
+    entries=state.get('batches',[])
+    completed=[e['id'] for e in entries if e.get('state')=='REVIEW_COMPLETE' and e.get('returncode')==0]
+    failed=[e['id'] for e in entries if e.get('state') not in ('REVIEW_COMPLETE','RUNNING')]
+    timeouts=[]
+    for entry in entries:
+        path=native/(entry['id']+'-diagnosis.json')
+        if path.is_file():
+            if path.resolve() not in sources:
+                raise ValueError('RESUME_DIAGNOSIS_NOT_IN_TERMINAL_SOURCES')
+            diagnosis=read_json(path)
+            if any(f.get('classification')=='timeout' for f in diagnosis.get('manifest_failures',[])):
+                timeouts.append(entry['id'])
+    return {'planned_batches':len(planned),'completed_batches':completed,'failed_batches':failed,
+            'unstarted_batches':sorted(planned-{e['id'] for e in entries}),
+            'request_timeouts':timeouts,'request_timeout_seconds':spec.get('request_timeout_seconds'),
+            'cause':'模型单次请求超时后，原审查程序停止接纳后续批次。' if timeouts else '按原始终态核对未完成范围。',
+            'business_pass':False}
 
 
 def resume(ledger, identity, action_id, new_action_id, reason, *, authorization=None, command_id):

@@ -1,4 +1,4 @@
-# 本机 OCR 固定执行流程（运行格式1.7.0，结果核验增强）
+# 本机 OCR 固定执行流程（运行格式1.7.1，结果核验与有界补审）
 
 适用：本机 Hermes 协调者的常规 OpenCodeReview。入口是 `/home/wang/.codex/skills/complex-task-coordinator/scripts/ocr_runtime.py`，使用已核验 v1.13.0（CLI沿用v1.12.13契约）。已绑定项目的新run逐批读取Hermes模型切换设置；本地仍为`vllm-local`永久LAN端点，云端复用已配置供应商和同一模型。其它项目/平台先验证工具与运行环境，不能硬套本机路径。强模型审查、开发、独立测试和合入职责不变。
 
@@ -49,6 +49,8 @@ python3 /home/wang/.codex/skills/complex-task-coordinator/scripts/ocr_runtime.py
 这些值针对当前已验证链路。需要改变参数、工具版本或provider时，由获授权维护者先验证并版本化入口；协调者不能临时编写另一runner来绕过失败条件。60分钟达到后保留门禁，不无限加超时。
 
 ## 失败与补审
+
+结果未收齐、超时或补审失败时先读[审查异常恢复规范](review-recovery.md)，按实际终态、失败范围与有效授权处理。1.7.1 的新补审冻结 `recovery_policy`，上限降为一批；复用批次逐一重核，失败批次和未启动批次进入补审。初审仍按原队列策略准入。worker 记录 `unstarted_batches`，明确“尚未启动”，不伪造这些批次的失败报告。旧冻结目录不修改。1.7.1 显式保留 1.7.0 冻结格式读取；升级验证须覆盖旧格式→新入口补审，未知格式仍拒绝。
 
 - **BLOCKED/作废 run 的目录名不能复用来 re-prepare**：一个 run 一旦登记过 `inbox/control/runtime/ocr/<review_identity>.json`（即使竞态 BLOCKED 未真正审查），其目录名就绑定了一个索引。若把 BLOCKED run 目录 `rm -rf` 后用同名 re-prepare 成新身份，会新建第二个 `<identity>.json` 指向同一目录 → `role_live_progress`/report 报 `OCR conflicting runtime index`，巡检读数全废。正确：BLOCKED/作废 run 用**新目录名**重跑（如 `-retry`/`-v2`），或先经入口 stop 清理其索引。已误复用目录名时：备份后删除指向已失效旧 unit 的孤儿索引文件（`inbox/control/runtime/ocr/<旧identity>.json`），保留指向当前 spec.json review_identity 的那个，再重跑 live_progress 验证冲突解除。本教训源自 2026-10-17 R2：复用 BLOCKED run 35e09225 的目录名 re-prepare 成 0145306b，孤儿索引致 live_progress 冲突，清理后恢复。
 - 先读取 `bNN-diagnosis.json` 与原session；manifest终因优先，正确区分压缩、任务截止、请求超时、预算、宿主回收及身份拒绝。`context canceled`和`round 1/2`只是症状。步骤见 `ocr-and-merge.md` §5。

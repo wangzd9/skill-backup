@@ -225,7 +225,7 @@ def _intent(pool_path, role, home):
     previous = [v for v in snapshot['works'] if v['role'] == role and v['run_id'] == run_id]
     processed = (work or (previous[-1] if previous else {})).get('processed_through', 0)
     mechanical = {'EXECUTION_BOUND', 'EXECUTION_ENDED', 'EXECUTION_OUTCOME_OBSERVED', 'TOOL_EXECUTION_REGISTERED',
-                  'CHECKPOINT_SAVED', 'WORK_CLAIMED'}
+                  'CHECKPOINT_SAVED', 'WORK_CLAIMED', 'COORDINATION_ATTENTION_REQUIRED'}
     high = max((event['event_id'] for event in snapshot['events']
                 if event.get('run_id') in (None, run_id) and event['kind'] not in mechanical
                 and not (work and event.get('work_id') == work['work_id']

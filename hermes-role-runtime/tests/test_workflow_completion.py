@@ -81,6 +81,26 @@ class CompletionTests(LedgerFixture):
         self.assertEqual('COMPLETED',snapshot['tasks'][0]['phase'])
         self.assertFalse(facts(snapshot,'run-one')['completion_event_id'])
 
+    def test_managed_mysql_integration_replays_original_result_without_recreating_database(self):
+        from contextlib import contextmanager
+        self.queue();tp,tester=self.bind('TESTER')
+        calls=[]
+        @contextmanager
+        def session(directory):
+            calls.append(str(directory));directory.mkdir(parents=True,exist_ok=True)
+            marker=directory/'ready.json';marker.write_text('{"state":"READY"}')
+            yield 'isolated-integration-url',marker
+        assertion="import os; assert os.environ['DATABASE_URL']==os.environ['ROLE_TEST_MYSQL_URL']==os.environ['MN01_MYSQL_URL']; "
+        payload={'profile':'mysql','report_format':'junit',
+            'argv':[sys.executable,'-c',assertion+CHECK,'{junit_xml}','2']}
+        with mock.patch('workflow_supplemental.mysql_session',session):
+            first=verify(self.ledger,tester,payload,command_id='managed-final')
+            second=verify(self.ledger,tester,payload,command_id='managed-final')
+        self.assertEqual('PASS',first['test_stats']['mechanical_result'])
+        self.assertEqual(first['publication']['event_id'],second['publication']['event_id'])
+        self.assertEqual(1,len(calls))
+        self.close(tp,tester)
+
     def test_real_final_evidence_and_writer_exit_are_required_before_native_closure(self):
         self.queue();tp,tester,eid=self.run_final()
         self.assertEqual('integration_verification',self.ledger.current_work('TESTER')['kind'])

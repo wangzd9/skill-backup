@@ -1,0 +1,10 @@
+{
+  "commit": "6447ca7e652df5b8c9255c614da080871cab3c5f",
+  "path": "/home/wang/work/.local/commit-sync-20261102/baseline-6447ca7e65",
+  "tests_run": 2,
+  "failure_ids": [
+    "test_lease_monitor.LeaseMonitorTests.test_generation_and_delivery_receipts_quiet_unknown_and_no_duplicate_send",
+    "test_lease_monitor.Schema2ObservationTests.test_open_compaction_and_persisted_request_gap_cannot_certify_inactivity"
+  ],
+  "error_ids": []
+}

@@ -1,0 +1,125 @@
+{
+  "collected_at": "2026-11-02T12:50:33.554805+08:00",
+  "high_watermark": 19601,
+  "tasks": [
+    {
+      "run_id": "prepared-rosbag-catalog-scene-foundation",
+      "task_id": "TASK-BR-00",
+      "role": "C",
+      "phase": "DEVELOPING",
+      "attempt": 3
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-scene-foundation",
+      "task_id": "TASK-BR-01",
+      "role": "B",
+      "phase": "PENDING",
+      "attempt": 1
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-scene-foundation",
+      "task_id": "TASK-BR-02",
+      "role": "A",
+      "phase": "PENDING",
+      "attempt": 1
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-scene-foundation",
+      "task_id": "TASK-BR-03",
+      "role": "C",
+      "phase": "PENDING",
+      "attempt": 1
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-scene-foundation",
+      "task_id": "TASK-FND-REC-01",
+      "role": "B",
+      "phase": "REVIEW",
+      "attempt": 2
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-scene-foundation",
+      "task_id": "TASK-FND-SRC-01",
+      "role": "A",
+      "phase": "PENDING",
+      "attempt": 1
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-spray-pipeline",
+      "task_id": "TASK-SR-00",
+      "role": "A",
+      "phase": "COMPLETED",
+      "attempt": 4
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-spray-pipeline",
+      "task_id": "TASK-SR-01",
+      "role": "A",
+      "phase": "COMPLETED",
+      "attempt": 7
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-spray-pipeline",
+      "task_id": "TASK-SR-02",
+      "role": "B",
+      "phase": "COMPLETED",
+      "attempt": 1
+    },
+    {
+      "run_id": "prepared-rosbag-catalog-spray-pipeline",
+      "task_id": "TASK-SR-03",
+      "role": "C",
+      "phase": "DEVELOPING",
+      "attempt": 1
+    }
+  ],
+  "review_events": [
+    {
+      "event_id": 19549,
+      "kind": "SERVICE_ARTIFACT_RECORDED",
+      "role": "COORDINATOR",
+      "created_at": 1793593557.7804348,
+      "action_id": "ocr-br00-5acc54-a2-resume1",
+      "candidate_id": "candidate-5acc5436caa74113b69b8723d74feaed",
+      "result": null,
+      "decision": null
+    },
+    {
+      "event_id": 19568,
+      "kind": "SERVICE_ADJUDICATED",
+      "role": "COORDINATOR",
+      "created_at": 1793594381.2466276,
+      "action_id": "ocr-br00-5acc54-a2-resume1",
+      "candidate_id": "candidate-5acc5436caa74113b69b8723d74feaed",
+      "result": "FAIL",
+      "decision": null
+    },
+    {
+      "event_id": 19587,
+      "kind": "CANDIDATE_DECIDED",
+      "role": "COORDINATOR",
+      "created_at": 1793594716.3268483,
+      "action_id": null,
+      "candidate_id": null,
+      "result": null,
+      "decision": "REWORK"
+    },
+    {
+      "event_id": 19588,
+      "kind": "CANDIDATE_DELIVERED",
+      "role": "B",
+      "created_at": 1793594761.0190322,
+      "action_id": null,
+      "candidate_id": "candidate-1803ad03bd2649bda645c56ddb788f0a",
+      "result": null,
+      "decision": null
+    }
+  ],
+  "external_actions": [
+    {
+      "action_id": "ocr-br00-5acc54-a2-resume1",
+      "state": "ENDED",
+      "candidate_id": "candidate-5acc5436caa74113b69b8723d74feaed"
+    }
+  ]
+}

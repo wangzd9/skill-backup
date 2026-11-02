@@ -253,7 +253,9 @@ def _objects(packet, snapshot):
                           ('action','external_actions','action_id')):
         result[kind]={r[key]:r for r in packet[name]}
     run_id=(packet.get('run') or {}).get('run_id')
-    result['event']={str(e['event_id']):e for e in snapshot['events'] if e.get('run_id') in (None,run_id)}
+    from workflow_coordination import related_runs
+    runs = related_runs(snapshot, run_id) if packet.get('role') == 'COORDINATOR' else {run_id}
+    result['event']={str(e['event_id']):e for e in snapshot['events'] if e.get('run_id') in runs | {None}}
     plan=(packet.get('completion') or {}).get('plan') or {}
     result['obligation']={o['id']:o for o in plan.get('obligations',[])}
     report=(packet.get('completion') or {}).get('report') or {}
@@ -398,7 +400,8 @@ def _query(scope, args):
     if operation=='contract':
         if not isinstance(args.get('action'),str):raise ValueError('ACTION_REQUIRED')
         return _contract(scope['role'],args['action'])
-    ledger=open_ledger(scope['pool_path']);mark=time.monotonic();snapshot=ledger.snapshot(scope['run_id'])
+    ledger=open_ledger(scope['pool_path']);mark=time.monotonic()
+    snapshot=ledger.snapshot(None if scope['role']=='COORDINATOR' else scope['run_id'])
     timings['snapshot_ms']=round((time.monotonic()-mark)*1000,3);mark=time.monotonic()
     packet=current_input(scope['pool_path'],scope['role'],scope=scope,snapshot=snapshot,model_view=False)
     timings['current_input_ms']=round((time.monotonic()-mark)*1000,3);mark=time.monotonic()

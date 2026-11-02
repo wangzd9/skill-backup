@@ -11,6 +11,77 @@ from workflow_replay import replay, run_corpus
 
 
 class ObservationReplayTests(unittest.TestCase):
+    def writer_exit(self, execution='execution-one'):
+        return {'identity': execution, 'type': 'observer_business_writer_exited',
+                'source': 'business.sqlite3', 'role': 'A', 'work_id': 'work-one',
+                'execution_id': execution, 'severity': 1}
+
+    def test_writer_collection_gap_stays_visible_without_alert_or_recovery_pair(self):
+        fault = self.writer_exit()
+        state, events = step({}, {'faults': [fault], 'anomalies': [fault]}, 100)
+        self.assertEqual([], events)
+        self.assertIn(fault['identity'], state['active'])
+        state, events = step(state, {'closed_execution_ids': [fault['execution_id']]}, 104)
+        self.assertEqual([], events)
+        self.assertEqual({}, state['active'])
+
+    def test_persistent_writer_gap_alerts_once_then_closes_with_exact_execution(self):
+        fault = self.writer_exit()
+        observation = {'faults': [fault], 'anomalies': [fault]}
+        state, _ = step({}, observation, 100)
+        state, events = step(state, observation, 219)
+        self.assertEqual([], events)
+        state, events = step(state, observation, 220)
+        self.assertEqual(['first'], [row['transition'] for row in events])
+        self.assertEqual(100, events[0]['occurred_at'])
+        state, events = step(state, observation, 280)
+        self.assertEqual([], events)
+        healthy = {'source_states': {'business.sqlite3': {'state': 'OBSERVED'}},
+                   'closed_work_ids': ['work-one'], 'closed_execution_ids': ['replacement']}
+        state, events = step(state, healthy, 300)
+        self.assertEqual([], events)
+        self.assertIn(fault['identity'], state['active'])
+        state, events = step(state, {'closed_execution_ids': [fault['execution_id']]}, 310)
+        self.assertEqual(['closed_with_execution'], [row['transition'] for row in events])
+        self.assertEqual({}, state['active'])
+
+    def test_writer_gap_blind_sample_interrupts_unreported_stability_window(self):
+        fault = self.writer_exit()
+        observation = {'faults': [fault]}
+        state, _ = step({}, observation, 100)
+        state, events = step(state, {}, 160)
+        self.assertEqual([], events)
+        self.assertIn(fault['identity'], state['active'])
+        state, events = step(state, observation, 230)
+        self.assertEqual([], events)
+        self.assertEqual(230, state['active'][fault['identity']]['first_seen'])
+        state, events = step(state, observation, 350)
+        self.assertEqual(['first'], [row['transition'] for row in events])
+
+    def test_legacy_writer_alert_closes_without_emitting_another_first(self):
+        fault = self.writer_exit()
+        old = {**fault, 'first_seen': 100, 'last_seen': 100, 'episode': 'legacy'}
+        prior = {'active': {fault['identity']: old}}
+        state, events = step(prior, {'faults': [fault]}, 110)
+        self.assertEqual([], events)
+        state, events = step(state, {'closed_execution_ids': [fault['execution_id']]}, 120)
+        self.assertEqual(['closed_with_execution'], [row['transition'] for row in events])
+        self.assertEqual('legacy', events[0]['episode'])
+
+    def test_writer_recovery_requires_positive_same_execution_scope_evidence(self):
+        fault = self.writer_exit()
+        state, _ = step({}, {'faults': [fault]}, 100)
+        state, _ = step(state, {'faults': [fault]}, 220)
+        writer = {'execution_id': fault['execution_id'], 'writers_present': True,
+                  'writer_scope_verified': True, 'scope_identity_verified': True}
+        for mutation in ({'execution_id': 'replacement'}, {'writer_scope_verified': False},
+                         {'scope_identity_verified': False}, {'writers_present': False}):
+            _, events = step(state, {'roles': {'A': [{'executions': [{**writer, **mutation}]}]}}, 230)
+            self.assertEqual([], events)
+        state, events = step(state, {'roles': {'A': [{'executions': [writer]}]}}, 240)
+        self.assertEqual(['recovered'], [row['transition'] for row in events])
+        self.assertEqual({}, state['active'])
+
     def test_diagnostic_source_flapping_is_debounced_but_health_fact_remains(self):
         fault = {'type': 'observer_write_diagnostics_unverified',
                  'source': 'diagnostics.sqlite3', 'severity': 1,
